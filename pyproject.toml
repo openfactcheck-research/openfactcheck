@@ -4,12 +4,12 @@ requires = ["setuptools"]
 
 [project]
 authors = [
-  {name = "Hasan Iqbal", email = "hasan.iqbal@mbzuai.ac.ae"},
-  {name = "Yuxia Wang", email = "yuxia.wang@mbzuai.ac.ae"},
-  {name = "Minghan Wang", email = "minghan.wang@monash.edu"},
-  {name = "Georgi Georgiev", email = "geoergi@uni-sofia.bg"},
-  {name = "Jiahui Geng", email = "jiahui.geng@mbzuai.ac.ae"},
-  {name = "Preslav Nakov", email = "preslav.nakov@mbzuai.ac.ae"},
+  { name = "Hasan Iqbal", email = "hasan.iqbal@mbzuai.ac.ae" },
+  { name = "Yuxia Wang", email = "yuxia.wang@mbzuai.ac.ae" },
+  { name = "Minghan Wang", email = "minghan.wang@monash.edu" },
+  { name = "Georgi Georgiev", email = "geoergi@uni-sofia.bg" },
+  { name = "Jiahui Geng", email = "jiahui.geng@mbzuai.ac.ae" },
+  { name = "Preslav Nakov", email = "preslav.nakov@mbzuai.ac.ae" },
 ]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -24,24 +24,28 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 description = "An Open-source Factuality Evaluation Demo for LLMs"
-keywords = ["NLP", "deep learning", "transformer", "pytorch", "factuality evaluation"]
-license = {file = "LICENSE"}
-maintainers = [
-  {name = "Hasan Iqbal", email = "hasan.iqbal@mbzuai.ac.ae"},
+keywords = [
+  "NLP",
+  "deep learning",
+  "transformer",
+  "pytorch",
+  "factuality evaluation",
 ]
+license = { file = "LICENSE" }
+maintainers = [{ name = "Hasan Iqbal", email = "hasan.iqbal@mbzuai.ac.ae" }]
 name = "openfactcheck"
 readme = "README.md"
 requires-python = ">=3.10"
 version = "0.3.15"
 
 [project.urls]
-"Bug Tracker" = "https://github.com/hasaniqbal777/openfactcheck/issues"
+"Bug Tracker" = "https://github.com/openfactcheck-research/openfactcheck/issues"
 "Documentation" = "https://openfactcheck.readthedocs.io"
-"Homepage" = "https://github.com/hasaniqbal777/openfactcheck"
-"Repository" = "https://github.com/hasaniqbal777/openfactcheck"
+"Homepage" = "https://github.com/openfactcheck-research/openfactcheck"
+"Repository" = "https://github.com/openfactcheck-research/openfactcheck"
 
 [tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
+dependencies = { file = ["requirements.txt"] }
 
 [project.optional-dependencies]
 docs = [

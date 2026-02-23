@@ -49,13 +49,13 @@ extensions = [
     "sphinx_togglebutton",
     "sphinx_favicon",
     "myst_parser",
-    #"autoapi.extension",
-    #"ablog",
-    #"jupyter_sphinx",
-    #"sphinxcontrib.youtube",
-    #"nbsphinx",
-    #"numpydoc",
-    #"jupyterlite_sphinx",
+    # "autoapi.extension",
+    # "ablog",
+    # "jupyter_sphinx",
+    # "sphinxcontrib.youtube",
+    # "nbsphinx",
+    # "numpydoc",
+    # "jupyterlite_sphinx",
 
     # -- Custom configuration ---------------------------------------------------
     "_extension.gallery_directive",
@@ -72,7 +72,8 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
-intersphinx_mapping = {"sphinx": ("https://www.sphinx-doc.org/en/master", None)}
+intersphinx_mapping = {"sphinx": (
+    "https://www.sphinx-doc.org/en/master", None)}
 
 # -- Sitemap -----------------------------------------------------------------
 
@@ -159,7 +160,7 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "GitHub",
-            "url": "https://github.com/hasaniqbal777/openfactcheck",
+            "url": "https://github.com/openfactcheck-research/openfactcheck",
             "icon": "fa-brands fa-github",
         },
         {
@@ -174,7 +175,7 @@ html_theme_options = {
         },
     ],
     # alternative way to set twitter and github header icons
-    # "github_url": "https://github.com/hasaniqbal777/openfactcheck",
+    # "github_url": "https://github.com/openfactcheck-research/openfactcheck",
     # "twitter_url": "https://twitter.com/hasaniqbal777",
     "logo": {
         "image_light": "_static/logo/logo_dark.svg",
@@ -182,19 +183,20 @@ html_theme_options = {
     },
     "use_edit_page_button": True,
     "show_toc_level": 1,
-    "navbar_align": "left",  # [left, content, right] For testing that the navbar items align properly
+    # [left, content, right] For testing that the navbar items align properly
+    "navbar_align": "left",
     # "show_nav_level": 2,
     # "announcement": "https://raw.githubusercontent.com/pydata/pydata-sphinx-theme/main/docs/_templates/custom-template.html",
     "show_version_warning_banner": True,
     # "navbar_center": ["navbar-nav"],
     # "navbar_start": ["navbar-logo"],
     "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
-    #"navbar_persistent": ["search-button"],
+    # "navbar_persistent": ["search-button"],
     "primary_sidebar_end": ["sidebar-ethical-ads"],
     # "article_footer_items": ["test", "test"],
     # "content_footer_items": ["test", "test"],
     "footer_start": ["copyright"],
-    #"footer_left": ["sphinx-version"],
+    # "footer_left": ["sphinx-version"],
     "secondary_sidebar_items": {
         "**/*": ["page-toc", "edit-this-page", "sourcelink"],
         "examples/no-sidebar": [],
@@ -207,7 +209,7 @@ html_theme_options = {
 }
 
 html_context = {
-    "github_user": "hasaniqbal777",
+    "github_user": "openfactcheck-research",
     "github_repo": "openfactcheck",
     "github_version": "main",
     "doc_path": "docs",
@@ -260,6 +262,8 @@ autodoc_member_order = "groupwise"
 # -- application setup -------------------------------------------------------
 
 # based on numpy doc/source/conf.py
+
+
 def linkcode_resolve(domain, info) -> str | None:
     """
     Determine the URL corresponding to Python object
@@ -312,12 +316,13 @@ def linkcode_resolve(domain, info) -> str | None:
     fn = os.path.relpath(fn, start=os.path.dirname(openfactcheck.__file__))
 
     if "+" in openfactcheck.__version__:
-        return f"https://github.com/hasaniqbal777/openfactcheck/blob/main/src/openfactcheck/{fn}{linespec}"
+        return f"https://github.com/openfactcheck-research/openfactcheck/blob/main/src/openfactcheck/{fn}{linespec}"
     else:
         return (
-            f"https://github.com/hasaniqbal777/openfactcheck/blob/"
+            f"https://github.com/openfactcheck-research/openfactcheck/blob/"
             f"v{openfactcheck.__version__}/src/openfactcheck/{fn}{linespec}"
         )
+
 
 def setup_to_main(
     app: Sphinx, pagename: str, templatename: str, context, doctree
@@ -335,9 +340,10 @@ def setup_to_main(
         """
         links = link.split("/")
         idx = links.index("edit")
-        return "/".join(links[: idx + 1]) + "/main/" + "/".join(links[idx + 2 :])
+        return "/".join(links[: idx + 1]) + "/main/" + "/".join(links[idx + 2:])
 
     context["to_main"] = to_main
+
 
 def setup(app: Sphinx) -> Dict[str, Any]:
     """Add custom configuration to sphinx app.

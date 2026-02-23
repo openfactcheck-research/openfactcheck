@@ -92,7 +92,7 @@ $(git log --pretty=oneline $PREVIOUS_TAG..)
 
 Diff:
 
-https://github.com/hasaniqbal777/$APP_NAME/compare/$PREVIOUS_TAG...$VERSION
+https://github.com/openfactcheck-research/$APP_NAME/compare/$PREVIOUS_TAG...$VERSION
 "
 
 # Confirmation message
@@ -138,14 +138,8 @@ if [[ "$VERSION" =~ a[0-9]+$ || "$VERSION" =~ alpha[0-9]+$ || "$VERSION" =~ b[0-
     # It's a pre-release because it contains `rc`
     gh release create "$VERSION" --generate-notes --prerelease
     echo "Pre-release $VERSION created."
-
-    # Also release in the organization
-    gh release create "$VERSION" --generate-notes --prerelease --repo "mbzuai-nlp/openfactcheck"
 else
     # It's a full release
     gh release create "$VERSION" --generate-notes
     echo "Release $VERSION created."
-
-    # Also release in the organization
-    gh release create "$VERSION" --generate-notes --repo "mbzuai-nlp/openfactcheck"
 fi

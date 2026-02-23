@@ -118,8 +118,8 @@ The API and documentation are still under heavy development and may change in fu
 
 **Useful links**:
 [Binary Installers](https://pypi.org/project/openfactcheck) |
-[Source Repository](https://github.com/hasaniqbal777/openfactcheck) |
-[Issues & Ideas](https://github.com/hasaniqbal777/openfactcheck/issues) |
+[Source Repository](https://github.com/openfactcheck-research/openfactcheck) |
+[Issues & Ideas](https://github.com/openfactcheck-research/openfactcheck/issues) |
 
 ```{toctree}
 :hidden: true

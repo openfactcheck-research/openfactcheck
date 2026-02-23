@@ -13,10 +13,12 @@ from openfactcheck.app.evaluate_factchecker import evaluate_factchecker
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Initialize OpenFactCheck with custom configuration.")
+    parser = argparse.ArgumentParser(
+        description="Initialize OpenFactCheck with custom configuration.")
 
     # Add arguments here, example:
-    parser.add_argument("--config-path", type=str, help="Config File Path", default="config.json")
+    parser.add_argument("--config-path", type=str,
+                        help="Config File Path", default="config.json")
 
     # Parse arguments from command line
     args = parser.parse_args()
@@ -62,7 +64,7 @@ class App:
         st.markdown(
             """
             <div style='text-align: center;'>
-                <img src='https://raw.githubusercontent.com/hasaniqbal777/OpenFactCheck/main/assets/splash_dark.svg' width='400'/>
+                <img src='https://raw.githubusercontent.com/openfactcheck-research/OpenFactCheck/main/assets/splash_dark.svg' width='400'/>
             </div>
             """,
             unsafe_allow_html=True,
@@ -75,8 +77,10 @@ class App:
         # Selection Menu
         selected = option_menu(
             None,
-            ["Evaluate Text", "Evaluate LLM", "Evaluate FactChecker", "Leaderboards", "About"],
-            icons=["card-checklist", "check-square", "check2-all", "trophy", "info-circle"],
+            ["Evaluate Text", "Evaluate LLM",
+                "Evaluate FactChecker", "Leaderboards", "About"],
+            icons=["card-checklist", "check-square",
+                   "check2-all", "trophy", "info-circle"],
             menu_icon="cast",
             default_index=0,
             orientation="horizontal",
