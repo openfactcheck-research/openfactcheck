@@ -6,6 +6,7 @@ colorTo: purple
 sdk: streamlit
 app_file: src/openfactcheck/app/app.py
 pinned: false
+python_version: 3.11
 -->
 
 <p align="center">
