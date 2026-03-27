@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  # Application Information
+  APP_NAME: openfactcheck
+  APP_VERSION:
+    sh: cat VERSION
+  COMMIT:
+    sh: git rev-parse HEAD
+
+  # Colors
+  COLOR_GREEN: '\033[0;32m'
+  COLOR_YELLOW: '\033[0;33m'
+  COLOR_RED: '\033[0;31m'
+  COLOR_CYAN: '\033[0;36m'
+  COLOR_RESET: '\033[0m'
+
+tasks:
+  success:
+    internal: true
+    cmds:
+      - printf '{{.COLOR_GREEN}}{{.MSG}}{{.COLOR_RESET}}\n'
+
+  info:
+    internal: true
+    cmds:
+      - printf '{{.COLOR_CYAN}}{{.MSG}}{{.COLOR_RESET}}\n'
+
+  warning:
+    internal: true
+    cmds:
+      - printf '{{.COLOR_YELLOW}}{{.MSG}}{{.COLOR_RESET}}\n'
+
+  error:
+    internal: true
+    cmds:
+      - printf '{{.COLOR_RED}}{{.MSG}}{{.COLOR_RESET}}\n'
+
+  header:
+    internal: true
+    cmds:
+      - printf '{{.COLOR_YELLOW}}{{.MSG}}{{":"}}{{.COLOR_RESET}}\n'

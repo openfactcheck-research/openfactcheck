@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  default:
+    desc: Validate local environment configuration and required dependencies.
+    deps:
+      - root
+      - deps
+    cmds:
+      - task: :print:success
+        vars:
+          MSG: "✓ All checks passed"
+
+  root:
+    desc: Verify task is run from repository root
+    internal: true
+    cmds:
+      - bash taskfiles/check.helpers.sh force_root
+
+  deps:
+    desc: Verify required dependencies are installed
+    internal: true
+    cmds:
+      - bash taskfiles/check.helpers.sh check_dependencies git python uv
