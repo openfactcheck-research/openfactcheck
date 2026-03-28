@@ -33,7 +33,6 @@ jobs:
         env:
           HATCH_INDEX_USER: __token__
           HATCH_INDEX_AUTH: ${{ secrets.PYPI_TOKEN }}
-          PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
         run: task release:publish
 
       - name: Create GitHub Release

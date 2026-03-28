@@ -87,7 +87,7 @@ tasks:
     desc: Build and publish to PyPI (called by CI)
     cmds:
       - uvx hatch build
-      - uvx hatch publish
+      - uvx hatch publish -u "$HATCH_INDEX_USER" -a "$HATCH_INDEX_AUTH" --no-prompt
       - task: :print:success
         vars:
           MSG: "✓ Published to PyPI"
