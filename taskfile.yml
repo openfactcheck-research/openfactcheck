@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+silent: true
+
+includes:
+  print:
+    taskfile: ./taskfiles/common.taskfile.yml
+    internal: true
+  check:
+    taskfile: ./taskfiles/check.taskfile.yml
+  dev:
+    taskfile: ./taskfiles/dev.taskfile.yml
+  release:
+    taskfile: ./taskfiles/release.taskfile.yml
+
+tasks:
+  list:
+    desc: Show all available tasks
+    cmds:
+      - task --list --sort alphanumeric
+
+  default:
+    cmds:
+      - |
+        printf '{{.COLOR_CYAN}}{{.APP_NAME}} {{.APP_VERSION}}{{.COLOR_RESET}} ({{.COMMIT}})\n'
+        printf '\n'
+
+        printf '{{.COLOR_CYAN}}Namespaces{{.COLOR_RESET}}\n'
+        printf '  dev      Development (sync, test, lint, format, clean)\n'
+        printf '  check    Verify dependencies\n'
+        printf '  release  Release workflow (bumps version, tags, CI publishes)\n\n'
+
+        printf '{{.COLOR_CYAN}}Release Workflow{{.COLOR_RESET}}\n'
+        printf '  1. task release:prepare                 Verify ready to release\n'
+        printf '  2. task release:release VERSION=v1.0.0  Tag and push (triggers CI)\n'
+        printf '  3. GitHub Actions publishes to PyPI\n\n'
+
+        printf '{{.COLOR_CYAN}}Development{{.COLOR_RESET}}\n'
+        printf '  task dev              Sync, lint, and test\n'
+        printf '  task dev:test         Run tests\n'
+        printf '  task check            Validate environment\n\n'
+
+        printf '{{.COLOR_YELLOW}}Run "task --list" for all tasks{{.COLOR_RESET}}\n'
