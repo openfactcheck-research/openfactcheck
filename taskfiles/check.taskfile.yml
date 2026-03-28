@@ -23,4 +23,4 @@ tasks:
     desc: Verify required dependencies are installed
     internal: true
     cmds:
-      - bash taskfiles/check.helpers.sh check_dependencies git python uv
+      - bash taskfiles/check.helpers.sh check_dependencies git python uv tofu

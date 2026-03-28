@@ -1,15 +1,17 @@
-name: Lint
+name: CI
 
 on:
   push:
     branches:
-      - '*'
-  pull_request:
-    branches:
-      - main
+      - "**"
+      - "!main"
+
+permissions:
+  contents: read
 
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version: "3.14"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3

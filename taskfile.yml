@@ -14,6 +14,8 @@ includes:
     taskfile: ./taskfiles/dev.taskfile.yml
   release:
     taskfile: ./taskfiles/release.taskfile.yml
+  deploy:
+    taskfile: ./taskfiles/deploy.taskfile.yml
 
 tasks:
   list:
@@ -30,7 +32,8 @@ tasks:
         printf '{{.COLOR_CYAN}}Namespaces{{.COLOR_RESET}}\n'
         printf '  dev      Development (sync, test, lint, format, clean)\n'
         printf '  check    Verify dependencies\n'
-        printf '  release  Release workflow (bumps version, tags, CI publishes)\n\n'
+        printf '  release  Release workflow (bumps version, tags, CI publishes)\n'
+        printf '  deploy   Infrastructure (init, plan, apply, destroy)\n\n'
 
         printf '{{.COLOR_CYAN}}Release Workflow{{.COLOR_RESET}}\n'
         printf '  1. task release:prepare                 Verify ready to release\n'

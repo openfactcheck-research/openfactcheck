@@ -1,0 +1,111 @@
+name: CI Production
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Task
+        uses: go-task/setup-task@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Lint
+        run: task dev:lint
+
+  publish:
+    name: Publish to PyPI
+    needs: [lint]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Task
+        uses: go-task/setup-task@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run checks
+        run: task release:check
+
+      - name: Build package
+        run: uvx hatch build
+
+      - name: Publish to PyPI
+        env:
+          PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
+        run: >
+          uvx hatch publish
+          -u __token__
+          -a ${{ secrets.PYPI_TOKEN }}
+          --no-prompt
+
+  github_release:
+    name: Create GitHub Release
+    needs: [publish]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Task
+        uses: go-task/setup-task@v2
+
+      - name: Create GitHub Release
+        run: task release:github-release VERSION=${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    name: Deploy to Production
+    needs: [publish]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Task
+        uses: go-task/setup-task@v2
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PRODUCTION }}
+          aws-region: us-east-1
+
+      - name: Deploy to production
+        run: task deploy TARGET=production
