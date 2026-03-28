@@ -49,8 +49,6 @@ env/
 htmlcov/
 .tox/
 
-# uv
-uv.lock
 
 # Data
 *.db
