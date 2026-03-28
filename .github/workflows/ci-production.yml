@@ -98,6 +98,12 @@ jobs:
       - name: Install Task
         uses: go-task/setup-task@v2
 
+      - name: Write deployment config
+        run: |
+          mkdir -p deployments/environments deployments/accounts
+          echo '${{ secrets.PRODUCTION_TFVARS }}' > deployments/environments/production.tfvars.json
+          echo '${{ secrets.HASANIQBAL_DEV_BACKEND_CONF }}' > deployments/accounts/hasaniqbal-dev.backend.conf
+
       - name: Install OpenTofu
         uses: opentofu/setup-opentofu@v1
 
