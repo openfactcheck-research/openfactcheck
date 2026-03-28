@@ -60,5 +60,12 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_INTEGRATION }}
           aws-region: us-east-1
 
+      - name: Write AWS profile
+        run: |
+          aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID" --profile hasaniqbal-dev
+          aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" --profile hasaniqbal-dev
+          aws configure set aws_session_token "$AWS_SESSION_TOKEN" --profile hasaniqbal-dev
+          aws configure set region us-east-1 --profile hasaniqbal-dev
+
       - name: Deploy to integration
         run: task deploy TARGET=integration
