@@ -1,0 +1,75 @@
+# MacOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# uv
+uv.lock
+
+# Data
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Markdown files
+*.md
+!README.md
+
+# TF files
+*.tfstate
+*.tfstate.backup
+.terraform/
+accounts/
+environments/
+
+# Temp files
+tmp

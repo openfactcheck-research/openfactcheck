@@ -1,0 +1,37 @@
+[project]
+name = "openfactcheck"
+dynamic = ["version"]
+description = "An Open-Source Framework for Fact-Checking and Factuality Evaluation of LLMs"
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [{ name = "Hasan Iqbal", email = "hasan.iqbal@mbzuai.ac.ae" }]
+license = { file = "LICENSE" }
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "regex"
+path = "VERSION"
+pattern = "(?P<version>.+)"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openfactcheck"]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+
+[tool.mypy]
+strict = true
+mypy_path = "src"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.8",
+]

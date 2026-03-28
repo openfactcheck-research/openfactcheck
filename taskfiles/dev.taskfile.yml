@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  setup:
+    desc: Install dependencies and git hooks
+    cmds:
+      - uv sync
+      - uv run pre-commit install
+
+  sync:
+    desc: Sync dependencies
+    cmds:
+      - uv sync
+
+  test:
+    desc: Run tests
+    cmds:
+      - uv run pytest -v || test $? -eq 5
+
+  test:coverage:
+    desc: Run tests with coverage report
+    cmds:
+      - uv run pytest --cov=openfactcheck --cov-report=term-missing -v
+
+  lint:
+    desc: Run all code quality checks (format, ruff, typecheck)
+    cmds:
+      - task: :print:info
+        vars:
+          MSG: "Formatting..."
+      - uv run ruff format --check src/
+      - printf '\n'
+      - task: :print:info
+        vars:
+          MSG: "Linting..."
+      - uv run ruff check src/
+      - printf '\n'
+      - task: :print:info
+        vars:
+          MSG: "Type checking..."
+      - uv run mypy src/
+      - printf '\n'
+      - task: :print:success
+        vars:
+          MSG: "✓ All checks passed"
+
+  lint:fix:
+    desc: Auto-fix linting and formatting
+    cmds:
+      - uv run ruff format src/
+      - uv run ruff check --fix src/
+
+  version:
+    desc: Show current version
+    cmds:
+      - cat VERSION
+
+  clean:
+    desc: Remove build artifacts and caches
+    cmds:
+      - rm -rf dist build .pytest_cache .ruff_cache .mypy_cache src/*.egg-info
+
+  default:
+    desc: Run sync, lint, and test
+    cmds:
+      - task: sync
+      - task: lint
+      - task: test

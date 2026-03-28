@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+tasks:
+  check:
+    desc: Run tests and linting before release
+    cmds:
+      - task: :print:info
+        vars:
+          MSG: "Linting..."
+      - task: :dev:lint
+      - printf '\n'
+      - task: :print:info
+        vars:
+          MSG: "Testing..."
+      - printf '\n'
+      - task: :dev:test
+      - printf '\n'
+      - task: :print:success
+        vars:
+          MSG: "✓ Checks passed"
+
+  prepare:
+    desc: Verify checks pass and build is ready
+    deps:
+      - check
+    cmds:
+      - printf '\n'
+      - task: :print:info
+        vars:
+          MSG: "Building package..."
+      - printf '\n'
+      - uvx hatch build
+      - printf '\n'
+      - task: :print:success
+        vars:
+          MSG: "✓ Build complete"
+
+  validate:
+    desc: Run pre-release validation checks
+    internal: true
+    requires:
+      vars: [VERSION]
+    cmds:
+      - printf '\n{{.COLOR_CYAN}}Pre-release checks for {{.VERSION}}...{{.COLOR_RESET}}\n\n'
+      - bash taskfiles/release.helpers.sh run_all_checks {{.VERSION}}
+      - printf '\n'
+
+  default:
+    desc: Release a version (VERSION=vX.Y.Z[a|b|rcN])
+    requires:
+      vars: [VERSION]
+    deps:
+      - prepare
+    cmds:
+      - task: validate
+        vars:
+          VERSION: "{{.VERSION}}"
+      - |
+        VERSION="{{.VERSION}}"
+        CHANGELOG=$(bash taskfiles/release.helpers.sh get_changelog)
+        bash taskfiles/release.helpers.sh confirm_release "$VERSION" "$CHANGELOG"
+      - bash taskfiles/release.helpers.sh update_version_file {{.VERSION}}
+      - bash taskfiles/release.helpers.sh commit_and_tag {{.VERSION}} "$(bash taskfiles/release.helpers.sh get_changelog)"
+      - bash taskfiles/release.helpers.sh push_to_remote {{.VERSION}}
+      - |
+        printf '\n{{.COLOR_GREEN}}✓ Released {{.VERSION}}{{.COLOR_RESET}}\n'
+        printf '{{.COLOR_CYAN}}GitHub Actions will publish to PyPI{{.COLOR_RESET}}\n'
+
+  dry-run:
+    desc: Verify release without committing (VERSION=vX.Y.Z[a|b|rcN])
+    requires:
+      vars: [VERSION]
+    deps:
+      - prepare
+    cmds:
+      - task: validate
+        vars:
+          VERSION: "{{.VERSION}}"
+      - |
+        printf '\n{{.COLOR_GREEN}}✓ All pre-release checks passed{{.COLOR_RESET}}\n'
+        printf '{{.COLOR_CYAN}}Ready to release {{.VERSION}}{{.COLOR_RESET}}\n'
+        printf '\nRun: {{.COLOR_YELLOW}}task release VERSION={{.VERSION}}{{.COLOR_RESET}}\n\n'
+
+  github-release:
+    desc: Create GitHub release (called by CI)
+    cmds:
+      - bash taskfiles/release.helpers.sh create_github_release {{.VERSION}}
