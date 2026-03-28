@@ -68,4 +68,4 @@ jobs:
           aws configure set region us-east-1 --profile hasaniqbal-dev
 
       - name: Deploy to integration
-        run: task deploy TARGET=integration
+        run: task deploy TARGET=integration AUTO_APPROVE=true

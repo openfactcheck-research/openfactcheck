@@ -121,4 +121,4 @@ jobs:
           aws configure set region us-east-1 --profile hasaniqbal-dev
 
       - name: Deploy to production
-        run: task deploy TARGET=production
+        run: task deploy TARGET=production AUTO_APPROVE=true

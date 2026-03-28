@@ -240,7 +240,9 @@ tasks:
 
         # Run apply
         printf '\n{{.COLOR_CYAN}}Running apply...{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} apply -var-file=$VAR_FILE
+        AUTO_APPROVE_FLAG=""
+        [ "{{.AUTO_APPROVE}}" = "true" ] && AUTO_APPROVE_FLAG="-auto-approve"
+        {{.TF_BIN}} apply -var-file=$VAR_FILE $AUTO_APPROVE_FLAG
 
         if [ $? -eq 0 ]; then
           printf '\n{{.COLOR_GREEN}}✓ Apply completed successfully{{.COLOR_RESET}}\n'
@@ -361,7 +363,6 @@ tasks:
 
   default:
     desc: Run the full infrastructure workflow (TARGET=<target>, optional DEP=<deployment>)
-    interactive: true
     cmds:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
@@ -388,7 +389,9 @@ tasks:
 
         # Run apply
         printf '{{.COLOR_CYAN}}Running apply...{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} apply -var-file=$VAR_FILE
+        AUTO_APPROVE_FLAG=""
+        [ "{{.AUTO_APPROVE}}" = "true" ] && AUTO_APPROVE_FLAG="-auto-approve"
+        {{.TF_BIN}} apply -var-file=$VAR_FILE $AUTO_APPROVE_FLAG
 
         if [ $? -eq 0 ]; then
           printf '\n{{.COLOR_GREEN}}✓ Successfully deployed: %s to %s{{.COLOR_RESET}}\n' "$RESOLVED_DEP" "$WORKSPACE"
