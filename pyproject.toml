@@ -9,7 +9,23 @@ readme = "README.md"
 requires-python = ">=3.14"
 authors = [{ name = "Hasan Iqbal", email = "hasan.iqbal@mbzuai.ac.ae" }]
 license = { file = "LICENSE" }
-dependencies = []
+dependencies = [
+    "pydantic>=2.11",
+]
+
+[project.optional-dependencies]
+api = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "pydantic-settings>=2.9",
+    "PyJWT[crypto]>=2.10",
+    "sqlalchemy[asyncio]>=2.0",
+    "aiosqlite>=0.21",
+    "mangum>=0.19",
+]
+cloud = [
+    "boto3>=1.35",
+]
 
 ###############################################################################
 # Build System
@@ -50,7 +66,7 @@ indent-width = 4
 target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "UP", "I", "T20", "LOG", "ANN", "UP", "FA"]
+select = ["E4", "E7", "E9", "F", "UP", "I", "T20", "LOG", "ANN", "FA"]
 ignore = ["E712", "ANN401"]
 fixable = ["ALL"]
 unfixable = []
@@ -72,9 +88,14 @@ docstring-code-line-length = "dynamic"
 ###############################################################################
 [dependency-groups]
 dev = [
+    "openfactcheck[api,cloud]",
     "pyright>=1.1",
     "pre-commit>=4.5.1",
     "pytest>=9.0.2",
     "pytest-cov>=7.1.0",
+    "pytest-asyncio>=0.26",
+    "httpx>=0.28",
+    "boto3-stubs[dynamodb]>=1.35",
+    "moto[dynamodb]>=5.1",
     "ruff>=0.15.8",
 ]

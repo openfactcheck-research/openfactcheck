@@ -103,5 +103,10 @@ jobs:
           aws configure set aws_session_token "$AWS_SESSION_TOKEN" --profile hasaniqbal-dev
           aws configure set region us-east-1 --profile hasaniqbal-dev
 
-      - name: Deploy to production
-        run: task deploy TARGET=production AUTO_APPROVE=true
+      - name: Deploy infrastructure
+        run: |
+          task deploy TARGET=production DEP=repositories AUTO_APPROVE=true
+          task deploy TARGET=production AUTO_APPROVE=true
+
+      - name: Build and deploy API
+        run: task deploy:api TARGET=production

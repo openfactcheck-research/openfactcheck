@@ -16,6 +16,8 @@ includes:
     taskfile: ./taskfiles/dev.taskfile.yml
   release:
     taskfile: ./taskfiles/release.taskfile.yml
+  build:
+    taskfile: ./taskfiles/build.taskfile.yml
   deploy:
     taskfile: ./taskfiles/deploy.taskfile.yml
 
@@ -33,6 +35,7 @@ tasks:
 
         printf '{{.COLOR_CYAN}}Namespaces{{.COLOR_RESET}}\n'
         printf '  dev      Development (sync, test, lint, format, clean)\n'
+        printf '  build    Build artifacts (Lambda container image)\n'
         printf '  check    Verify dependencies\n'
         printf '  release  Release workflow (bumps version, tags, CI publishes)\n'
         printf '  deploy   Infrastructure (init, plan, apply, destroy)\n\n'

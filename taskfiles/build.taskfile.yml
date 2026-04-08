@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  lambda:
+    desc: Build + push container image (TARGET=<name>, WS=<workspace> for ECR push)
+    requires:
+      vars: [TARGET]
+    cmds:
+      - |
+        source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
+        set_target "{{.TARGET}}"
+        {{if .WS}}set_workspace "{{.WS}}"{{end}}
+
+        if build_needed; then
+            assemble
+            build_image
+            write_hash
+            {{if .WS}}
+            ecr_login
+            push_all
+            write_tfvars
+            {{end}}
+        else
+            c_echo "$COLOR_YELLOW" "[{{.TARGET}}] Skipping build — source unchanged"
+        fi
+
+  lambda:force:
+    desc: Build + push container image (TARGET=<name>, always rebuilds, WS=<workspace> for ECR push)
+    requires:
+      vars: [TARGET]
+    cmds:
+      - |
+        source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
+        set_target "{{.TARGET}}"
+        {{if .WS}}set_workspace "{{.WS}}"{{end}}
+
+        assemble
+        build_image
+        write_hash
+        {{if .WS}}
+        ecr_login
+        push_all
+        write_tfvars
+        {{end}}
+
+  lambda:assemble:
+    desc: Assemble build/ directory only (TARGET=<name>)
+    requires:
+      vars: [TARGET]
+    cmds:
+      - |
+        source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
+        set_target "{{.TARGET}}"
+        assemble
+
+  clean:
+    desc: Remove build artifacts (TARGET=<name>)
+    requires:
+      vars: [TARGET]
+    cmds:
+      - |
+        source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
+        set_target "{{.TARGET}}"
+        clean
+
+  default:
+    desc: Show available build tasks
+    cmds:
+      - task: :print:info
+        vars:
+          MSG: "Usage: task build:lambda TARGET=api [WS=devhasan]"

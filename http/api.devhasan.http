@@ -1,0 +1,98 @@
+@base = https://devhasan-api.openfactcheck.com
+@api = {{base}}/api/v1
+@token = REPLACE_WITH_COGNITO_ID_TOKEN
+
+###############################################################################
+# Health
+###############################################################################
+
+### Root
+GET {{base}}/
+
+### Health check
+GET {{base}}/health
+
+###############################################################################
+# Projects
+###############################################################################
+
+### List projects
+GET {{api}}/projects/
+Authorization: Bearer {{token}}
+
+### Create project
+POST {{api}}/projects/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "My Project"
+}
+
+### Get project
+@projectId = REPLACE_ME
+GET {{api}}/projects/{{projectId}}
+Authorization: Bearer {{token}}
+
+### Update project
+PATCH {{api}}/projects/{{projectId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Renamed Project"
+}
+
+### Delete project
+DELETE {{api}}/projects/{{projectId}}
+Authorization: Bearer {{token}}
+
+###############################################################################
+# Workspaces
+###############################################################################
+
+### List workspaces
+GET {{api}}/projects/{{projectId}}/workspaces/
+Authorization: Bearer {{token}}
+
+### Create workspace
+POST {{api}}/projects/{{projectId}}/workspaces/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "My Workspace"
+}
+
+### Get workspace
+@workspaceId = REPLACE_ME
+GET {{api}}/projects/{{projectId}}/workspaces/{{workspaceId}}
+Authorization: Bearer {{token}}
+
+### Update workspace
+PATCH {{api}}/projects/{{projectId}}/workspaces/{{workspaceId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Renamed Workspace",
+    "description": "Updated description",
+    "locked": false
+}
+
+### Delete workspace
+DELETE {{api}}/projects/{{projectId}}/workspaces/{{workspaceId}}
+Authorization: Bearer {{token}}
+
+### Duplicate workspace
+POST {{api}}/projects/{{projectId}}/workspaces/{{workspaceId}}/duplicate
+Authorization: Bearer {{token}}
+
+### Reorder workspaces
+PUT {{api}}/projects/{{projectId}}/workspaces/reorder
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "ordered_ids": ["id1", "id2", "id3"]
+}
