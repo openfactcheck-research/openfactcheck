@@ -71,3 +71,8 @@ environments/
 
 # Temp files
 tmp
+
+# Build artifacts
+deployments/containers/*/build/
+deployments/containers/*/.hash
+deployments/base/ignore.*.auto.tfvars

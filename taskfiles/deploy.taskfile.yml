@@ -9,7 +9,7 @@ vars:
   ACCOUNTS_DIR: deployments/accounts
 
   # Deployment Types
-  ENVIRONMENT_DEPLOYS: base
+  ENVIRONMENT_DEPLOYS: base repositories
   ACCOUNT_DEPLOYS: secrets
 
   # Binaries
@@ -360,6 +360,60 @@ tasks:
           printf '{{.COLOR_RED}}✗ Formatting failed{{.COLOR_RESET}}\n'
           exit 1
         fi
+
+  api:
+    desc: Build, push, and deploy API to Lambda (TARGET=<environment>)
+    requires:
+      vars: [TARGET]
+    cmds:
+      - |
+        source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
+        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
+
+        set_target "api"
+
+        if ! build_needed; then
+            c_echo "$COLOR_YELLOW" "[api] Skipping deploy — source unchanged"
+            exit 0
+        fi
+
+        # Build
+        assemble
+        build_image
+        write_hash
+
+        # Resolve deploy config
+        prepare "{{.TARGET}}" "base" || exit 1
+        AWS_PROFILE=$(jq -r .aws_profile "$VAR_FILE")
+        AWS_REGION=$(jq -r .aws_region "$VAR_FILE")
+
+        cd deployments/base
+        {{.TF_BIN}} workspace select $WORKSPACE 2>/dev/null
+        ECR_URL=$({{.TF_BIN}} output -raw ecr_repository_url)
+        FUNCTION_NAME=$({{.TF_BIN}} output -raw lambda_function_name 2>/dev/null || echo "openfactcheck-api-${WORKSPACE}-${AWS_REGION}")
+        API_URL=$({{.TF_BIN}} output -raw api_url)
+        cd -
+
+        IMAGE_REF="${ECR_URL}:latest"
+
+        # ECR login + push
+        printf '{{.COLOR_CYAN}}Logging into ECR...{{.COLOR_RESET}}\n'
+        aws ecr get-login-password --region "$AWS_REGION" --profile "$AWS_PROFILE" \
+          | docker login --username AWS --password-stdin "${ECR_URL%%/*}"
+
+        printf '{{.COLOR_CYAN}}Pushing image to ECR...{{.COLOR_RESET}}\n'
+        docker tag openfactcheck-api:latest "$IMAGE_REF"
+        docker push "$IMAGE_REF"
+
+        # Update Lambda
+        printf '{{.COLOR_CYAN}}Updating Lambda function...{{.COLOR_RESET}}\n'
+        aws lambda update-function-code \
+          --function-name "$FUNCTION_NAME" \
+          --image-uri "$IMAGE_REF" \
+          --region "$AWS_REGION" \
+          --profile "$AWS_PROFILE" > /dev/null
+
+        printf '{{.COLOR_GREEN}}✓ Deployed to: %s{{.COLOR_RESET}}\n' "$API_URL"
 
   default:
     desc: Run the full infrastructure workflow (TARGET=<target>, optional DEP=<deployment>)

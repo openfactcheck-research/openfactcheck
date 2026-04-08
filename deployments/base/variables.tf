@@ -22,3 +22,21 @@ variable "aws_account_name" {
   description = "AWS Account Name for deployment (optional, for reference)"
   type        = string
 }
+
+variable "cors_origins" {
+  description = "Allowed CORS origins for the API"
+  type        = list(string)
+  default     = ["http://localhost:3001"]
+}
+
+variable "build_version" {
+  description = "Application build version (auto-set by build script)"
+  type        = string
+  default     = "unknown"
+}
+
+variable "commit" {
+  description = "Git commit hash (auto-set by build script)"
+  type        = string
+  default     = "unknown"
+}

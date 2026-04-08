@@ -39,11 +39,11 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Module      = "OpenFactCheck"
-      Owner       = "OpenFactCheck Research"
-      Creator     = "openfactcheck@gmail.com"
-      Environment = terraform.workspace
-      Criticality = terraform.workspace == "production" ? "High" : "Low"
+      Module        = "OpenFactCheck"
+      Owner         = "OpenFactCheck Research"
+      Creator       = "openfactcheck@gmail.com"
+      Environment   = terraform.workspace
+      Criticality   = terraform.workspace == "production" ? "High" : "Low"
       ManagedBy     = "terraform"
       TerraformPath = "deployments/base"
       Region        = var.aws_region
