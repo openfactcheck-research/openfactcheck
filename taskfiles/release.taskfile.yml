@@ -64,9 +64,10 @@ tasks:
       - bash taskfiles/release.helpers.sh update_version_file {{.VERSION}}
       - bash taskfiles/release.helpers.sh commit_and_tag {{.VERSION}} "$(bash taskfiles/release.helpers.sh get_changelog)"
       - bash taskfiles/release.helpers.sh push_to_remote {{.VERSION}}
+      - bash taskfiles/release.helpers.sh create_github_release {{.VERSION}}
       - |
         printf '\n{{.COLOR_GREEN}}✓ Released {{.VERSION}}{{.COLOR_RESET}}\n'
-        printf '{{.COLOR_CYAN}}GitHub Actions will publish to PyPI{{.COLOR_RESET}}\n'
+        printf '{{.COLOR_CYAN}}GitHub Actions will publish to PyPI and deploy to production{{.COLOR_RESET}}\n'
 
   dry-run:
     desc: Verify release without committing (VERSION=vX.Y.Z[a|b|rcN])
@@ -84,6 +85,6 @@ tasks:
         printf '\nRun: {{.COLOR_YELLOW}}task release VERSION={{.VERSION}}{{.COLOR_RESET}}\n\n'
 
   github-release:
-    desc: Create GitHub release (called by CI)
+    desc: Create GitHub release
     cmds:
       - bash taskfiles/release.helpers.sh create_github_release {{.VERSION}}
