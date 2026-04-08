@@ -7,7 +7,6 @@ on:
 
 permissions:
   id-token: write
-  contents: write
 
 jobs:
   lint:
@@ -70,22 +69,6 @@ jobs:
           -u __token__
           -a ${{ secrets.PYPI_TOKEN }}
           --no-prompt
-
-  github_release:
-    name: Create GitHub Release
-    needs: [publish]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Install Task
-        uses: go-task/setup-task@v2
-
-      - name: Create GitHub Release
-        run: task release:github-release VERSION=${{ github.ref_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     name: Deploy to Production

@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  default:
+    desc: Install all required tools
+    cmds:
+      - task: :print:header
+        vars:
+          MSG: "Setting up tools"
+      - task: uv
+      - task: tfenv
+      - task: tflint
+      - printf '\n'
+      - task: :print:success
+        vars:
+          MSG: "✓ All tools ready"
+
+  uv:
+    desc: Ensure uv is installed
+    internal: true
+    cmds:
+      - bash taskfiles/setup.helpers.sh ensure_tool uv "curl -LsSf https://astral.sh/uv/install.sh | sh"
+
+  tfenv:
+    desc: Ensure tfenv is installed
+    internal: true
+    cmds:
+      - bash taskfiles/setup.helpers.sh ensure_tool tfenv
+
+  tflint:
+    desc: Ensure tflint is installed
+    internal: true
+    cmds:
+      - bash taskfiles/setup.helpers.sh ensure_tool tflint

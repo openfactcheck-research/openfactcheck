@@ -1,3 +1,6 @@
+###############################################################################
+# Project Metadata
+###############################################################################
 [project]
 name = "openfactcheck"
 dynamic = ["version"]
@@ -8,6 +11,9 @@ authors = [{ name = "Hasan Iqbal", email = "hasan.iqbal@mbzuai.ac.ae" }]
 license = { file = "LICENSE" }
 dependencies = []
 
+###############################################################################
+# Build System
+###############################################################################
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -20,16 +26,53 @@ pattern = "(?P<version>.+)"
 [tool.hatch.build.targets.wheel]
 packages = ["src/openfactcheck"]
 
+###############################################################################
+# Testing
+###############################################################################
 [tool.pytest.ini_options]
 pythonpath = "src"
 
-[tool.mypy]
-strict = true
-mypy_path = "src"
+###############################################################################
+# Type Checking
+###############################################################################
+[tool.pyright]
+typeCheckingMode = "strict"
+include = ["src"]
+venvPath = "."
+venv = ".venv"
 
+###############################################################################
+# Linting
+###############################################################################
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "UP", "I", "T20", "LOG", "ANN", "UP", "FA"]
+ignore = ["E712", "ANN401"]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+###############################################################################
+# Formatting
+###############################################################################
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+
+###############################################################################
+# Development Dependencies
+###############################################################################
 [dependency-groups]
 dev = [
-    "mypy>=1.19.1",
+    "pyright>=1.1",
     "pre-commit>=4.5.1",
     "pytest>=9.0.2",
     "pytest-cov>=7.1.0",

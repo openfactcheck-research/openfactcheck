@@ -40,7 +40,7 @@ tasks:
       - task: :print:info
         vars:
           MSG: "Type checking..."
-      - uv run mypy src/
+      - uv run pyright src/
       - printf '\n'
       - task: :print:success
         vars:
@@ -60,11 +60,11 @@ tasks:
   clean:
     desc: Remove build artifacts and caches
     cmds:
-      - rm -rf dist build .pytest_cache .ruff_cache .mypy_cache src/*.egg-info
+      - rm -rf dist build .pytest_cache .ruff_cache src/*.egg-info
 
   default:
-    desc: Run sync, lint, and test
+    desc: Show available dev tasks
     cmds:
-      - task: sync
-      - task: lint
-      - task: test
+      - task: :print:info
+        vars:
+          MSG: "No default dev action. Run 'task dev:lint' or 'task --list' for options."

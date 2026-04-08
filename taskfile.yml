@@ -8,6 +8,8 @@ includes:
   print:
     taskfile: ./taskfiles/common.taskfile.yml
     internal: true
+  setup:
+    taskfile: ./taskfiles/setup.taskfile.yml
   check:
     taskfile: ./taskfiles/check.taskfile.yml
   dev:

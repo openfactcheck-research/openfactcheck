@@ -4,10 +4,9 @@ version: '3'
 
 tasks:
   default:
-    desc: Validate local environment configuration and required dependencies.
+    desc: Validate local environment configuration.
     deps:
       - root
-      - deps
     cmds:
       - task: :print:success
         vars:
@@ -18,9 +17,3 @@ tasks:
     internal: true
     cmds:
       - bash taskfiles/check.helpers.sh force_root
-
-  deps:
-    desc: Verify required dependencies are installed
-    internal: true
-    cmds:
-      - bash taskfiles/check.helpers.sh check_dependencies git python uv tofu
