@@ -84,9 +84,7 @@ tasks:
     cmds:
       - |
         DEP="{{.DEP | default "base"}}"
-
         cd {{.DEPLOYMENTS_DIR}}/$DEP
-
         printf '{{.COLOR_CYAN}}Workspaces in deployment: %s{{.COLOR_RESET}}\n' "$DEP"
         {{.TF_BIN}} workspace list
 
@@ -97,18 +95,9 @@ tasks:
     cmds:
       - |
         DEP="{{.DEP | default "base"}}"
-
         cd {{.DEPLOYMENTS_DIR}}/$DEP
-
-        printf '{{.COLOR_YELLOW}}Selecting workspace: {{.WS}}{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} workspace select {{.WS}}
-
-        if [ $? -eq 0 ]; then
-          printf '{{.COLOR_GREEN}}✓ Workspace selected: {{.WS}}{{.COLOR_RESET}}\n'
-        else
-          printf '{{.COLOR_RED}}✗ Failed to select workspace{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        {{.TF_BIN}} workspace select {{.WS}} || exit 1
+        printf '{{.COLOR_GREEN}}✓ Workspace selected: {{.WS}}{{.COLOR_RESET}}\n'
 
   workspace:create:
     desc: Create a workspace (WS=<workspace>, optional DEP=<deployment>, defaults to base)
@@ -117,18 +106,9 @@ tasks:
     cmds:
       - |
         DEP="{{.DEP | default "base"}}"
-
         cd {{.DEPLOYMENTS_DIR}}/$DEP
-
-        printf '{{.COLOR_YELLOW}}Creating workspace: {{.WS}}{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} workspace new {{.WS}}
-
-        if [ $? -eq 0 ]; then
-          printf '{{.COLOR_GREEN}}✓ Workspace created: {{.WS}}{{.COLOR_RESET}}\n'
-        else
-          printf '{{.COLOR_RED}}✗ Failed to create workspace{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        {{.TF_BIN}} workspace new {{.WS}} || exit 1
+        printf '{{.COLOR_GREEN}}✓ Workspace created: {{.WS}}{{.COLOR_RESET}}\n'
 
   workspace:delete:
     desc: Delete a workspace (WS=<workspace>, optional DEP=<deployment>, defaults to base)
@@ -138,18 +118,9 @@ tasks:
     cmds:
       - |
         DEP="{{.DEP | default "base"}}"
-
         cd {{.DEPLOYMENTS_DIR}}/$DEP
-
-        printf '{{.COLOR_YELLOW}}Deleting workspace: {{.WS}}{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} workspace delete {{.WS}}
-
-        if [ $? -eq 0 ]; then
-          printf '{{.COLOR_GREEN}}✓ Workspace deleted: {{.WS}}{{.COLOR_RESET}}\n'
-        else
-          printf '{{.COLOR_RED}}✗ Failed to delete workspace{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        {{.TF_BIN}} workspace delete {{.WS}} || exit 1
+        printf '{{.COLOR_GREEN}}✓ Workspace deleted: {{.WS}}{{.COLOR_RESET}}\n'
 
   init:
     desc: Initialize infrastructure (TARGET=<target>, optional DEP=<deployment>)
@@ -157,32 +128,8 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
-        prepare "{{.TARGET}}" "{{.DEP}}" || exit 1
-
-        # Check if deployment exists
-        if [ ! -d "{{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP" ]; then
-          printf '{{.COLOR_RED}}Error: Deployment "%s" does not exist{{.COLOR_RESET}}\n' "$RESOLVED_DEP"
-          exit 1
-        fi
-
-        # Check if backend config exists
-        if [ ! -f "$BACKEND_CONF_ABS" ]; then
-          printf '{{.COLOR_RED}}Error: Backend config file not found: %s{{.COLOR_RESET}}\n' "$BACKEND_CONF_ABS"
-          exit 1
-        fi
-
-        cd {{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP
-
-        printf '{{.COLOR_YELLOW}}Initializing TF...{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} init -reconfigure -backend-config=$BACKEND_CONF
-
-        if [ $? -eq 0 ]; then
-          printf '{{.COLOR_GREEN}}✓ Terraform initialized successfully{{.COLOR_RESET}}\n'
-        else
-          printf '{{.COLOR_RED}}✗ Terraform initialization failed{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        source taskfiles/deploy.helpers.sh
+        tf_init "{{.TARGET}}" "{{.DEP}}"
 
   plan:
     desc: Plan infrastructure changes (TARGET=<target>, optional DEP=<deployment>)
@@ -190,31 +137,8 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
-        prepare "{{.TARGET}}" "{{.DEP}}" || exit 1
-
-        # Check if initialized
-        if [ ! -d "{{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP/.terraform" ]; then
-          printf '{{.COLOR_RED}}Error: Deployment not initialized. Run: task deploy:init TARGET={{.TARGET}}{{.COLOR_RESET}}\n'
-          exit 1
-        fi
-
-        cd {{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP
-
-        # Select workspace
-        printf '{{.COLOR_YELLOW}}Selecting workspace: %s{{.COLOR_RESET}}\n' "$WORKSPACE"
-        {{.TF_BIN}} workspace select -or-create $WORKSPACE
-
-        # Run plan
-        printf '\n{{.COLOR_CYAN}}Running plan...{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} plan -var-file=$VAR_FILE
-
-        if [ $? -eq 0 ]; then
-          printf '\n{{.COLOR_GREEN}}✓ Plan completed successfully{{.COLOR_RESET}}\n'
-        else
-          printf '\n{{.COLOR_RED}}✗ Plan failed{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        source taskfiles/deploy.helpers.sh
+        tf_plan "{{.TARGET}}" "{{.DEP}}"
 
   apply:
     desc: Apply infrastructure changes (TARGET=<target>, optional DEP=<deployment>)
@@ -223,33 +147,8 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
-        prepare "{{.TARGET}}" "{{.DEP}}" || exit 1
-
-        # Check if initialized
-        if [ ! -d "{{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP/.terraform" ]; then
-          printf '{{.COLOR_RED}}Error: Deployment not initialized. Run: task deploy:init TARGET={{.TARGET}}{{.COLOR_RESET}}\n'
-          exit 1
-        fi
-
-        cd {{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP
-
-        # Select workspace
-        printf '{{.COLOR_YELLOW}}Selecting workspace: %s{{.COLOR_RESET}}\n' "$WORKSPACE"
-        {{.TF_BIN}} workspace select -or-create $WORKSPACE
-
-        # Run apply
-        printf '\n{{.COLOR_CYAN}}Running apply...{{.COLOR_RESET}}\n'
-        AUTO_APPROVE_FLAG=""
-        [ "{{.AUTO_APPROVE}}" = "true" ] && AUTO_APPROVE_FLAG="-auto-approve"
-        {{.TF_BIN}} apply -var-file=$VAR_FILE $AUTO_APPROVE_FLAG
-
-        if [ $? -eq 0 ]; then
-          printf '\n{{.COLOR_GREEN}}✓ Apply completed successfully{{.COLOR_RESET}}\n'
-        else
-          printf '\n{{.COLOR_RED}}✗ Apply failed{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        source taskfiles/deploy.helpers.sh
+        tf_apply "{{.TARGET}}" "{{.DEP}}" "{{.AUTO_APPROVE}}"
 
   destroy:
     desc: Destroy infrastructure (TARGET=<target>, optional DEP=<deployment>)
@@ -259,31 +158,8 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
-        prepare "{{.TARGET}}" "{{.DEP}}" || exit 1
-
-        # Check if initialized
-        if [ ! -d "{{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP/.terraform" ]; then
-          printf '{{.COLOR_RED}}Error: Deployment not initialized. Run: task deploy:init TARGET={{.TARGET}}{{.COLOR_RESET}}\n'
-          exit 1
-        fi
-
-        cd {{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP
-
-        # Select workspace
-        printf '{{.COLOR_YELLOW}}Selecting workspace: %s{{.COLOR_RESET}}\n' "$WORKSPACE"
-        {{.TF_BIN}} workspace select -or-create $WORKSPACE
-
-        # Run destroy
-        printf '\n{{.COLOR_RED}}Running destroy...{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} destroy -var-file=$VAR_FILE
-
-        if [ $? -eq 0 ]; then
-          printf '\n{{.COLOR_GREEN}}✓ Destroy completed successfully{{.COLOR_RESET}}\n'
-        else
-          printf '\n{{.COLOR_RED}}✗ Destroy failed{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        source taskfiles/deploy.helpers.sh
+        tf_destroy "{{.TARGET}}" "{{.DEP}}"
 
   validate:
     desc: Validate infrastructure configuration (TARGET=<target>, optional DEP=<deployment>)
@@ -291,26 +167,8 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
-        prepare "{{.TARGET}}" "{{.DEP}}" || exit 1
-
-        # Check if initialized
-        if [ ! -d "{{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP/.terraform" ]; then
-          printf '{{.COLOR_RED}}Error: Deployment not initialized. Run: task deploy:init TARGET={{.TARGET}}{{.COLOR_RESET}}\n'
-          exit 1
-        fi
-
-        cd {{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP
-
-        printf '{{.COLOR_CYAN}}Validating configuration...{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} validate
-
-        if [ $? -eq 0 ]; then
-          printf '\n{{.COLOR_GREEN}}✓ Configuration is valid{{.COLOR_RESET}}\n'
-        else
-          printf '\n{{.COLOR_RED}}✗ Validation failed{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        source taskfiles/deploy.helpers.sh
+        tf_validate "{{.TARGET}}" "{{.DEP}}"
 
   output:
     desc: Display infrastructure outputs (TARGET=<target>, optional DEP=<deployment>)
@@ -318,48 +176,23 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
-        prepare "{{.TARGET}}" "{{.DEP}}" || exit 1
-
-        # Check if initialized
-        if [ ! -d "{{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP/.terraform" ]; then
-          printf '{{.COLOR_RED}}Error: Deployment not initialized. Run: task deploy:init TARGET={{.TARGET}}{{.COLOR_RESET}}\n'
-          exit 1
-        fi
-
-        cd {{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP
-
-        # Select workspace
-        printf '{{.COLOR_YELLOW}}Workspace: %s{{.COLOR_RESET}}\n' "$WORKSPACE"
-        {{.TF_BIN}} workspace select $WORKSPACE 2>/dev/null
-
-        # Show outputs
-        printf '\n{{.COLOR_CYAN}}Outputs:{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} output
+        source taskfiles/deploy.helpers.sh
+        tf_output "{{.TARGET}}" "{{.DEP}}"
 
   fmt:
     desc: Format infrastructure configuration files across all deployments
     cmds:
       - |
-        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
-
+        set -e
         printf '{{.COLOR_CYAN}}Formatting TF files...{{.COLOR_RESET}}\n'
-
         ALL_DEPLOYS="{{.ENVIRONMENT_DEPLOYS}} {{.ACCOUNT_DEPLOYS}}"
-
         for deploy in $ALL_DEPLOYS; do
-          if [ -d "$DEPLOYMENTS_DIR/$deploy" ]; then
+          if [ -d "{{.DEPLOYMENTS_DIR}}/$deploy" ]; then
             printf '{{.COLOR_YELLOW}}  Formatting: %s{{.COLOR_RESET}}\n' "$deploy"
-            (cd "$DEPLOYMENTS_DIR/$deploy" && {{.TF_BIN}} fmt -recursive .)
+            (cd "{{.DEPLOYMENTS_DIR}}/$deploy" && {{.TF_BIN}} fmt -recursive .)
           fi
         done
-
-        if [ $? -eq 0 ]; then
-          printf '{{.COLOR_GREEN}}✓ Files formatted successfully{{.COLOR_RESET}}\n'
-        else
-          printf '{{.COLOR_RED}}✗ Formatting failed{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        printf '{{.COLOR_GREEN}}✓ Files formatted{{.COLOR_RESET}}\n'
 
   api:
     desc: Build, push, and deploy API to Lambda (TARGET=<environment>)
@@ -367,8 +200,9 @@ tasks:
       vars: [TARGET]
     cmds:
       - |
-        source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
-        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
+        export TF_BIN="{{.TF_BIN}}"
+        source taskfiles/build.helpers.sh
+        source taskfiles/deploy.helpers.sh
 
         set_target "api"
 
@@ -388,32 +222,32 @@ tasks:
         AWS_REGION=$(jq -r .aws_region "$VAR_FILE")
 
         cd deployments/base
-        {{.TF_BIN}} workspace select $WORKSPACE 2>/dev/null
-        ECR_URL=$({{.TF_BIN}} output -raw ecr_repository_url)
-        FUNCTION_NAME=$({{.TF_BIN}} output -raw lambda_function_name 2>/dev/null || echo "openfactcheck-api-${WORKSPACE}-${AWS_REGION}")
-        API_URL=$({{.TF_BIN}} output -raw api_url)
+        $TF_BIN workspace select $WORKSPACE 2>/dev/null
+        ECR_URL=$($TF_BIN output -raw ecr_repository_url)
+        FUNCTION_NAME=$($TF_BIN output -raw lambda_function_name 2>/dev/null || echo "openfactcheck-api-${WORKSPACE}-${AWS_REGION}")
+        API_URL=$($TF_BIN output -raw api_url)
         cd -
 
         IMAGE_REF="${ECR_URL}:latest"
 
         # ECR login + push
-        printf '{{.COLOR_CYAN}}Logging into ECR...{{.COLOR_RESET}}\n'
+        c_echo "$COLOR_CYAN" "Logging into ECR..."
         aws ecr get-login-password --region "$AWS_REGION" --profile "$AWS_PROFILE" \
           | docker login --username AWS --password-stdin "${ECR_URL%%/*}"
 
-        printf '{{.COLOR_CYAN}}Pushing image to ECR...{{.COLOR_RESET}}\n'
+        c_echo "$COLOR_CYAN" "Pushing image to ECR..."
         docker tag openfactcheck-api:latest "$IMAGE_REF"
         docker push "$IMAGE_REF"
 
         # Update Lambda
-        printf '{{.COLOR_CYAN}}Updating Lambda function...{{.COLOR_RESET}}\n'
+        c_echo "$COLOR_CYAN" "Updating Lambda function..."
         aws lambda update-function-code \
           --function-name "$FUNCTION_NAME" \
           --image-uri "$IMAGE_REF" \
           --region "$AWS_REGION" \
           --profile "$AWS_PROFILE" > /dev/null
 
-        printf '{{.COLOR_GREEN}}✓ Deployed to: %s{{.COLOR_RESET}}\n' "$API_URL"
+        c_echo "$COLOR_GREEN" "✓ Deployed to: ${API_URL}"
 
   default:
     desc: Run the full infrastructure workflow (TARGET=<target>, optional DEP=<deployment>)
@@ -421,35 +255,25 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh 2>/dev/null || source ./taskfiles/deploy.helpers.sh
+        export TF_BIN="{{.TF_BIN}}"
+        source taskfiles/deploy.helpers.sh
         prepare "{{.TARGET}}" "{{.DEP}}" || exit 1
 
         cd {{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP
 
         # Initialize if needed
         if [ ! -d ".terraform" ]; then
-          printf '{{.COLOR_YELLOW}}Initializing TF...{{.COLOR_RESET}}\n'
-          {{.TF_BIN}} init -reconfigure -backend-config=$BACKEND_CONF || exit 1
-          printf '{{.COLOR_GREEN}}✓ Initialized{{.COLOR_RESET}}\n\n'
+          c_echo "$COLOR_YELLOW" "Initializing TF..."
+          $TF_BIN init -reconfigure -backend-config=$BACKEND_CONF || exit 1
+          c_echo "$COLOR_GREEN" "✓ Initialized"
         fi
 
-        # Select workspace
-        printf '{{.COLOR_YELLOW}}Selecting workspace: %s{{.COLOR_RESET}}\n\n' "$WORKSPACE"
-        {{.TF_BIN}} workspace select -or-create $WORKSPACE
+        c_echo "$COLOR_YELLOW" "Selecting workspace: ${WORKSPACE}"
+        $TF_BIN workspace select -or-create $WORKSPACE
 
-        # List workspaces
-        printf '{{.COLOR_CYAN}}Available workspaces:{{.COLOR_RESET}}\n'
-        {{.TF_BIN}} workspace list
-
-        # Run apply
-        printf '{{.COLOR_CYAN}}Running apply...{{.COLOR_RESET}}\n'
         AUTO_APPROVE_FLAG=""
         [ "{{.AUTO_APPROVE}}" = "true" ] && AUTO_APPROVE_FLAG="-auto-approve"
-        {{.TF_BIN}} apply -var-file=$VAR_FILE $AUTO_APPROVE_FLAG
 
-        if [ $? -eq 0 ]; then
-          printf '\n{{.COLOR_GREEN}}✓ Successfully deployed: %s to %s{{.COLOR_RESET}}\n' "$RESOLVED_DEP" "$WORKSPACE"
-        else
-          printf '\n{{.COLOR_RED}}✗ Deployment failed{{.COLOR_RESET}}\n'
-          exit 1
-        fi
+        c_echo "$COLOR_CYAN" "Running apply..."
+        $TF_BIN apply -var-file=$VAR_FILE $AUTO_APPROVE_FLAG || exit 1
+        c_echo "$COLOR_GREEN" "✓ Successfully deployed: ${RESOLVED_DEP} → ${WORKSPACE}"

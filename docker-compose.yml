@@ -1,0 +1,25 @@
+# Standalone API — run: docker compose up
+#
+# API:     http://localhost:8000
+# Swagger: http://localhost:8000/docs
+#
+# Runs with SQLite and auth bypass by default.
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      OPENFACTCHECK_HOST: "0.0.0.0"
+      OPENFACTCHECK_PORT: "8000"
+      OPENFACTCHECK_DEBUG: ${OPENFACTCHECK_DEBUG:-true}
+      OPENFACTCHECK_AUTH_BYPASS: ${OPENFACTCHECK_AUTH_BYPASS:-true}
+      OPENFACTCHECK_DATABASE_BACKEND: sqlite
+      OPENFACTCHECK_SQLITE_PATH: /data/openfactcheck.db
+      OPENFACTCHECK_CORS_ORIGINS: '["http://localhost:3001"]'
+    volumes:
+      - api-data:/data
+
+volumes:
+  api-data:

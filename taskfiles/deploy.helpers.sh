@@ -145,6 +145,106 @@ list_deployments() {
   done
 }
 
+# ============================================================================
+# Terraform Operations
+# ============================================================================
+
+TF_BIN="${TF_BIN:-tofu}"
+
+# Check deployment is initialized
+tf_check_init() {
+  if [ ! -d "${DEPLOYMENTS_DIR}/${RESOLVED_DEP}/.terraform" ]; then
+    c_echo "$COLOR_RED" "Error: Deployment not initialized. Run: task deploy:init TARGET=$1"
+    return 1
+  fi
+}
+
+# Prepare, check init, cd into deployment, select workspace
+tf_enter() {
+  local target="$1"
+  local dep="$2"
+
+  prepare "$target" "$dep" || return 1
+  tf_check_init "$target" || return 1
+
+  cd "${DEPLOYMENTS_DIR}/${RESOLVED_DEP}" || return 1
+
+  c_echo "$COLOR_YELLOW" "Selecting workspace: ${WORKSPACE}"
+  $TF_BIN workspace select -or-create "$WORKSPACE" || return 1
+}
+
+tf_init() {
+  local target="$1"
+  local dep="$2"
+
+  prepare "$target" "$dep" || return 1
+
+  if [ ! -d "${DEPLOYMENTS_DIR}/${RESOLVED_DEP}" ]; then
+    c_echo "$COLOR_RED" "Error: Deployment \"${RESOLVED_DEP}\" does not exist"
+    return 1
+  fi
+
+  if [ ! -f "$BACKEND_CONF_ABS" ]; then
+    c_echo "$COLOR_RED" "Error: Backend config not found: ${BACKEND_CONF_ABS}"
+    return 1
+  fi
+
+  cd "${DEPLOYMENTS_DIR}/${RESOLVED_DEP}" || return 1
+
+  c_echo "$COLOR_YELLOW" "Initializing TF..."
+  $TF_BIN init -reconfigure -backend-config="$BACKEND_CONF" || return 1
+  c_echo "$COLOR_GREEN" "✓ Terraform initialized"
+}
+
+tf_plan() {
+  tf_enter "$1" "$2" || return 1
+  c_echo "$COLOR_CYAN" "Running plan..."
+  $TF_BIN plan -var-file="$VAR_FILE" || return 1
+  c_echo "$COLOR_GREEN" "✓ Plan completed"
+}
+
+tf_apply() {
+  local auto_approve="$3"
+  tf_enter "$1" "$2" || return 1
+
+  local flags=""
+  [ "$auto_approve" = "true" ] && flags="-auto-approve"
+
+  c_echo "$COLOR_CYAN" "Running apply..."
+  $TF_BIN apply -var-file="$VAR_FILE" $flags || return 1
+  c_echo "$COLOR_GREEN" "✓ Apply completed: ${RESOLVED_DEP} → ${WORKSPACE}"
+}
+
+tf_destroy() {
+  tf_enter "$1" "$2" || return 1
+  c_echo "$COLOR_RED" "Running destroy..."
+  $TF_BIN destroy -var-file="$VAR_FILE" || return 1
+  c_echo "$COLOR_GREEN" "✓ Destroy completed"
+}
+
+tf_validate() {
+  tf_enter "$1" "$2" || return 1
+  c_echo "$COLOR_CYAN" "Validating configuration..."
+  $TF_BIN validate || return 1
+  c_echo "$COLOR_GREEN" "✓ Configuration is valid"
+}
+
+tf_output() {
+  local target="$1"
+  local dep="$2"
+
+  prepare "$target" "$dep" || return 1
+  tf_check_init "$target" || return 1
+
+  cd "${DEPLOYMENTS_DIR}/${RESOLVED_DEP}" || return 1
+
+  c_echo "$COLOR_YELLOW" "Workspace: ${WORKSPACE}"
+  $TF_BIN workspace select "$WORKSPACE" 2>/dev/null
+
+  c_echo "$COLOR_CYAN" "Outputs:"
+  $TF_BIN output
+}
+
 # Execute function if script is run directly (not sourced)
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     "$@"
