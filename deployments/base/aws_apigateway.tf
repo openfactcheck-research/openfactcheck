@@ -10,7 +10,7 @@ resource "aws_apigatewayv2_api" "openfactcheck" {
   disable_execute_api_endpoint = true
 
   cors_configuration {
-    allow_origins     = var.cors_origins
+    allow_origins     = local.cors_origins
     allow_methods     = ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"]
     allow_headers     = ["Authorization", "Content-Type", "X-Request-ID"]
     allow_credentials = true

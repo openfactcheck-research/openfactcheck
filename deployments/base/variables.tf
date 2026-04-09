@@ -23,12 +23,6 @@ variable "aws_account_name" {
   type        = string
 }
 
-variable "cors_origins" {
-  description = "Allowed CORS origins for the API"
-  type        = list(string)
-  default     = ["http://localhost:3001"]
-}
-
 variable "build_version" {
   description = "Application build version (auto-set by build script)"
   type        = string

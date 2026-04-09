@@ -28,7 +28,7 @@ resource "aws_lambda_function" "api" {
       OPENFACTCHECK_COGNITO_REGION       = var.aws_region
       OPENFACTCHECK_COGNITO_USER_POOL_ID = aws_cognito_user_pool.openfactcheck.id
       OPENFACTCHECK_COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.openfactcheck_client.id
-      OPENFACTCHECK_CORS_ORIGINS         = jsonencode(var.cors_origins)
+      OPENFACTCHECK_CORS_ORIGINS         = jsonencode(local.cors_origins)
       OPENFACTCHECK_DEBUG                = "false"
       OPENFACTCHECK_AUTH_BYPASS          = "false"
     }
