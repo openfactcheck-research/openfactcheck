@@ -13,5 +13,5 @@ locals {
   root_domain     = local.attributes.root_domain
   api_domain      = terraform.workspace == "production" ? "api.${local.root_domain}" : "${terraform.workspace}-api.${local.root_domain}"
   frontend_origin = terraform.workspace == "production" ? "https://playground.${local.root_domain}" : "https://${terraform.workspace}-playground.${local.root_domain}"
-  cors_origins    = ["https://playground.${local.root_domain}", local.frontend_origin, "http://localhost:3001"]
+  cors_origins    = [local.frontend_origin, "http://localhost:3001"]
 }
