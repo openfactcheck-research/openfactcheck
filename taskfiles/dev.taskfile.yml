@@ -53,9 +53,10 @@ tasks:
       - uv run ruff check --fix src/
 
   api:
-    desc: Start the API server (loads .env for shell + pydantic-settings)
+    desc: Start the API server (loads .env)
+    dotenv: ['.env']
     cmds:
-      - set -a; [ -f .env ] && . ./.env; set +a; uv run uvicorn openfactcheck.api.app:app --host "${OPENFACTCHECK_HOST:-0.0.0.0}" --port "${OPENFACTCHECK_PORT:-8000}" --reload
+      - uv run uvicorn openfactcheck.api.app:app --host "${OPENFACTCHECK_HOST:-0.0.0.0}" --port "${OPENFACTCHECK_PORT:-8000}" --reload
 
   version:
     desc: Show current version

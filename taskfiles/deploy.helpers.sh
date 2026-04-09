@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Source common helpers
-source "${BASH_SOURCE%/*}/common.helpers.sh"
+# Source common helpers (skip if already loaded or if sourced inline)
+if [ -z "${COLOR_RESET:-}" ]; then
+  source "${BASH_SOURCE%/*}/common.helpers.sh" 2>/dev/null || true
+fi
 
 # ============================================================================
 # Deploy Helper Functions

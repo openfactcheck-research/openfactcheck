@@ -128,7 +128,7 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh
+        source taskfiles/common.helpers.sh && source taskfiles/deploy.helpers.sh
         tf_init "{{.TARGET}}" "{{.DEP}}"
 
   plan:
@@ -137,7 +137,7 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh
+        source taskfiles/common.helpers.sh && source taskfiles/deploy.helpers.sh
         tf_plan "{{.TARGET}}" "{{.DEP}}"
 
   apply:
@@ -147,7 +147,7 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh
+        source taskfiles/common.helpers.sh && source taskfiles/deploy.helpers.sh
         tf_apply "{{.TARGET}}" "{{.DEP}}" "{{.AUTO_APPROVE}}"
 
   destroy:
@@ -158,7 +158,7 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh
+        source taskfiles/common.helpers.sh && source taskfiles/deploy.helpers.sh
         tf_destroy "{{.TARGET}}" "{{.DEP}}"
 
   validate:
@@ -167,7 +167,7 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh
+        source taskfiles/common.helpers.sh && source taskfiles/deploy.helpers.sh
         tf_validate "{{.TARGET}}" "{{.DEP}}"
 
   output:
@@ -176,7 +176,7 @@ tasks:
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
-        source taskfiles/deploy.helpers.sh
+        source taskfiles/common.helpers.sh && source taskfiles/deploy.helpers.sh
         tf_output "{{.TARGET}}" "{{.DEP}}"
 
   fmt:
@@ -202,7 +202,7 @@ tasks:
       - |
         export TF_BIN="{{.TF_BIN}}"
         source taskfiles/build.helpers.sh
-        source taskfiles/deploy.helpers.sh
+        source taskfiles/common.helpers.sh && source taskfiles/deploy.helpers.sh
 
         set_target "api"
 
@@ -256,7 +256,7 @@ tasks:
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |
         export TF_BIN="{{.TF_BIN}}"
-        source taskfiles/deploy.helpers.sh
+        source taskfiles/common.helpers.sh && source taskfiles/deploy.helpers.sh
         prepare "{{.TARGET}}" "{{.DEP}}" || exit 1
 
         cd {{.DEPLOYMENTS_DIR}}/$RESOLVED_DEP

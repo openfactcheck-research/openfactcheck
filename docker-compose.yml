@@ -4,12 +4,16 @@
 # Swagger: http://localhost:8000/docs
 #
 # Runs with SQLite and auth bypass by default.
+# Source files are bind-mounted — uvicorn --reload works in the container.
 
 services:
   api:
     build: .
     ports:
       - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - api-data:/data
     environment:
       OPENFACTCHECK_HOST: "0.0.0.0"
       OPENFACTCHECK_PORT: "8000"
@@ -18,8 +22,6 @@ services:
       OPENFACTCHECK_DATABASE_BACKEND: sqlite
       OPENFACTCHECK_SQLITE_PATH: /data/openfactcheck.db
       OPENFACTCHECK_CORS_ORIGINS: '["http://localhost:3001"]'
-    volumes:
-      - api-data:/data
 
 volumes:
   api-data:
