@@ -12,7 +12,7 @@ from openfactcheck.api.auth.cognito import CognitoVerifier, DevVerifier, TokenVe
 from openfactcheck.api.config import APIConfig
 from openfactcheck.api.errors import AuthError
 from openfactcheck.api.models import AuthUser
-from openfactcheck.api.repositories.protocols import ProjectRepository, WorkspaceRepository
+from openfactcheck.api.repositories.protocols import ProjectRepository, RunRepository, WorkspaceRepository
 
 
 @lru_cache(maxsize=1)
@@ -24,6 +24,7 @@ def get_config() -> APIConfig:
 _verifier: TokenVerifier | None = None
 _project_repo: ProjectRepository | None = None
 _workspace_repo: WorkspaceRepository | None = None
+_run_repo: RunRepository | None = None
 _sqlite_session_factory: Any = None
 _sqlite_lock = asyncio.Lock()
 
@@ -110,3 +111,21 @@ async def get_workspace_repo(
             sf = await _get_sqlite_session_factory(config)
             _workspace_repo = SqliteWorkspaceRepository(sf)
     return _workspace_repo
+
+
+async def get_run_repo(
+    config: Annotated[APIConfig, Depends(get_config)],
+) -> RunRepository:
+    """Return the run repository, creating it on first call."""
+    global _run_repo  # noqa: PLW0603
+    if _run_repo is None:
+        if config.mode == "cloud":
+            from openfactcheck.api.repositories.dynamodb.runs import DynamoRunRepository
+
+            _run_repo = DynamoRunRepository(config.dynamodb_table_name, config.dynamodb_region)
+        else:
+            from openfactcheck.api.repositories.sqlite.runs import SqliteRunRepository
+
+            sf = await _get_sqlite_session_factory(config)
+            _run_repo = SqliteRunRepository(sf)
+    return _run_repo

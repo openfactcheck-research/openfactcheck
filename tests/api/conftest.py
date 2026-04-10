@@ -10,10 +10,11 @@ from httpx import ASGITransport, AsyncClient
 from openfactcheck.api.app import create_app
 from openfactcheck.api.auth.cognito import DEV_USER
 from openfactcheck.api.config import APIConfig
-from openfactcheck.api.dependencies import get_current_user, get_project_repo, get_workspace_repo
+from openfactcheck.api.dependencies import get_current_user, get_project_repo, get_run_repo, get_workspace_repo
 from openfactcheck.api.models import AuthUser
 from openfactcheck.api.repositories.sqlite.engine import create_engine_and_tables, session_factory
 from openfactcheck.api.repositories.sqlite.projects import SqliteProjectRepository
+from openfactcheck.api.repositories.sqlite.runs import SqliteRunRepository
 from openfactcheck.api.repositories.sqlite.workspaces import SqliteWorkspaceRepository
 
 TEST_USER = DEV_USER
@@ -26,6 +27,7 @@ async def client() -> AsyncIterator[AsyncClient]:
     sf = session_factory(engine)
     project_repo = SqliteProjectRepository(sf)
     workspace_repo = SqliteWorkspaceRepository(sf)
+    run_repo = SqliteRunRepository(sf)
 
     config = APIConfig(auth_bypass=True)
     app = create_app(config)
@@ -39,9 +41,13 @@ async def client() -> AsyncIterator[AsyncClient]:
     async def override_workspace_repo() -> SqliteWorkspaceRepository:
         return workspace_repo
 
+    async def override_run_repo() -> SqliteRunRepository:
+        return run_repo
+
     app.dependency_overrides[get_current_user] = override_current_user
     app.dependency_overrides[get_project_repo] = override_project_repo
     app.dependency_overrides[get_workspace_repo] = override_workspace_repo
+    app.dependency_overrides[get_run_repo] = override_run_repo
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
