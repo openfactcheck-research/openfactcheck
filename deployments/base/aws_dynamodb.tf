@@ -1,15 +1,16 @@
 # ##############################################################################
-# DynamoDB Table — Single-table design
+# DynamoDB Table — Single-table design with PK + SK
 # ##############################################################################
 
 resource "aws_dynamodb_table" "openfactcheck" {
   name         = "openfactcheck-db-${terraform.workspace}-${var.aws_region}"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "PK"
+  range_key    = "SK"
 
   global_secondary_index {
-    name            = "gs1"
-    hash_key        = "GS1PK"
+    name            = "gs2"
+    hash_key        = "GS2PK"
     projection_type = "ALL"
   }
 
@@ -19,7 +20,12 @@ resource "aws_dynamodb_table" "openfactcheck" {
   }
 
   attribute {
-    name = "GS1PK"
+    name = "SK"
+    type = "S"
+  }
+
+  attribute {
+    name = "GS2PK"
     type = "S"
   }
 

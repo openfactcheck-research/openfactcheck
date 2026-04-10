@@ -27,15 +27,19 @@ async def dynamo_table() -> AsyncIterator[str]:
         client = boto3.client("dynamodb", region_name=REGION)
         client.create_table(
             TableName=TABLE_NAME,
-            KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+            KeySchema=[
+                {"AttributeName": "PK", "KeyType": "HASH"},
+                {"AttributeName": "SK", "KeyType": "RANGE"},
+            ],
             AttributeDefinitions=[
                 {"AttributeName": "PK", "AttributeType": "S"},
-                {"AttributeName": "GS1PK", "AttributeType": "S"},
+                {"AttributeName": "SK", "AttributeType": "S"},
+                {"AttributeName": "GS2PK", "AttributeType": "S"},
             ],
             GlobalSecondaryIndexes=[
                 {
-                    "IndexName": "gs1",
-                    "KeySchema": [{"AttributeName": "GS1PK", "KeyType": "HASH"}],
+                    "IndexName": "gs2",
+                    "KeySchema": [{"AttributeName": "GS2PK", "KeyType": "HASH"}],
                     "Projection": {"ProjectionType": "ALL"},
                 },
             ],

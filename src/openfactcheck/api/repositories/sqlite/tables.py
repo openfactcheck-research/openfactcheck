@@ -46,3 +46,22 @@ class WorkspaceRow(Base):
     content_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime)
     updated_at: Mapped[datetime] = mapped_column(DateTime)
+
+
+class RunRow(Base):
+    """ORM model for the ``runs`` table."""
+
+    __tablename__ = "runs"
+
+    id: Mapped[str] = mapped_column(String(12), primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255), index=True)
+    project_id: Mapped[str] = mapped_column(String(12), index=True)
+    workspace_id: Mapped[str] = mapped_column(String(12), index=True)
+    status: Mapped[str] = mapped_column(String(20))
+    pipeline_json: Mapped[str] = mapped_column(Text)
+    output: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime)
+    updated_at: Mapped[datetime] = mapped_column(DateTime)
