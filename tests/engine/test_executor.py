@@ -10,8 +10,13 @@ pytestmark = pytest.mark.asyncio(loop_scope="function")
 
 
 def _pipeline(*blocks: dict[str, Any]) -> dict[str, Any]:
-    """Build a minimal Blockly workspace JSON."""
+    """Build a minimal Blockly workspace JSON (flat format)."""
     return {"blocks": {"blocks": list(blocks)}}
+
+
+def _pipeline_real(*blocks: dict[str, Any]) -> dict[str, Any]:
+    """Build a Blockly workspace JSON matching real serialization format."""
+    return {"blocks": {"blocks": {"language_version": 0, "blocks": list(blocks)}}}
 
 
 def _text_print(text: str, next_block: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -90,6 +95,16 @@ async def test_execute_pipeline_text_print(text: str, expected: str) -> None:
 
     assert result.success is True
     assert result.output == expected
+
+
+async def test_execute_pipeline_real_blockly_format() -> None:
+    """Real Blockly serialization format with language_version wrapper works."""
+    pipeline = _pipeline_real(_text_print("Hello from Blockly"))
+
+    result = await execute_pipeline(pipeline)
+
+    assert result.success is True
+    assert result.output == "Hello from Blockly"
 
 
 async def test_execute_pipeline_text_print_no_input() -> None:

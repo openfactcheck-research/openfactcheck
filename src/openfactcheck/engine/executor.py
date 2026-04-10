@@ -1,51 +1,71 @@
-"""Graph executor — walks Blockly workspace JSON and runs block handlers."""
+"""Pipeline executor — the top-level entry point for running a Blockly workspace.
+
+Flow::
+
+    execute_pipeline(workspace_json)
+        → parse_pipeline → list[Block]
+        → for each top-level block:
+            _execute_block_chain(block, ctx)
+                → ctx.execute_block(block)  (dispatches to handler)
+                → follow block.next recursively
+        → collect output → ExecutionResult
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any
 
-from openfactcheck.engine.context import BlockDict, EngineError, ExecutionContext, execute_block, get_dict
+from openfactcheck.engine.block import Block
+from openfactcheck.engine.context import EngineError, ExecutionContext
+from openfactcheck.engine.parser import parse_pipeline
 
 
 @dataclass
 class ExecutionResult:
-    """Result of a pipeline execution."""
+    """Outcome of a pipeline execution.
+
+    Attributes:
+        success: ``True`` if the pipeline completed without engine errors.
+        output: Captured stdout (newline-joined print output).
+        error: Error message if ``success`` is ``False``, otherwise ``None``.
+    """
 
     success: bool
     output: str
     error: str | None = None
 
 
-def _execute_block_chain(block: BlockDict, ctx: ExecutionContext) -> None:
-    """Execute a block and all its 'next' connected blocks."""
-    execute_block(block, ctx)
-    next_data = get_dict(block, "next")
-    if next_data is None:
-        return
-    next_block = get_dict(next_data, "block")
+def _execute_block_chain(block: Block, ctx: ExecutionContext) -> None:
+    """Execute a block and follow the ``next`` chain until the end.
+
+    This handles Blockly's statement connection model — blocks stack
+    vertically and execute top-to-bottom.
+    """
+    ctx.execute_block(block)
+    next_block = block.next
     if next_block is not None:
         _execute_block_chain(next_block, ctx)
 
 
-async def execute_pipeline(pipeline: BlockDict) -> ExecutionResult:
-    """Execute a Blockly workspace JSON.
+async def execute_pipeline(pipeline: dict[str, Any]) -> ExecutionResult:
+    """Execute a Blockly workspace JSON end-to-end.
 
-    Walks all top-level block chains, executing each block via its registered handler.
+    1. Parses the workspace JSON into a list of top-level :class:`Block` objects.
+    2. Walks each block chain, executing handlers via the :class:`ExecutionContext`.
+    3. Returns an :class:`ExecutionResult` with captured output or error.
+
+    Any :class:`EngineError` raised during execution is caught and returned
+    as a failed result. Other exceptions propagate to the caller.
     """
     ctx = ExecutionContext()
     try:
-        blocks_data = get_dict(pipeline, "blocks")
-        if blocks_data is None:
+        blocks = parse_pipeline(pipeline)
+        if not blocks:
             return ExecutionResult(success=True, output="")
 
-        top_level_blocks: object = blocks_data.get("blocks")
-        if not isinstance(top_level_blocks, list):
-            return ExecutionResult(success=True, output="")
-
-        for item in cast(list[Any], top_level_blocks):
-            if isinstance(item, dict):
-                _execute_block_chain(cast(BlockDict, item), ctx)
+        for block in blocks:
+            _execute_block_chain(block, ctx)
 
         return ExecutionResult(
             success=True,
