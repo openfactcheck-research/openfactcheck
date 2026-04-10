@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Path, status
 from openfactcheck.api.dependencies import get_current_user, get_workspace_repo
 from openfactcheck.api.errors import AppError, ErrorCode, NotFoundError, WorkspaceLimitError
 from openfactcheck.api.models import AuthUser, WorkspaceCreate, WorkspaceUpdate
+from openfactcheck.api.repositories.constants import MAX_CONTENT_BYTES
 from openfactcheck.api.repositories.protocols import WorkspaceRepository
 from openfactcheck.api.schemas.workspaces import (
     CreateWorkspaceRequest,
@@ -41,7 +42,7 @@ async def create_workspace(
     repo: Annotated[WorkspaceRepository, Depends(get_workspace_repo)],
 ) -> WorkspaceResponse:
     """Create a new workspace in a project."""
-    ws = await repo.create(user.sub, project_id, WorkspaceCreate(name=body.name))
+    ws = await repo.create(user.sub, project_id, WorkspaceCreate(name=body.name, description=body.description))
     if ws is None:
         raise WorkspaceLimitError()
     return WorkspaceResponse.from_model(ws)
@@ -70,11 +71,19 @@ async def update_workspace(
     repo: Annotated[WorkspaceRepository, Depends(get_workspace_repo)],
 ) -> WorkspaceResponse:
     """Update a workspace."""
+    if body.content is not None and len(str(body.content)) > MAX_CONTENT_BYTES:
+        raise AppError("Workspace content exceeds size limit", ErrorCode.VALIDATION_ERROR, status=422)
     ws = await repo.update(
         user.sub,
         project_id,
         workspace_id,
-        WorkspaceUpdate(name=body.name, description=body.description, locked=body.locked, settings=body.settings),
+        WorkspaceUpdate(
+            name=body.name,
+            description=body.description,
+            locked=body.locked,
+            settings=body.settings,
+            content=body.content,
+        ),
     )
     if ws is None:
         raise NotFoundError(f"Workspace {workspace_id} not found")

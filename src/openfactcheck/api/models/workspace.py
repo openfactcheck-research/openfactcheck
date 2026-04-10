@@ -24,6 +24,7 @@ class Workspace(BaseModel):
     locked: bool = False
     sort_order: int
     settings: WorkspaceSettings = Field(default_factory=WorkspaceSettings)
+    content: dict[str, object] | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -32,6 +33,7 @@ class WorkspaceCreate(BaseModel):
     """Fields required to create a new workspace."""
 
     name: str = Field(min_length=1, max_length=255)
+    description: str = Field(default="", max_length=10000)
 
 
 class WorkspaceUpdate(BaseModel):
@@ -41,3 +43,4 @@ class WorkspaceUpdate(BaseModel):
     description: str | None = Field(default=None, max_length=10000)
     locked: bool | None = None
     settings: WorkspaceSettings | None = None
+    content: dict[str, object] | None = None

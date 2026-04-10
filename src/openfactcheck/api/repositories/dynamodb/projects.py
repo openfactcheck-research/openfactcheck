@@ -18,6 +18,7 @@ def _item_to_model(item: dict[str, Any]) -> Project:
         id=item["id"],
         user_id=item["userId"],
         name=item["name"],
+        description=item.get("description", ""),
         created_at=datetime.fromisoformat(item["createdAt"]),
         updated_at=datetime.fromisoformat(item["updatedAt"]),
     )
@@ -69,6 +70,7 @@ class DynamoProjectRepository:
             "id": project_id,
             "userId": user_id,
             "name": data.name,
+            "description": data.description,
             "createdAt": now.isoformat(),
             "updatedAt": now.isoformat(),
         }

@@ -13,12 +13,14 @@ class CreateProjectRequest(BaseModel):
     """Body for POST /api/v1/projects."""
 
     name: str = Field(min_length=1, max_length=255)
+    description: str = Field(default="", max_length=10000)
 
 
 class UpdateProjectRequest(BaseModel):
     """Body for PATCH /api/v1/projects/{id}."""
 
     name: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = Field(default=None, max_length=10000)
 
 
 class ProjectResponse(BaseModel):
@@ -26,6 +28,7 @@ class ProjectResponse(BaseModel):
 
     id: str
     name: str
+    description: str
     created_at: datetime
     updated_at: datetime
 
@@ -35,6 +38,7 @@ class ProjectResponse(BaseModel):
         return ProjectResponse(
             id=project.id,
             name=project.name,
+            description=project.description,
             created_at=project.created_at,
             updated_at=project.updated_at,
         )

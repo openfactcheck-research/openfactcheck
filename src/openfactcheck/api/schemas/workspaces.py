@@ -12,6 +12,7 @@ class CreateWorkspaceRequest(BaseModel):
     """Body for POST /api/v1/projects/{pid}/workspaces."""
 
     name: str = Field(min_length=1, max_length=255)
+    description: str = Field(default="", max_length=10000)
 
 
 class UpdateWorkspaceRequest(BaseModel):
@@ -21,6 +22,7 @@ class UpdateWorkspaceRequest(BaseModel):
     description: str | None = Field(default=None, max_length=10000)
     locked: bool | None = None
     settings: WorkspaceSettings | None = None
+    content: dict[str, object] | None = None
 
 
 class ReorderWorkspacesRequest(BaseModel):
@@ -39,6 +41,7 @@ class WorkspaceResponse(BaseModel):
     locked: bool
     sort_order: int
     settings: WorkspaceSettings
+    content: dict[str, object] | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -53,6 +56,7 @@ class WorkspaceResponse(BaseModel):
             locked=ws.locked,
             sort_order=ws.sort_order,
             settings=ws.settings,
+            content=ws.content,
             created_at=ws.created_at,
             updated_at=ws.updated_at,
         )

@@ -18,6 +18,7 @@ class ProjectRow(Base):
     id: Mapped[str] = mapped_column(String(12), primary_key=True)
     user_id: Mapped[str] = mapped_column(String(255), index=True)
     name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime)
     updated_at: Mapped[datetime] = mapped_column(DateTime)
 
@@ -42,5 +43,6 @@ class WorkspaceRow(Base):
     locked: Mapped[bool] = mapped_column(Boolean, default=False)
     sort_order: Mapped[int] = mapped_column(Integer)
     settings_json: Mapped[str] = mapped_column(Text, default="{}")
+    content_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime)
     updated_at: Mapped[datetime] = mapped_column(DateTime)

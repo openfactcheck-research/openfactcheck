@@ -23,6 +23,7 @@ def _row_to_model(row: WorkspaceRow) -> Workspace:
         locked=row.locked,
         sort_order=row.sort_order,
         settings=WorkspaceSettings.model_validate_json(row.settings_json),
+        content=json.loads(row.content_json) if row.content_json and row.content_json != "{}" else None,
         created_at=row.created_at.replace(tzinfo=UTC),
         updated_at=row.updated_at.replace(tzinfo=UTC),
     )
@@ -82,7 +83,7 @@ class SqliteWorkspaceRepository:
                 user_id=user_id,
                 project_id=project_id,
                 name=data.name,
-                description="",
+                description=data.description,
                 locked=False,
                 sort_order=await self._next_sort_order(session, user_id, project_id),
                 settings_json="{}",
@@ -103,6 +104,8 @@ class SqliteWorkspaceRepository:
             values["locked"] = data.locked
         if data.settings is not None:
             values["settings_json"] = data.settings.model_dump_json()
+        if data.content is not None:
+            values["content_json"] = json.dumps(data.content)
 
         if not values:
             return await self.get(user_id, project_id, workspace_id)
@@ -156,6 +159,7 @@ class SqliteWorkspaceRepository:
                 locked=False,
                 sort_order=await self._next_sort_order(session, user_id, project_id),
                 settings_json=json.dumps(source.settings.model_dump()),
+                content_json=json.dumps(source.content) if source.content else "{}",
                 created_at=now,
                 updated_at=now,
             )

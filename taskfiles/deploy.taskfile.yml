@@ -194,64 +194,11 @@ tasks:
         done
         printf '{{.COLOR_GREEN}}✓ Files formatted{{.COLOR_RESET}}\n'
 
-  api:
-    desc: Build, push, and deploy API to Lambda (TARGET=<environment>)
-    requires:
-      vars: [TARGET]
-    cmds:
-      - |
-        export TF_BIN="{{.TF_BIN}}"
-        source taskfiles/build.helpers.sh
-        source taskfiles/common.helpers.sh && source taskfiles/deploy.helpers.sh
-
-        set_target "api"
-
-        if ! build_needed; then
-            c_echo "$COLOR_YELLOW" "[api] Skipping deploy — source unchanged"
-            exit 0
-        fi
-
-        # Build
-        assemble
-        build_image
-        write_hash
-
-        # Resolve deploy config
-        prepare "{{.TARGET}}" "base" || exit 1
-        AWS_PROFILE=$(jq -r .aws_profile "$VAR_FILE")
-        AWS_REGION=$(jq -r .aws_region "$VAR_FILE")
-
-        cd deployments/base
-        $TF_BIN workspace select $WORKSPACE 2>/dev/null
-        ECR_URL=$($TF_BIN output -raw ecr_repository_url)
-        FUNCTION_NAME=$($TF_BIN output -raw lambda_function_name 2>/dev/null || echo "openfactcheck-api-${WORKSPACE}-${AWS_REGION}")
-        API_URL=$($TF_BIN output -raw api_url)
-        cd -
-
-        IMAGE_REF="${ECR_URL}:latest"
-
-        # ECR login + push
-        c_echo "$COLOR_CYAN" "Logging into ECR..."
-        aws ecr get-login-password --region "$AWS_REGION" --profile "$AWS_PROFILE" \
-          | docker login --username AWS --password-stdin "${ECR_URL%%/*}"
-
-        c_echo "$COLOR_CYAN" "Pushing image to ECR..."
-        docker tag openfactcheck-api:latest "$IMAGE_REF"
-        docker push "$IMAGE_REF"
-
-        # Update Lambda
-        c_echo "$COLOR_CYAN" "Updating Lambda function..."
-        aws lambda update-function-code \
-          --function-name "$FUNCTION_NAME" \
-          --image-uri "$IMAGE_REF" \
-          --region "$AWS_REGION" \
-          --profile "$AWS_PROFILE" > /dev/null
-
-        c_echo "$COLOR_GREEN" "✓ Deployed to: ${API_URL}"
-
   default:
-    desc: Run the full infrastructure workflow (TARGET=<target>, optional DEP=<deployment>)
+    desc: Build API + deploy infrastructure (TARGET=<target>, optional DEP=<deployment>)
     cmds:
+      - task: :build:lambda
+        vars: {APP: 'api', TARGET: '{{.TARGET}}'}
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |

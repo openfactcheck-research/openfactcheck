@@ -27,6 +27,7 @@ def _item_to_model(item: dict[str, Any]) -> Workspace:
         locked=item.get("locked", False),
         sort_order=int(item.get("sortOrder", 0)),
         settings=WorkspaceSettings.model_validate_json(settings_str),
+        content=item.get("content"),
         created_at=datetime.fromisoformat(item["createdAt"]),
         updated_at=datetime.fromisoformat(item["updatedAt"]),
     )
@@ -82,7 +83,7 @@ class DynamoWorkspaceRepository:
                 "userId": user_id,
                 "projectId": project_id,
                 "name": data.name,
-                "description": "",
+                "description": data.description,
                 "locked": False,
                 "sortOrder": max_order + 1,
                 "settings": "{}",
@@ -115,6 +116,10 @@ class DynamoWorkspaceRepository:
             update_parts.append("#settings = :settings")
             attr_names["#settings"] = "settings"
             attr_values[":settings"] = data.settings.model_dump_json()
+        if data.content is not None:
+            update_parts.append("#content = :content")
+            attr_names["#content"] = "content"
+            attr_values[":content"] = data.content
 
         if not update_parts:
             return await self.get(user_id, project_id, workspace_id)
@@ -186,6 +191,8 @@ class DynamoWorkspaceRepository:
                 "createdAt": now.isoformat(),
                 "updatedAt": now.isoformat(),
             }
+            if source.content:
+                item["content"] = source.content
             self._table.put_item(Item=item)
             return _item_to_model(item)
 

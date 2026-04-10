@@ -4,65 +4,65 @@ version: "3"
 
 tasks:
   lambda:
-    desc: Build + push container image (TARGET=<name>, WS=<workspace> for ECR push)
+    desc: Build + push container image (APP=<name>, TARGET=<environment> for ECR push)
     requires:
-      vars: [TARGET]
+      vars: [APP]
     cmds:
       - |
         source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
-        set_target "{{.TARGET}}"
-        {{if .WS}}set_workspace "{{.WS}}"{{end}}
+        set_target "{{.APP}}"
+        {{if .TARGET}}set_workspace "{{.TARGET}}"{{end}}
 
         if build_needed; then
             assemble
             build_image
             write_hash
-            {{if .WS}}
+            {{if .TARGET}}
             ecr_login
             push_all
             write_tfvars
             {{end}}
         else
-            c_echo "$COLOR_YELLOW" "[{{.TARGET}}] Skipping build — source unchanged"
+            c_echo "$COLOR_YELLOW" "[{{.APP}}] Skipping build — source unchanged"
         fi
 
   lambda:force:
-    desc: Build + push container image (TARGET=<name>, always rebuilds, WS=<workspace> for ECR push)
+    desc: Build + push container image (APP=<name>, always rebuilds, TARGET=<environment> for ECR push)
     requires:
-      vars: [TARGET]
+      vars: [APP]
     cmds:
       - |
         source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
-        set_target "{{.TARGET}}"
-        {{if .WS}}set_workspace "{{.WS}}"{{end}}
+        set_target "{{.APP}}"
+        {{if .TARGET}}set_workspace "{{.TARGET}}"{{end}}
 
         assemble
         build_image
         write_hash
-        {{if .WS}}
+        {{if .TARGET}}
         ecr_login
         push_all
         write_tfvars
         {{end}}
 
   lambda:assemble:
-    desc: Assemble build/ directory only (TARGET=<name>)
+    desc: Assemble build/ directory only (APP=<name>)
     requires:
-      vars: [TARGET]
+      vars: [APP]
     cmds:
       - |
         source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
-        set_target "{{.TARGET}}"
+        set_target "{{.APP}}"
         assemble
 
   clean:
-    desc: Remove build artifacts (TARGET=<name>)
+    desc: Remove build artifacts (APP=<name>)
     requires:
-      vars: [TARGET]
+      vars: [APP]
     cmds:
       - |
         source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
-        set_target "{{.TARGET}}"
+        set_target "{{.APP}}"
         clean
 
   default:
@@ -70,4 +70,4 @@ tasks:
     cmds:
       - task: :print:info
         vars:
-          MSG: "Usage: task build:lambda TARGET=api [WS=devhasan]"
+          MSG: "Usage: task build:lambda APP=api [TARGET=devhasan]"
