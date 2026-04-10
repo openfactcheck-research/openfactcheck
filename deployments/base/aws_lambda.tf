@@ -22,7 +22,7 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      OPENFACTCHECK_DATABASE_BACKEND     = "dynamodb"
+      OPENFACTCHECK_MODE                 = "cloud"
       OPENFACTCHECK_DYNAMODB_TABLE_NAME  = aws_dynamodb_table.openfactcheck.name
       OPENFACTCHECK_DYNAMODB_REGION      = var.aws_region
       OPENFACTCHECK_COGNITO_REGION       = var.aws_region

@@ -26,8 +26,8 @@ class APIConfig(BaseSettings):
     cognito_user_pool_id: str = ""
     cognito_client_id: str = ""
 
-    # Database
-    database_backend: Literal["sqlite", "dynamodb"] = "sqlite"
+    # Mode — "local" (SQLite, in-process execution) or "cloud" (DynamoDB, SQS)
+    mode: Literal["local", "cloud"] = "local"
     sqlite_path: str = "~/.openfactcheck/data.db"
     dynamodb_table_name: str = "openfactcheck"
     dynamodb_region: str = "us-east-1"
