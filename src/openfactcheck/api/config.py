@@ -26,11 +26,11 @@ class APIConfig(BaseSettings):
     cognito_user_pool_id: str = ""
     cognito_client_id: str = ""
 
-    # Mode — "local" (SQLite, in-process execution) or "cloud" (DynamoDB, SQS)
+    # Mode — "local" (SQLite, in-process execution) or "cloud" (DynamoDB, Step Functions)
     mode: Literal["local", "cloud"] = "local"
     sqlite_path: str = "~/.openfactcheck/data.db"
     dynamodb_table_name: str = "openfactcheck"
     dynamodb_region: str = "us-east-1"
 
-    # Execution
-    max_execution_timeout: int = 600
+    # Run
+    state_machine_arn: str = ""

@@ -15,8 +15,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from openfactcheck.api.repositories.constants import MAX_OUTPUT_BYTES
 from openfactcheck.engine.handler import BLOCK_HANDLERS
+
+MAX_OUTPUT_BYTES = 65_536
 
 if TYPE_CHECKING:
     from openfactcheck.engine.block import Block

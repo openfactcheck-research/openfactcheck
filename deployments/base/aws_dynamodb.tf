@@ -8,12 +8,6 @@ resource "aws_dynamodb_table" "openfactcheck" {
   hash_key     = "PK"
   range_key    = "SK"
 
-  global_secondary_index {
-    name            = "gs2"
-    hash_key        = "GS2PK"
-    projection_type = "ALL"
-  }
-
   attribute {
     name = "PK"
     type = "S"
@@ -21,11 +15,6 @@ resource "aws_dynamodb_table" "openfactcheck" {
 
   attribute {
     name = "SK"
-    type = "S"
-  }
-
-  attribute {
-    name = "GS2PK"
     type = "S"
   }
 

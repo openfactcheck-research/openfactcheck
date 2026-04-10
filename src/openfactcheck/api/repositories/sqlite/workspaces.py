@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from openfactcheck.api.models import Workspace, WorkspaceCreate, WorkspaceSettings, WorkspaceUpdate
+from openfactcheck.api.models import Workspace, WorkspaceCreate, WorkspaceRun, WorkspaceSettings, WorkspaceUpdate
 from openfactcheck.api.repositories.constants import MAX_WORKSPACES_PER_PROJECT, generate_id
 from openfactcheck.api.repositories.sqlite.helpers import ensure_utc
 from openfactcheck.api.repositories.sqlite.tables import WorkspaceRow
@@ -25,6 +25,7 @@ def _row_to_model(row: WorkspaceRow) -> Workspace:
         sort_order=row.sort_order,
         settings=WorkspaceSettings.model_validate_json(row.settings_json),
         content=json.loads(row.content_json) if row.content_json and row.content_json != "{}" else None,
+        run=WorkspaceRun.model_validate_json(row.run_json) if row.run_json else None,
         created_at=ensure_utc(row.created_at),
         updated_at=ensure_utc(row.updated_at),
     )
@@ -180,4 +181,18 @@ class SqliteWorkspaceRepository:
                     )
                     .values(sort_order=index, updated_at=datetime.now(UTC))
                 )
+            await session.commit()
+
+    async def set_run(self, user_id: str, project_id: str, workspace_id: str, run: WorkspaceRun) -> None:
+        """Update the latest run state on the workspace."""
+        async with self._session_factory() as session:
+            await session.execute(
+                update(WorkspaceRow)
+                .where(
+                    WorkspaceRow.id == workspace_id,
+                    WorkspaceRow.user_id == user_id,
+                    WorkspaceRow.project_id == project_id,
+                )
+                .values(run_json=run.model_dump_json(), updated_at=datetime.now(UTC))
+            )
             await session.commit()
