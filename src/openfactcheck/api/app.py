@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI
 from openfactcheck.api.config import APIConfig
 from openfactcheck.api.dependencies import get_config
 from openfactcheck.api.middleware import register_middleware
-from openfactcheck.api.routers import health, projects, workspaces, runs
+from openfactcheck.api.routers import health, projects, runs, workspaces
 
 
 def create_app(config: APIConfig | None = None) -> FastAPI:
