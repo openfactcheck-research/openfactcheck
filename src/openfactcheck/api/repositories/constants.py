@@ -6,6 +6,7 @@ from secrets import token_urlsafe
 
 MAX_PROJECTS_PER_USER = 50
 MAX_WORKSPACES_PER_PROJECT = 5
+MAX_CONTENT_BYTES = 350_000
 
 
 def generate_id() -> str:

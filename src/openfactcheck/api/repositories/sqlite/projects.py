@@ -17,6 +17,7 @@ def _row_to_model(row: ProjectRow) -> Project:
         id=row.id,
         user_id=row.user_id,
         name=row.name,
+        description=row.description,
         created_at=row.created_at.replace(tzinfo=UTC),
         updated_at=row.updated_at.replace(tzinfo=UTC),
     )
@@ -60,6 +61,7 @@ class SqliteProjectRepository:
                 id=generate_id(),
                 user_id=user_id,
                 name=data.name,
+                description=data.description,
                 created_at=now,
                 updated_at=now,
             )
