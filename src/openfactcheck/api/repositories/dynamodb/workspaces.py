@@ -7,10 +7,16 @@ import asyncio
 from datetime import UTC, datetime
 from typing import Any
 
-from openfactcheck.api.models import Workspace, WorkspaceCreate, WorkspaceSettings, WorkspaceUpdate
+from openfactcheck.api.models import Workspace, WorkspaceCreate, WorkspaceRun, WorkspaceSettings, WorkspaceUpdate
 from openfactcheck.api.repositories.constants import MAX_WORKSPACES_PER_PROJECT, generate_id
 from openfactcheck.api.repositories.dynamodb.base import BaseDynamoRepository
 from openfactcheck.api.repositories.dynamodb.keys import workspace_pk, workspace_sk
+
+
+def _parse_run(raw: dict[str, Any] | None) -> WorkspaceRun | None:
+    if raw is None:
+        return None
+    return WorkspaceRun.model_validate(raw)
 
 
 def _item_to_model(item: dict[str, Any]) -> Workspace:
@@ -31,6 +37,7 @@ def _item_to_model(item: dict[str, Any]) -> Workspace:
         sort_order=int(item.get("sortOrder", 0)),
         settings=settings,
         content=item.get("content"),
+        run=_parse_run(item.get("run")),
         created_at=datetime.fromisoformat(item["createdAt"]),
         updated_at=datetime.fromisoformat(item["updatedAt"]),
     )
@@ -152,3 +159,11 @@ class DynamoWorkspaceRepository(BaseDynamoRepository):
                 )
 
         await asyncio.to_thread(_reorder)
+
+    async def set_run(self, user_id: str, project_id: str, workspace_id: str, run: WorkspaceRun) -> None:
+        """Update the latest run state on the workspace."""
+        await self._update(
+            workspace_pk(user_id, project_id),
+            workspace_sk(workspace_id),
+            {"run": run.model_dump(mode="json")},
+        )

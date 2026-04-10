@@ -16,6 +16,17 @@ vars:
   TF_BIN: tofu
 
 tasks:
+  _build:
+    internal: true
+    desc: Build Lambda container images (skipped for non-base deployments)
+    status:
+      - '[ "{{.DEP}}" != "" ] && [ "{{.DEP}}" != "base" ]'
+    cmds:
+      - task: :build:lambda
+        vars: {APP: 'api', TARGET: '{{.TARGET}}'}
+      - task: :build:lambda
+        vars: {APP: 'engine', TARGET: '{{.TARGET}}'}
+
   _prepare:
     internal: true
     desc: Parse TARGET and resolve all configuration paths (validation & display only)
@@ -195,10 +206,10 @@ tasks:
         printf '{{.COLOR_GREEN}}✓ Files formatted{{.COLOR_RESET}}\n'
 
   default:
-    desc: Build API + deploy infrastructure (TARGET=<target>, optional DEP=<deployment>)
+    desc: Build + deploy infrastructure (TARGET=<target>, optional DEP=<deployment>)
     cmds:
-      - task: :build:lambda
-        vars: {APP: 'api', TARGET: '{{.TARGET}}'}
+      - task: _build
+        vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - task: _prepare
         vars: {TARGET: '{{.TARGET}}', DEP: '{{.DEP}}'}
       - |

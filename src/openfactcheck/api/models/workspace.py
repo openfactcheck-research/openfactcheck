@@ -3,8 +3,27 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
+
+
+class RunStatus(StrEnum):
+    """Lifecycle states for a pipeline run."""
+
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class WorkspaceRun(BaseModel):
+    """Latest pipeline run state for a workspace."""
+
+    status: RunStatus
+    output: str = ""
+    error: str = ""
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
 
 
 class WorkspaceSettings(BaseModel):
@@ -25,6 +44,7 @@ class Workspace(BaseModel):
     sort_order: int
     settings: WorkspaceSettings = Field(default_factory=WorkspaceSettings)
     content: dict[str, object] | None = None
+    run: WorkspaceRun | None = None
     created_at: datetime
     updated_at: datetime
 

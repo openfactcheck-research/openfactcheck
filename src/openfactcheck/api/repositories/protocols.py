@@ -8,11 +8,9 @@ from openfactcheck.api.models import (
     Project,
     ProjectCreate,
     ProjectUpdate,
-    Run,
-    RunCreate,
-    RunStatus,
     Workspace,
     WorkspaceCreate,
+    WorkspaceRun,
     WorkspaceUpdate,
 )
 
@@ -50,29 +48,4 @@ class WorkspaceRepository(Protocol):
 
     async def reorder(self, user_id: str, project_id: str, ordered_ids: list[str]) -> None: ...
 
-
-class RunRepository(Protocol):
-    """Data access interface for pipeline runs."""
-
-    async def create(self, user_id: str, project_id: str, data: RunCreate) -> Run: ...
-
-    async def get(self, user_id: str, project_id: str, run_id: str) -> Run | None: ...
-
-    async def update_status(
-        self,
-        user_id: str,
-        project_id: str,
-        run_id: str,
-        status: RunStatus,
-        output: str | None = None,
-        error: str | None = None,
-    ) -> Run | None: ...
-
-    async def list_by_project(
-        self,
-        user_id: str,
-        project_id: str,
-        workspace_id: str | None = None,
-        limit: int = 20,
-        offset: int = 0,
-    ) -> list[Run]: ...
+    async def set_run(self, user_id: str, project_id: str, workspace_id: str, run: WorkspaceRun) -> None: ...
