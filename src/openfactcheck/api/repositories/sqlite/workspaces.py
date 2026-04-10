@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from openfactcheck.api.models import Workspace, WorkspaceCreate, WorkspaceSettings, WorkspaceUpdate
 from openfactcheck.api.repositories.constants import MAX_WORKSPACES_PER_PROJECT, generate_id
+from openfactcheck.api.repositories.sqlite.helpers import ensure_utc
 from openfactcheck.api.repositories.sqlite.tables import WorkspaceRow
 
 
@@ -24,8 +25,8 @@ def _row_to_model(row: WorkspaceRow) -> Workspace:
         sort_order=row.sort_order,
         settings=WorkspaceSettings.model_validate_json(row.settings_json),
         content=json.loads(row.content_json) if row.content_json and row.content_json != "{}" else None,
-        created_at=row.created_at.replace(tzinfo=UTC),
-        updated_at=row.updated_at.replace(tzinfo=UTC),
+        created_at=ensure_utc(row.created_at),
+        updated_at=ensure_utc(row.updated_at),
     )
 
 

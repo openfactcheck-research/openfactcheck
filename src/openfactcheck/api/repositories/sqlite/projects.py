@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from openfactcheck.api.models import Project, ProjectCreate, ProjectUpdate
 from openfactcheck.api.repositories.constants import MAX_PROJECTS_PER_USER, generate_id
+from openfactcheck.api.repositories.sqlite.helpers import ensure_utc
 from openfactcheck.api.repositories.sqlite.tables import ProjectRow
 
 
@@ -18,8 +19,8 @@ def _row_to_model(row: ProjectRow) -> Project:
         user_id=row.user_id,
         name=row.name,
         description=row.description,
-        created_at=row.created_at.replace(tzinfo=UTC),
-        updated_at=row.updated_at.replace(tzinfo=UTC),
+        created_at=ensure_utc(row.created_at),
+        updated_at=ensure_utc(row.updated_at),
     )
 
 
