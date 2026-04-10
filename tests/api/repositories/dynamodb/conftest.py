@@ -34,14 +34,6 @@ async def dynamo_table() -> AsyncIterator[str]:
             AttributeDefinitions=[
                 {"AttributeName": "PK", "AttributeType": "S"},
                 {"AttributeName": "SK", "AttributeType": "S"},
-                {"AttributeName": "GS2PK", "AttributeType": "S"},
-            ],
-            GlobalSecondaryIndexes=[
-                {
-                    "IndexName": "gs2",
-                    "KeySchema": [{"AttributeName": "GS2PK", "KeyType": "HASH"}],
-                    "Projection": {"ProjectionType": "ALL"},
-                },
             ],
             BillingMode="PAY_PER_REQUEST",
         )
