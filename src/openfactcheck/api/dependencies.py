@@ -82,7 +82,7 @@ async def get_project_repo(
     """Return the project repository, creating it on first call."""
     global _project_repo  # noqa: PLW0603
     if _project_repo is None:
-        if config.database_backend == "dynamodb":
+        if config.mode == "cloud":
             from openfactcheck.api.repositories.dynamodb.projects import DynamoProjectRepository
 
             _project_repo = DynamoProjectRepository(config.dynamodb_table_name, config.dynamodb_region)
@@ -100,7 +100,7 @@ async def get_workspace_repo(
     """Return the workspace repository, creating it on first call."""
     global _workspace_repo  # noqa: PLW0603
     if _workspace_repo is None:
-        if config.database_backend == "dynamodb":
+        if config.mode == "cloud":
             from openfactcheck.api.repositories.dynamodb.workspaces import DynamoWorkspaceRepository
 
             _workspace_repo = DynamoWorkspaceRepository(config.dynamodb_table_name, config.dynamodb_region)
