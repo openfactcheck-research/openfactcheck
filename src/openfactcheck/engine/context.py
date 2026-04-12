@@ -1,7 +1,6 @@
-"""Execution context and engine errors.
+"""Execution context — mutable state passed to every block handler.
 
-:class:`ExecutionContext` is the mutable state object passed to every block
-handler during a pipeline run. It provides:
+:class:`ExecutionContext` provides:
 
 - **Output capture** — :meth:`~ExecutionContext.print` collects output lines
   (with truncation at :data:`MAX_OUTPUT_BYTES`).
@@ -15,33 +14,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from openfactcheck.engine.handler import BLOCK_HANDLERS
+from openfactcheck.engine.errors import UnknownBlockError
+from openfactcheck.engine.handler import HANDLERS  # noqa: TC001 — runtime import, not type-only
 
 MAX_OUTPUT_BYTES = 65_536
 
 if TYPE_CHECKING:
     from openfactcheck.engine.block import Block
-
-
-class EngineError(Exception):
-    """Base exception for all engine execution failures.
-
-    Caught by :func:`~openfactcheck.engine.executor.execute_pipeline` and
-    converted to a failed :class:`~openfactcheck.engine.executor.ExecutionResult`.
-    """
-
-
-class UnknownBlockError(EngineError):
-    """Raised when a block type has no registered handler.
-
-    This typically means a block was added to the frontend toolbox
-    but no corresponding :class:`~openfactcheck.engine.handler.BlockHandler`
-    subclass exists on the server.
-    """
-
-    def __init__(self, block_type: str) -> None:
-        super().__init__(f"No handler for block type: {block_type}")
-        self.block_type = block_type
 
 
 @dataclass
@@ -81,14 +60,10 @@ class ExecutionContext:
     def execute_block(self, block: Block) -> Any:  # noqa: ANN401
         """Dispatch a block to its registered handler and return the result.
 
-        This is how handlers execute connected child blocks — e.g. a
-        ``text_print`` handler calls ``ctx.execute_block(input_block)``
-        to evaluate the text value plugged into its input.
-
         Raises:
             UnknownBlockError: If no handler is registered for ``block.type``.
         """
-        handler = BLOCK_HANDLERS.get(block.type)
-        if handler is None:
+        handler_fn = HANDLERS.get(block.type)
+        if handler_fn is None:
             raise UnknownBlockError(block.type)
-        return handler.execute(block, self)
+        return handler_fn(block, self)

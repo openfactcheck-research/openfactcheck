@@ -1,59 +1,43 @@
-"""Block handler base class with auto-registration.
+"""Block handler registration via decorator.
 
-New handlers are created by subclassing :class:`BlockHandler` and setting
-``block_type``. Registration into :data:`BLOCK_HANDLERS` is automatic via
-``__init_subclass__`` — no decorator or manual registration needed::
+Register a handler by decorating a function with ``@handler``::
 
-    class TextPrintHandler(BlockHandler):
-        block_type = "text_print"
+    @handler("text_print")
+    def text_print(block: Block, ctx: ExecutionContext) -> None:
+        ctx.print(resolve.string(block, ctx, "TEXT"))
 
-        def execute(self, block: Block, ctx: ExecutionContext) -> None:
-            ctx.print(block.get_field("TEXT"))
+Handlers are registered at import time — importing the module is
+sufficient to make the handler available.
 """
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from openfactcheck.engine.block import Block
     from openfactcheck.engine.context import ExecutionContext
 
-BLOCK_HANDLERS: dict[str, BlockHandler] = {}
-"""Global registry mapping block type strings to handler instances."""
+    type HandlerFn = Callable[[Block, ExecutionContext], Any]
+
+HANDLERS: dict[str, HandlerFn] = {}
+"""Global registry mapping block type strings to handler functions."""
 
 
-class BlockHandler(ABC):
-    """Base class for all block handlers.
+def handler(block_type: str) -> Callable[[HandlerFn], HandlerFn]:
+    """Decorator that registers a function as a block handler.
 
-    Subclasses must:
-        1. Set ``block_type`` as a class variable (the Blockly block type string).
-        2. Implement :meth:`execute` to define the block's behavior.
+    Args:
+        block_type: The Blockly block type string (e.g. ``"text_print"``).
 
-    A singleton instance is created and registered automatically when the
-    subclass is defined (via ``__init_subclass__``). Handlers must be stateless
-    — the same instance is reused across all runs.
+    Returns:
+        The unmodified function, now registered in :data:`HANDLERS`.
     """
 
-    block_type: ClassVar[str]
+    def decorator(fn: HandlerFn) -> HandlerFn:
+        HANDLERS[block_type] = fn
+        return fn
 
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)
-        if hasattr(cls, "block_type") and isinstance(cls.__dict__.get("block_type"), str):
-            BLOCK_HANDLERS[cls.block_type] = cls()
-
-    @abstractmethod
-    def execute(self, block: Block, ctx: ExecutionContext) -> Any:  # noqa: ANN401
-        """Execute the block and return its output value.
-
-        Args:
-            block: The parsed Blockly block with typed field/input access.
-            ctx: Mutable execution context for output capture, variable storage,
-                 and dispatching child block execution.
-
-        Returns:
-            The block's output value (used by parent blocks via value inputs),
-            or ``None`` for statement-only blocks like ``text_print``.
-        """
-        ...
+    return decorator

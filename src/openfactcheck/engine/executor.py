@@ -17,7 +17,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from openfactcheck.engine.block import Block
-from openfactcheck.engine.context import EngineError, ExecutionContext
+from openfactcheck.engine.context import ExecutionContext
+from openfactcheck.engine.errors import EngineError
 from openfactcheck.engine.parser import parse_pipeline
 
 
