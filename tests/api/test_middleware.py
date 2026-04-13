@@ -1,7 +1,5 @@
 """Tests for error handling middleware."""
 
-from __future__ import annotations
-
 import pytest
 from httpx import AsyncClient
 

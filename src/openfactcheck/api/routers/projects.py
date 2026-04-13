@@ -1,7 +1,5 @@
 """Project CRUD endpoints — /api/v1/projects."""
 
-from __future__ import annotations
-
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query, status

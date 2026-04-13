@@ -1,8 +1,6 @@
 # pyright: reportUnknownVariableType=false, reportUnknownMemberType=false, reportUnknownArgumentType=false
 """Blockly workspace JSON parser — extracts top-level blocks from workspace state."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from openfactcheck.engine.block import Block

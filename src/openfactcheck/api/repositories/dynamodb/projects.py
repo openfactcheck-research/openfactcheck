@@ -1,8 +1,6 @@
 # pyright: reportMissingTypeStubs=false, reportUnknownMemberType=false, reportUnknownVariableType=false
 """DynamoDB implementation of the project repository."""
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from typing import Any
 

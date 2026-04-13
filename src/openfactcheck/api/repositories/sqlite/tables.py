@@ -1,7 +1,5 @@
 """SQLAlchemy ORM table definitions for projects and workspaces."""
 
-from __future__ import annotations
-
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, ForeignKeyConstraint, Integer, String, Text

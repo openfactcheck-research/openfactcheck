@@ -1,7 +1,5 @@
 """Shared constants and utilities for all repository implementations."""
 
-from __future__ import annotations
-
 from secrets import token_urlsafe
 
 MAX_PROJECTS_PER_USER = 50

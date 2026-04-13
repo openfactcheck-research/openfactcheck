@@ -1,7 +1,5 @@
 """Repository protocol definitions for structural typing (Pyright strict)."""
 
-from __future__ import annotations
-
 from typing import Protocol
 
 from openfactcheck.api.models import (

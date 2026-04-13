@@ -1,7 +1,5 @@
 """Text block handlers — ``text``, ``text_print``, ``text_join``, etc."""
 
-from __future__ import annotations
-
 from openfactcheck.engine import resolve
 from openfactcheck.engine.block import Block
 from openfactcheck.engine.context import ExecutionContext

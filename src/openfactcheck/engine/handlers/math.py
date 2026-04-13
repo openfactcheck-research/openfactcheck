@@ -1,7 +1,5 @@
 """Math block handlers — ``math_number``, ``math_arithmetic``, etc."""
 
-from __future__ import annotations
-
 import math
 import random
 

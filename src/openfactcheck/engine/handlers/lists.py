@@ -1,7 +1,5 @@
 """List block handlers — ``lists_create_with``, ``lists_sort``, etc."""
 
-from __future__ import annotations
-
 from openfactcheck.engine import resolve
 from openfactcheck.engine.block import Block
 from openfactcheck.engine.context import ExecutionContext

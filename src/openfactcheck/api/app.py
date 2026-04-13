@@ -1,7 +1,5 @@
 """FastAPI application factory."""
 
-from __future__ import annotations
-
 from fastapi import APIRouter, FastAPI
 
 from openfactcheck.api.config import APIConfig

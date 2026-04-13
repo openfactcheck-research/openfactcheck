@@ -1,7 +1,5 @@
 """Authenticated user model derived from JWT claims."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 

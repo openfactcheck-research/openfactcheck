@@ -5,8 +5,6 @@ Invoked by Step Functions. Receives pipeline JSON, returns execution output.
 The engine is pure — no database access, no messaging, just compute.
 """
 
-from __future__ import annotations
-
 import asyncio
 from typing import Any
 

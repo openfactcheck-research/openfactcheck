@@ -1,7 +1,5 @@
 """API integration test fixtures — test client, mock auth, in-memory SQLite."""
 
-from __future__ import annotations
-
 from collections.abc import AsyncIterator
 
 import pytest_asyncio
