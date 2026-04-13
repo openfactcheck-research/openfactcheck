@@ -18,6 +18,9 @@ classifiers = [
 dependencies = [
     "pydantic>=2.11",
     "pydantic-settings[yaml]>=2.9",
+    "langgraph>=1.1",
+    "langchain-core>=1.2",
+    "litellm>=1.83",
 ]
 
 [project.optional-dependencies]
