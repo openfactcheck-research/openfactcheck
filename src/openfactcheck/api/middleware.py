@@ -1,7 +1,5 @@
 """Middleware — error handling and CORS."""
 
-from __future__ import annotations
-
 import logging
 
 from fastapi import FastAPI, Request

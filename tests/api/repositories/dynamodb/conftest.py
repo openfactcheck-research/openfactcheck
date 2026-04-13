@@ -1,8 +1,6 @@
 # pyright: reportUnknownMemberType=false, reportUnknownVariableType=false
 """Shared fixtures for DynamoDB repository tests — moto-mocked table."""
 
-from __future__ import annotations
-
 import os
 from collections.abc import AsyncIterator
 

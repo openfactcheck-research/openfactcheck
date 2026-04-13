@@ -1,7 +1,5 @@
 """Engine error types."""
 
-from __future__ import annotations
-
 
 class EngineError(Exception):
     """Base exception for all engine execution failures.

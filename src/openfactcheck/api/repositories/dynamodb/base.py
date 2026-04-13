@@ -1,8 +1,6 @@
 # pyright: reportMissingTypeStubs=false, reportUnknownMemberType=false, reportUnknownVariableType=false
 """Generic DynamoDB repository base — models own their keys, base handles CRUD."""
 
-from __future__ import annotations
-
 import asyncio
 from typing import Any
 

@@ -1,7 +1,5 @@
 """Variable block handlers — ``variables_get``, ``variables_set``."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from openfactcheck.engine import resolve

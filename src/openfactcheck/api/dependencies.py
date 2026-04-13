@@ -1,7 +1,5 @@
 """FastAPI dependency injection — settings, auth, repositories."""
 
-from __future__ import annotations
-
 import asyncio
 from functools import lru_cache
 from typing import Annotated, Any

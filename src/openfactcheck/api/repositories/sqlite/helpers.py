@@ -1,7 +1,5 @@
 """Shared helpers for SQLite repository implementations."""
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 
 

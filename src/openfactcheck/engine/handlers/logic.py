@@ -1,7 +1,5 @@
 """Logic block handlers — ``logic_boolean``, ``controls_if``, etc."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from openfactcheck.engine import resolve

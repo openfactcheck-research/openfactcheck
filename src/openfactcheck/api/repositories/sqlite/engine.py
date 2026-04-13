@@ -1,7 +1,5 @@
 """SQLAlchemy async engine, session factory, and declarative base."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from sqlalchemy import event

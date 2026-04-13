@@ -1,7 +1,5 @@
 """Loop block handlers — ``controls_repeat_ext``, ``controls_for``, etc."""
 
-from __future__ import annotations
-
 from openfactcheck.engine import resolve
 from openfactcheck.engine.block import Block
 from openfactcheck.engine.context import ExecutionContext

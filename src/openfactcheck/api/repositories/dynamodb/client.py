@@ -1,8 +1,6 @@
 # pyright: reportMissingTypeStubs=false, reportUnknownMemberType=false, reportUnknownVariableType=false, reportAttributeAccessIssue=false
 """boto3 DynamoDB table resource factory."""
 
-from __future__ import annotations
-
 from typing import Any
 
 import boto3

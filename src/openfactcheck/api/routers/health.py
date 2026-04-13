@@ -1,7 +1,5 @@
 """Health and status endpoints."""
 
-from __future__ import annotations
-
 from fastapi import APIRouter
 
 from openfactcheck import __version__
