@@ -8,6 +8,10 @@ from pydantic import BaseModel, Field
 
 from openfactcheck.api.models import Project
 
+# ---------------------------------------------------------------------------
+# Requests
+# ---------------------------------------------------------------------------
+
 
 class CreateProjectRequest(BaseModel):
     """Body for POST /api/v1/projects."""
@@ -21,6 +25,11 @@ class UpdateProjectRequest(BaseModel):
 
     name: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=10000)
+
+
+# ---------------------------------------------------------------------------
+# Responses
+# ---------------------------------------------------------------------------
 
 
 class ProjectResponse(BaseModel):

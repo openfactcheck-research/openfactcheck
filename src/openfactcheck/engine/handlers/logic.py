@@ -1,7 +1,5 @@
 """Logic block handlers — ``logic_boolean``, ``controls_if``, etc."""
 
-from typing import Any
-
 from openfactcheck.engine import resolve
 from openfactcheck.engine.block import Block
 from openfactcheck.engine.context import ExecutionContext
@@ -9,15 +7,15 @@ from openfactcheck.engine.handler import handler
 
 
 @handler("logic_boolean")
-def logic_boolean(block: Block, ctx: ExecutionContext) -> bool:
+def logic_boolean(block: Block, _ctx: ExecutionContext) -> bool:
     """Return True or False from the BOOL field."""
     return block.get_field("BOOL", default="TRUE") == "TRUE"
 
 
 @handler("logic_null")
-def logic_null(block: Block, ctx: ExecutionContext) -> None:
+def logic_null(_block: Block, _ctx: ExecutionContext) -> None:
     """Return None."""
-    return None
+    return
 
 
 @handler("logic_negate")
@@ -37,13 +35,13 @@ def logic_compare(block: Block, ctx: ExecutionContext) -> bool:
     if op == "NEQ":
         return a != b
     if op == "LT":
-        return a < b  # type: ignore[operator]
+        return a < b
     if op == "LTE":
-        return a <= b  # type: ignore[operator]
+        return a <= b
     if op == "GT":
-        return a > b  # type: ignore[operator]
+        return a > b
     if op == "GTE":
-        return a >= b  # type: ignore[operator]
+        return a >= b
     return False
 
 
@@ -57,7 +55,7 @@ def logic_operation(block: Block, ctx: ExecutionContext) -> bool:
 
 
 @handler("logic_ternary")
-def logic_ternary(block: Block, ctx: ExecutionContext) -> Any:  # noqa: ANN401
+def logic_ternary(block: Block, ctx: ExecutionContext) -> object:
     """If IF is truthy, return THEN, else return ELSE."""
     if resolve.boolean(block, ctx, "IF"):
         return resolve.value(block, ctx, "THEN")

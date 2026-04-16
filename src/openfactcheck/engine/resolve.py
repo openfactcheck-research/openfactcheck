@@ -22,7 +22,7 @@ def num(block: Block, ctx: ExecutionContext, name: str, default: float = 0.0) ->
         return default
     result = ctx.execute_block(input_block)
     try:
-        return float(result)  # type: ignore[arg-type]
+        return float(result)
     except (TypeError, ValueError):
         return default
 
@@ -51,7 +51,7 @@ def integer(block: Block, ctx: ExecutionContext, name: str, default: int = 0) ->
         return default
     result = ctx.execute_block(input_block)
     try:
-        return int(float(result))  # type: ignore[arg-type]
+        return int(float(result))
     except (TypeError, ValueError):
         return default
 
@@ -72,7 +72,7 @@ def items(block: Block, ctx: ExecutionContext, name: str) -> list[object]:
         return []
     result = ctx.execute_block(input_block)
     if isinstance(result, list):
-        return cast(list[object], result)
+        return cast("list[object]", result)
     return []
 
 

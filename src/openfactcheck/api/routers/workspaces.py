@@ -5,13 +5,31 @@ import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, status
-from pydantic import BaseModel  # noqa: TC002 — used by RunRequest/RunResponse below
+from pydantic import BaseModel
 
 from openfactcheck.api.config import APIConfig
-from openfactcheck.api.dependencies import get_config, get_current_user, get_workspace_repo
-from openfactcheck.api.errors import AppError, ErrorCode, NotFoundError, WorkspaceLimitError
-from openfactcheck.api.models import AuthUser, RunStatus, WorkspaceCreate, WorkspaceRun, WorkspaceUpdate
-from openfactcheck.api.repositories.constants import MAX_CONTENT_BYTES, MAX_PIPELINE_BYTES
+from openfactcheck.api.dependencies import (
+    get_config,
+    get_current_user,
+    get_workspace_repo,
+)
+from openfactcheck.api.errors import (
+    AppError,
+    ErrorCode,
+    NotFoundError,
+    WorkspaceLimitError,
+)
+from openfactcheck.api.models import (
+    AuthUser,
+    WorkspaceCreate,
+    WorkspaceRun,
+    WorkspaceRunStatus,
+    WorkspaceUpdate,
+)
+from openfactcheck.api.repositories.constants import (
+    MAX_CONTENT_BYTES,
+    MAX_PIPELINE_BYTES,
+)
 from openfactcheck.api.repositories.protocols import WorkspaceRepository
 from openfactcheck.api.schemas.workspaces import (
     CreateWorkspaceRequest,
@@ -21,6 +39,8 @@ from openfactcheck.api.schemas.workspaces import (
 )
 
 router = APIRouter(prefix="/projects/{project_id}/workspaces", tags=["workspaces"])
+
+_background_tasks: set[asyncio.Task[None]] = set()
 
 ResourceId = Annotated[str, Path(max_length=20)]
 
@@ -44,9 +64,13 @@ async def create_workspace(
     repo: Annotated[WorkspaceRepository, Depends(get_workspace_repo)],
 ) -> WorkspaceResponse:
     """Create a new workspace in a project."""
-    ws = await repo.create(user.sub, project_id, WorkspaceCreate(name=body.name, description=body.description))
+    ws = await repo.create(
+        user.sub,
+        project_id,
+        WorkspaceCreate(name=body.name, description=body.description),
+    )
     if ws is None:
-        raise WorkspaceLimitError()
+        raise WorkspaceLimitError
     return WorkspaceResponse.from_model(ws)
 
 
@@ -74,7 +98,11 @@ async def update_workspace(
 ) -> WorkspaceResponse:
     """Update a workspace."""
     if body.content is not None and len(str(body.content)) > MAX_CONTENT_BYTES:
-        raise AppError("Workspace content exceeds size limit", ErrorCode.VALIDATION_ERROR, status=422)
+        raise AppError(
+            "Workspace content exceeds size limit",
+            ErrorCode.VALIDATION_ERROR,
+            status=422,
+        )
     ws = await repo.update(
         user.sub,
         project_id,
@@ -120,7 +148,7 @@ async def duplicate_workspace(
 
     ws = await repo.duplicate(user.sub, project_id, workspace_id)
     if ws is None:
-        raise WorkspaceLimitError()
+        raise WorkspaceLimitError
     return WorkspaceResponse.from_model(ws)
 
 
@@ -139,7 +167,11 @@ async def reorder_workspaces(
     if len(body.ordered_ids) != len(submitted_ids):
         raise AppError("ordered_ids contains duplicates", ErrorCode.VALIDATION_ERROR, status=422)
     if submitted_ids != current_ids:
-        raise AppError("ordered_ids must contain exactly all workspace IDs", ErrorCode.VALIDATION_ERROR, status=422)
+        raise AppError(
+            "ordered_ids must contain exactly all workspace IDs",
+            ErrorCode.VALIDATION_ERROR,
+            status=422,
+        )
 
     await repo.reorder(user.sub, project_id, body.ordered_ids)
 
@@ -171,11 +203,11 @@ async def _start_sfn(
     pipeline: dict[str, object],
 ) -> None:
     """Start a Step Functions execution for the pipeline."""
-    import boto3
+    import boto3  # noqa: PLC0415 - lazy import for optional cloud dependency.
 
     def _start() -> None:
-        sfn = boto3.client("stepfunctions")  # pyright: ignore[reportUnknownVariableType,reportUnknownMemberType]
-        sfn.start_execution(  # pyright: ignore[reportUnknownMemberType]
+        sfn = boto3.client("stepfunctions")
+        sfn.start_execution(
             stateMachineArn=state_machine_arn,
             input=json.dumps(
                 {
@@ -183,7 +215,7 @@ async def _start_sfn(
                     "project_id": project_id,
                     "workspace_id": workspace_id,
                     "pipeline": pipeline,
-                }
+                },
             ),
         )
 
@@ -198,23 +230,28 @@ async def _run_local(
     pipeline: dict[str, object],
 ) -> None:
     """Local mode: run pipeline in-process and update workspace run state."""
-    from datetime import UTC, datetime
+    from datetime import UTC, datetime  # noqa: PLC0415 - lazy import to avoid engine dependency at module level.
 
-    from openfactcheck.engine import execute_pipeline
+    from openfactcheck.engine import (  # noqa: PLC0415 - lazy import to avoid engine dependency at module level.
+        execute_pipeline,
+    )
 
     result = await execute_pipeline(pipeline)
     now = datetime.now(UTC)
     if result.success:
-        run = WorkspaceRun(status=RunStatus.COMPLETED, output=result.output or "", completed_at=now)
+        run = WorkspaceRun(status=WorkspaceRunStatus.COMPLETED, output=result.output or "", completed_at=now)
     else:
         run = WorkspaceRun(
-            status=RunStatus.FAILED, output=result.output or "", error=result.error or "", completed_at=now
+            status=WorkspaceRunStatus.FAILED,
+            output=result.output or "",
+            error=result.error or "",
+            completed_at=now,
         )
     await repo.set_run(user_id, project_id, workspace_id, run)
 
 
 @router.post("/{workspace_id}/run", status_code=status.HTTP_202_ACCEPTED)
-async def run_pipeline(
+async def run_pipeline(  # noqa: PLR0913 - FastAPI DI requires all params as function args.
     project_id: ResourceId,
     workspace_id: ResourceId,
     body: RunRequest,
@@ -233,15 +270,23 @@ async def run_pipeline(
 
     if config.mode == "cloud":
         try:
-            await _start_sfn(config.state_machine_arn, user.sub, project_id, workspace_id, body.pipeline)
+            await _start_sfn(
+                config.state_machine_arn,
+                user.sub,
+                project_id,
+                workspace_id,
+                body.pipeline,
+            )
         except Exception:
-            run = WorkspaceRun(status=RunStatus.FAILED, error="Failed to dispatch pipeline")
+            run = WorkspaceRun(status=WorkspaceRunStatus.FAILED, error="Failed to dispatch pipeline")
             await repo.set_run(user.sub, project_id, workspace_id, run)
             raise
     else:
-        run = WorkspaceRun(status=RunStatus.RUNNING)
+        run = WorkspaceRun(status=WorkspaceRunStatus.RUNNING)
         await repo.set_run(user.sub, project_id, workspace_id, run)
-        asyncio.create_task(_run_local(repo, user.sub, project_id, workspace_id, body.pipeline))
+        task = asyncio.create_task(_run_local(repo, user.sub, project_id, workspace_id, body.pipeline))
+        _background_tasks.add(task)
+        task.add_done_callback(_background_tasks.discard)
 
     return RunResponse(status="running")
 

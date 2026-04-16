@@ -1,4 +1,3 @@
-# pyright: reportUnknownVariableType=false, reportUnknownMemberType=false, reportUnknownArgumentType=false
 """Typed wrapper around a raw Blockly block dict.
 
 This is the JSON boundary layer for the engine. Raw ``dict[str, Any]`` from
@@ -36,7 +35,7 @@ class Block:
         id: Unique block instance ID assigned by Blockly.
     """
 
-    __slots__ = ("type", "id", "_fields", "_inputs", "_next_data")
+    __slots__ = ("_fields", "_inputs", "_next_data", "id", "type")
 
     def __init__(self, data: dict[str, Any]) -> None:
         self.type: str = str(data.get("type", ""))

@@ -6,27 +6,18 @@ from datetime import UTC, datetime
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from openfactcheck.api.models import Workspace, WorkspaceCreate, WorkspaceRun, WorkspaceSettings, WorkspaceUpdate
-from openfactcheck.api.repositories.constants import MAX_WORKSPACES_PER_PROJECT, generate_id
-from openfactcheck.api.repositories.sqlite.helpers import ensure_utc
+from openfactcheck.api.models import (
+    Workspace,
+    WorkspaceCreate,
+    WorkspaceRun,
+    WorkspaceUpdate,
+)
+from openfactcheck.api.repositories.constants import (
+    MAX_WORKSPACES_PER_PROJECT,
+    generate_id,
+)
+from openfactcheck.api.repositories.sqlite.helpers import row_to_dict
 from openfactcheck.api.repositories.sqlite.tables import WorkspaceRow
-
-
-def _row_to_model(row: WorkspaceRow) -> Workspace:
-    return Workspace(
-        id=row.id,
-        user_id=row.user_id,
-        project_id=row.project_id,
-        name=row.name,
-        description=row.description,
-        locked=row.locked,
-        sort_order=row.sort_order,
-        settings=WorkspaceSettings.model_validate_json(row.settings_json),
-        content=json.loads(row.content_json) if row.content_json and row.content_json != "{}" else None,
-        run=WorkspaceRun.model_validate_json(row.run_json) if row.run_json else None,
-        created_at=ensure_utc(row.created_at),
-        updated_at=ensure_utc(row.updated_at),
-    )
 
 
 class SqliteWorkspaceRepository:
@@ -39,7 +30,7 @@ class SqliteWorkspaceRepository:
         result = await session.execute(
             select(func.count())
             .select_from(WorkspaceRow)
-            .where(WorkspaceRow.user_id == user_id, WorkspaceRow.project_id == project_id)
+            .where(WorkspaceRow.user_id == user_id, WorkspaceRow.project_id == project_id),
         )
         return result.scalar_one()
 
@@ -47,7 +38,7 @@ class SqliteWorkspaceRepository:
         result = await session.execute(
             select(func.coalesce(func.max(WorkspaceRow.sort_order), 0))
             .select_from(WorkspaceRow)
-            .where(WorkspaceRow.user_id == user_id, WorkspaceRow.project_id == project_id)
+            .where(WorkspaceRow.user_id == user_id, WorkspaceRow.project_id == project_id),
         )
         return result.scalar_one() + 1
 
@@ -55,10 +46,13 @@ class SqliteWorkspaceRepository:
         async with self._session_factory() as session:
             result = await session.execute(
                 select(WorkspaceRow)
-                .where(WorkspaceRow.user_id == user_id, WorkspaceRow.project_id == project_id)
-                .order_by(WorkspaceRow.sort_order)
+                .where(
+                    WorkspaceRow.user_id == user_id,
+                    WorkspaceRow.project_id == project_id,
+                )
+                .order_by(WorkspaceRow.sort_order),
             )
-            return [_row_to_model(row) for row in result.scalars()]
+            return [Workspace.model_validate(row_to_dict(row)) for row in result.scalars()]
 
     async def get(self, user_id: str, project_id: str, workspace_id: str) -> Workspace | None:
         async with self._session_factory() as session:
@@ -67,10 +61,10 @@ class SqliteWorkspaceRepository:
                     WorkspaceRow.id == workspace_id,
                     WorkspaceRow.user_id == user_id,
                     WorkspaceRow.project_id == project_id,
-                )
+                ),
             )
             row = result.scalar_one_or_none()
-            return _row_to_model(row) if row else None
+            return Workspace.model_validate(row_to_dict(row)) if row else None
 
     async def create(self, user_id: str, project_id: str, data: WorkspaceCreate) -> Workspace | None:
         async with self._session_factory() as session:
@@ -92,7 +86,7 @@ class SqliteWorkspaceRepository:
             )
             session.add(row)
             await session.commit()
-            return _row_to_model(row)
+            return Workspace.model_validate(row_to_dict(row))
 
     async def update(self, user_id: str, project_id: str, workspace_id: str, data: WorkspaceUpdate) -> Workspace | None:
         values: dict[str, object] = {}
@@ -120,10 +114,10 @@ class SqliteWorkspaceRepository:
                     WorkspaceRow.user_id == user_id,
                     WorkspaceRow.project_id == project_id,
                 )
-                .values(**values)
+                .values(**values),
             )
             await session.commit()
-            if cursor.rowcount == 0:  # type: ignore[union-attr]
+            if cursor.rowcount == 0:
                 return None
 
         return await self.get(user_id, project_id, workspace_id)
@@ -135,10 +129,10 @@ class SqliteWorkspaceRepository:
                     WorkspaceRow.id == workspace_id,
                     WorkspaceRow.user_id == user_id,
                     WorkspaceRow.project_id == project_id,
-                )
+                ),
             )
             await session.commit()
-            return bool(cursor.rowcount)  # type: ignore[union-attr]
+            return bool(cursor.rowcount)
 
     async def duplicate(self, user_id: str, project_id: str, workspace_id: str) -> Workspace | None:
         source = await self.get(user_id, project_id, workspace_id)
@@ -165,7 +159,7 @@ class SqliteWorkspaceRepository:
             )
             session.add(row)
             await session.commit()
-            return _row_to_model(row)
+            return Workspace.model_validate(row_to_dict(row))
 
     async def reorder(self, user_id: str, project_id: str, ordered_ids: list[str]) -> None:
         async with self._session_factory() as session:
@@ -177,7 +171,7 @@ class SqliteWorkspaceRepository:
                         WorkspaceRow.user_id == user_id,
                         WorkspaceRow.project_id == project_id,
                     )
-                    .values(sort_order=index, updated_at=datetime.now(UTC))
+                    .values(sort_order=index, updated_at=datetime.now(UTC)),
                 )
             await session.commit()
 
@@ -191,6 +185,6 @@ class SqliteWorkspaceRepository:
                     WorkspaceRow.user_id == user_id,
                     WorkspaceRow.project_id == project_id,
                 )
-                .values(run_json=run.model_dump_json(), updated_at=datetime.now(UTC))
+                .values(run_json=run.model_dump_json(), updated_at=datetime.now(UTC)),
             )
             await session.commit()

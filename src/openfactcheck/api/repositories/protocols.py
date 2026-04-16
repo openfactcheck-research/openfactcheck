@@ -37,7 +37,11 @@ class WorkspaceRepository(Protocol):
     async def create(self, user_id: str, project_id: str, data: WorkspaceCreate) -> Workspace | None: ...
 
     async def update(
-        self, user_id: str, project_id: str, workspace_id: str, data: WorkspaceUpdate
+        self,
+        user_id: str,
+        project_id: str,
+        workspace_id: str,
+        data: WorkspaceUpdate,
     ) -> Workspace | None: ...
 
     async def delete(self, user_id: str, project_id: str, workspace_id: str) -> bool: ...

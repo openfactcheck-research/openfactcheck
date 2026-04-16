@@ -12,8 +12,14 @@ Resolution order (highest wins)::
 from pathlib import Path
 from typing import Literal
 
-from pydantic import AliasChoices, Field, SecretStr  # noqa: TC002
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
+from pydantic import AliasChoices, Field, SecretStr
+from pydantic_settings import (
+    BaseSettings,
+    JsonConfigSettingsSource,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
 
 
 class OpenFactCheckConfig(BaseSettings):
@@ -66,11 +72,9 @@ class OpenFactCheckConfig(BaseSettings):
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,  # noqa: ARG003 - required by pydantic-settings override.
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Priority: constructor > env vars > .env > json/yaml config > defaults."""
-        from pydantic_settings import JsonConfigSettingsSource, YamlConfigSettingsSource
-
         return (
             init_settings,
             env_settings,

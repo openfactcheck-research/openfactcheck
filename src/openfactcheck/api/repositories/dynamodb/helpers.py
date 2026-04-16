@@ -1,36 +1,41 @@
 """Shared helpers for DynamoDB repository implementations."""
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import NamedTuple
+
+from openfactcheck.api.repositories.dynamodb.types import AttrNames, AttrValues, DynamoItem
+
+
+class UpdateExpression(NamedTuple):
+    """DynamoDB SET update expression with attribute name/value mappings."""
+
+    expression: str
+    attr_names: AttrNames
+    attr_values: AttrValues
 
 
 def build_update_expression(
-    values: dict[str, Any],
+    values: DynamoItem,
     timestamp_field: str = "updatedAt",
-) -> tuple[str, dict[str, str], dict[str, Any]]:
+) -> UpdateExpression:
     """Build a DynamoDB SET update expression from a values dict.
 
     Automatically appends an updatedAt timestamp.
-
-    Returns:
-        (update_expression, attr_names, attr_values)
     """
     update_parts: list[str] = []
-    attr_names: dict[str, str] = {}
-    attr_values: dict[str, Any] = {}
+    attr_names: AttrNames = {}
+    attr_values: AttrValues = {}
 
-    for field, value in values.items():
+    def _add(field: str, value: object) -> None:
         alias = f"#{field}"
         placeholder = f":{field}"
         update_parts.append(f"{alias} = {placeholder}")
         attr_names[alias] = field
         attr_values[placeholder] = value
 
-    now = datetime.now(UTC)
-    alias = f"#{timestamp_field}"
-    placeholder = f":{timestamp_field}"
-    update_parts.append(f"{alias} = {placeholder}")
-    attr_names[alias] = timestamp_field
-    attr_values[placeholder] = now.isoformat()
+    for field, value in values.items():
+        _add(field, value)
 
-    return "SET " + ", ".join(update_parts), attr_names, attr_values
+    _add(timestamp_field, datetime.now(UTC).isoformat())
+
+    return UpdateExpression("SET " + ", ".join(update_parts), attr_names, attr_values)

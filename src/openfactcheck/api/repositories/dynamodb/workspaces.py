@@ -1,60 +1,37 @@
-# pyright: reportMissingTypeStubs=false, reportUnknownMemberType=false, reportUnknownVariableType=false
 """DynamoDB implementation of the workspace repository."""
 
 import asyncio
 from datetime import UTC, datetime
-from typing import Any
 
-from openfactcheck.api.models import Workspace, WorkspaceCreate, WorkspaceRun, WorkspaceSettings, WorkspaceUpdate
-from openfactcheck.api.repositories.constants import MAX_WORKSPACES_PER_PROJECT, generate_id
+from openfactcheck.api.models import (
+    Workspace,
+    WorkspaceCreate,
+    WorkspaceRun,
+    WorkspaceUpdate,
+)
+from openfactcheck.api.repositories.constants import (
+    MAX_WORKSPACES_PER_PROJECT,
+    generate_id,
+)
 from openfactcheck.api.repositories.dynamodb.base import BaseDynamoRepository
 from openfactcheck.api.repositories.dynamodb.keys import workspace_pk, workspace_sk
-
-
-def _parse_run(raw: dict[str, Any] | None) -> WorkspaceRun | None:
-    if raw is None:
-        return None
-    return WorkspaceRun.model_validate(raw)
-
-
-def _item_to_model(item: dict[str, Any]) -> Workspace:
-    settings_raw = item.get("settings", {})
-    settings = (
-        WorkspaceSettings.model_validate(settings_raw)
-        if isinstance(settings_raw, dict)
-        else WorkspaceSettings.model_validate_json(settings_raw)
-    )
-
-    return Workspace(
-        id=item["id"],
-        user_id=item["userId"],
-        project_id=item["projectId"],
-        name=item["name"],
-        description=item.get("description", ""),
-        locked=item.get("locked", False),
-        sort_order=int(item.get("sortOrder", 0)),
-        settings=settings,
-        content=item.get("content"),
-        run=_parse_run(item.get("run")),
-        created_at=datetime.fromisoformat(item["createdAt"]),
-        updated_at=datetime.fromisoformat(item["updatedAt"]),
-    )
+from openfactcheck.api.repositories.dynamodb.types import DynamoItem
 
 
 class DynamoWorkspaceRepository(BaseDynamoRepository):
     """Workspace CRUD backed by DynamoDB single-table design."""
 
-    async def _list_items(self, user_id: str, project_id: str) -> list[dict[str, Any]]:
+    async def _list_items(self, user_id: str, project_id: str) -> list[DynamoItem]:
         return await self._query_by_pk(workspace_pk(user_id, project_id), sk_prefix="WORKSPACE#")
 
     async def list_by_project(self, user_id: str, project_id: str) -> list[Workspace]:
         items = await self._list_items(user_id, project_id)
-        workspaces = [_item_to_model(item) for item in items]
+        workspaces = [Workspace.model_validate(item) for item in items]
         return sorted(workspaces, key=lambda w: w.sort_order)
 
     async def get(self, user_id: str, project_id: str, workspace_id: str) -> Workspace | None:
         item = await self._get(workspace_pk(user_id, project_id), workspace_sk(workspace_id))
-        return _item_to_model(item) if item else None
+        return Workspace.model_validate(item) if item else None
 
     async def create(self, user_id: str, project_id: str, data: WorkspaceCreate) -> Workspace | None:
         items = await self._list_items(user_id, project_id)
@@ -65,7 +42,7 @@ class DynamoWorkspaceRepository(BaseDynamoRepository):
 
         now = datetime.now(UTC)
         wid = generate_id()
-        item: dict[str, Any] = {
+        item: DynamoItem = {
             "PK": workspace_pk(user_id, project_id),
             "SK": workspace_sk(wid),
             "id": wid,
@@ -80,10 +57,10 @@ class DynamoWorkspaceRepository(BaseDynamoRepository):
             "updatedAt": now.isoformat(),
         }
         await self._put(item)
-        return _item_to_model(item)
+        return Workspace.model_validate(item)
 
     async def update(self, user_id: str, project_id: str, workspace_id: str, data: WorkspaceUpdate) -> Workspace | None:
-        values: dict[str, Any] = {}
+        values: DynamoItem = {}
         if data.name is not None:
             values["name"] = data.name
         if data.description is not None:
@@ -99,7 +76,7 @@ class DynamoWorkspaceRepository(BaseDynamoRepository):
             return await self.get(user_id, project_id, workspace_id)
 
         attrs = await self._update(workspace_pk(user_id, project_id), workspace_sk(workspace_id), values)
-        return _item_to_model(attrs) if attrs else None
+        return Workspace.model_validate(attrs) if attrs else None
 
     async def delete(self, user_id: str, project_id: str, workspace_id: str) -> bool:
         return await self._delete(workspace_pk(user_id, project_id), workspace_sk(workspace_id))
@@ -117,7 +94,7 @@ class DynamoWorkspaceRepository(BaseDynamoRepository):
 
         now = datetime.now(UTC)
         new_id = generate_id()
-        item: dict[str, Any] = {
+        item: DynamoItem = {
             "PK": workspace_pk(user_id, project_id),
             "SK": workspace_sk(new_id),
             "id": new_id,
@@ -134,7 +111,7 @@ class DynamoWorkspaceRepository(BaseDynamoRepository):
         if source.content:
             item["content"] = source.content
         await self._put(item)
-        return _item_to_model(item)
+        return Workspace.model_validate(item)
 
     async def reorder(self, user_id: str, project_id: str, ordered_ids: list[str]) -> None:
         pk = workspace_pk(user_id, project_id)

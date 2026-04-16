@@ -18,8 +18,8 @@ async def test_ClaimExtractor_accepts_conforming_implementation() -> None:
     """A class with matching async __call__ satisfies the Protocol and can be invoked."""
 
     class DummyExtractor:
-        async def __call__(self, input: Input) -> list[Claim]:
-            return [Claim(text=f"claim from {input.content}")]
+        async def __call__(self, text: Input) -> list[Claim]:
+            return [Claim(text=f"claim from {text.content}")]
 
     extractor: ClaimExtractor = DummyExtractor()
 
