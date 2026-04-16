@@ -22,7 +22,7 @@ class ClaimExtractor(Protocol):
     valid (e.g. the input contains no checkable claims).
     """
 
-    async def __call__(self, input: Input) -> list[Claim]: ...
+    async def __call__(self, text: Input) -> list[Claim]: ...
 
 
 @runtime_checkable

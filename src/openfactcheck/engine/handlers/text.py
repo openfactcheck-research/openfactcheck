@@ -1,5 +1,7 @@
 """Text block handlers — ``text``, ``text_print``, ``text_join``, etc."""
 
+import random
+
 from openfactcheck.engine import resolve
 from openfactcheck.engine.block import Block
 from openfactcheck.engine.context import ExecutionContext
@@ -7,7 +9,7 @@ from openfactcheck.engine.handler import handler
 
 
 @handler("text")
-def text(block: Block, ctx: ExecutionContext) -> str:
+def text(block: Block, _ctx: ExecutionContext) -> str:
     """Return the string literal from the TEXT field."""
     return block.get_field("TEXT", default="")
 
@@ -67,8 +69,6 @@ def text_char_at(block: Block, ctx: ExecutionContext) -> str:
     if where == "LAST":
         return val[-1]
     if where == "RANDOM":
-        import random
-
         return random.choice(val)
     at = resolve.integer(block, ctx, "AT", default=1)
     idx = (at - 1) if where == "FROM_START" else (len(val) - at)

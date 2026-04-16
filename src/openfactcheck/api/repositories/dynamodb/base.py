@@ -1,11 +1,10 @@
-# pyright: reportMissingTypeStubs=false, reportUnknownMemberType=false, reportUnknownVariableType=false
 """Generic DynamoDB repository base — models own their keys, base handles CRUD."""
 
 import asyncio
-from typing import Any
 
 from openfactcheck.api.repositories.dynamodb.client import get_table
 from openfactcheck.api.repositories.dynamodb.helpers import build_update_expression
+from openfactcheck.api.repositories.dynamodb.types import DynamoItem
 
 
 class BaseDynamoRepository:
@@ -17,34 +16,38 @@ class BaseDynamoRepository:
     def __init__(self, table_name: str, region_name: str = "us-east-1") -> None:
         self._table = get_table(table_name, region_name)
 
-    # -------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     # Core operations
-    # -------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
 
-    async def _put(self, item: dict[str, Any]) -> None:
+    async def _put(self, item: DynamoItem) -> None:
         """Write an item to the table."""
-        await asyncio.to_thread(self._table.put_item, Item=item)
 
-    async def _get(self, pk: str, sk: str) -> dict[str, Any] | None:
+        def _do() -> None:
+            self._table.put_item(Item=item)
+
+        await asyncio.to_thread(_do)
+
+    async def _get(self, pk: str, sk: str) -> DynamoItem | None:
         """Get a single item by PK + SK."""
 
-        def _do() -> dict[str, Any] | None:
+        def _do() -> DynamoItem | None:
             response = self._table.get_item(Key={"PK": pk, "SK": sk})
             return response.get("Item")
 
         return await asyncio.to_thread(_do)
 
-    async def _update(self, pk: str, sk: str, values: dict[str, Any]) -> dict[str, Any] | None:
+    async def _update(self, pk: str, sk: str, values: DynamoItem) -> DynamoItem | None:
         """Update an item. Returns updated attributes or None if not found."""
-        update_expr, attr_names, attr_values = build_update_expression(values)
+        update = build_update_expression(values)
 
-        def _do() -> dict[str, Any] | None:
+        def _do() -> DynamoItem | None:
             try:
-                response: dict[str, Any] = self._table.update_item(
+                response = self._table.update_item(
                     Key={"PK": pk, "SK": sk},
-                    UpdateExpression=update_expr,
-                    ExpressionAttributeNames=attr_names,
-                    ExpressionAttributeValues=attr_values,
+                    UpdateExpression=update.expression,
+                    ExpressionAttributeNames=update.attr_names,
+                    ExpressionAttributeValues=update.attr_values,
                     ConditionExpression="attribute_exists(PK)",
                     ReturnValues="ALL_NEW",
                 )
@@ -69,20 +72,20 @@ class BaseDynamoRepository:
 
         return await asyncio.to_thread(_do)
 
-    # -------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     # Query operations
-    # -------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
 
     async def _query_by_pk(
         self,
         pk: str,
         sk_prefix: str | None = None,
         projection: str | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> list[DynamoItem]:
         """Query base table by PK, optionally filtering SK by prefix."""
 
-        def _do() -> list[dict[str, Any]]:
-            kwargs: dict[str, Any] = {
+        def _do() -> list[DynamoItem]:
+            kwargs: DynamoItem = {
                 "KeyConditionExpression": "PK = :pk",
                 "ExpressionAttributeValues": {":pk": pk},
             }
@@ -97,10 +100,10 @@ class BaseDynamoRepository:
 
         return await asyncio.to_thread(_do)
 
-    async def _query_gsi(self, index_name: str, key_name: str, key_value: str) -> list[dict[str, Any]]:
+    async def _query_gsi(self, index_name: str, key_name: str, key_value: str) -> list[DynamoItem]:
         """Query a GSI by its partition key."""
 
-        def _do() -> list[dict[str, Any]]:
+        def _do() -> list[DynamoItem]:
             response = self._table.query(
                 IndexName=index_name,
                 KeyConditionExpression=f"{key_name} = :val",
@@ -110,7 +113,7 @@ class BaseDynamoRepository:
 
         return await asyncio.to_thread(_do)
 
-    async def _batch_delete(self, items: list[dict[str, Any]]) -> None:
+    async def _batch_delete(self, items: list[DynamoItem]) -> None:
         """Batch delete items that have PK and SK attributes."""
 
         def _do() -> None:

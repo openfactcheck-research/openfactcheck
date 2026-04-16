@@ -67,6 +67,7 @@ tasks:
     desc: Remove build artifacts and caches
     cmds:
       - rm -rf dist build .pytest_cache .ruff_cache src/*.egg-info
+      - find . -type d -name __pycache__ -exec rm -rf {} +
 
   default:
     desc: Show available dev tasks

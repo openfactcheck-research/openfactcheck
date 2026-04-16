@@ -1,5 +1,7 @@
 """List block handlers — ``lists_create_with``, ``lists_sort``, etc."""
 
+import random
+
 from openfactcheck.engine import resolve
 from openfactcheck.engine.block import Block
 from openfactcheck.engine.context import ExecutionContext
@@ -127,14 +129,18 @@ def _list_index(block: Block, ctx: ExecutionContext, items: list[object]) -> int
     if where == "LAST":
         return len(items) - 1
     if where == "RANDOM":
-        import random
-
         return random.randrange(len(items)) if items else 0
     at = resolve.integer(block, ctx, "AT", default=1)
     return (at - 1) if where == "FROM_START" else (len(items) - at)
 
 
-def _list_index_range(block: Block, ctx: ExecutionContext, items: list[object], where_field: str, at_input: str) -> int:
+def _list_index_range(
+    block: Block,
+    ctx: ExecutionContext,
+    items: list[object],
+    where_field: str,
+    at_input: str,
+) -> int:
     """Resolve a sublist index."""
     where = block.get_field(where_field, default="FROM_START")
     if where == "FIRST":
@@ -147,7 +153,7 @@ def _list_index_range(block: Block, ctx: ExecutionContext, items: list[object], 
 
 def _sort_numeric(x: object) -> float:
     try:
-        return float(x)  # type: ignore[arg-type]
+        return float(x)  # pyright: ignore[reportArgumentType] - runtime try/except handles non-numeric values.
     except (TypeError, ValueError):
         return 0.0
 

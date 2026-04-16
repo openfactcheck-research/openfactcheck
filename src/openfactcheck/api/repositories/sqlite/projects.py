@@ -7,19 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from openfactcheck.api.models import Project, ProjectCreate, ProjectUpdate
 from openfactcheck.api.repositories.constants import MAX_PROJECTS_PER_USER, generate_id
-from openfactcheck.api.repositories.sqlite.helpers import ensure_utc
+from openfactcheck.api.repositories.sqlite.helpers import row_to_dict
 from openfactcheck.api.repositories.sqlite.tables import ProjectRow
-
-
-def _row_to_model(row: ProjectRow) -> Project:
-    return Project(
-        id=row.id,
-        user_id=row.user_id,
-        name=row.name,
-        description=row.description,
-        created_at=ensure_utc(row.created_at),
-        updated_at=ensure_utc(row.updated_at),
-    )
 
 
 class SqliteProjectRepository:
@@ -35,22 +24,22 @@ class SqliteProjectRepository:
                 .where(ProjectRow.user_id == user_id)
                 .order_by(ProjectRow.created_at)
                 .limit(limit)
-                .offset(offset)
+                .offset(offset),
             )
-            return [_row_to_model(row) for row in result.scalars()]
+            return [Project.model_validate(row_to_dict(row)) for row in result.scalars()]
 
     async def get(self, user_id: str, project_id: str) -> Project | None:
         async with self._session_factory() as session:
             result = await session.execute(
-                select(ProjectRow).where(ProjectRow.id == project_id, ProjectRow.user_id == user_id)
+                select(ProjectRow).where(ProjectRow.id == project_id, ProjectRow.user_id == user_id),
             )
             row = result.scalar_one_or_none()
-            return _row_to_model(row) if row else None
+            return Project.model_validate(row_to_dict(row)) if row else None
 
     async def create(self, user_id: str, data: ProjectCreate) -> Project | None:
         async with self._session_factory() as session:
             count_result = await session.execute(
-                select(func.count()).select_from(ProjectRow).where(ProjectRow.user_id == user_id)
+                select(func.count()).select_from(ProjectRow).where(ProjectRow.user_id == user_id),
             )
             if count_result.scalar_one() >= MAX_PROJECTS_PER_USER:
                 return None
@@ -66,7 +55,7 @@ class SqliteProjectRepository:
             )
             session.add(row)
             await session.commit()
-            return _row_to_model(row)
+            return Project.model_validate(row_to_dict(row))
 
     async def update(self, user_id: str, project_id: str, data: ProjectUpdate) -> Project | None:
         values = data.model_dump(exclude_none=True)
@@ -77,10 +66,10 @@ class SqliteProjectRepository:
 
         async with self._session_factory() as session:
             cursor = await session.execute(
-                update(ProjectRow).where(ProjectRow.id == project_id, ProjectRow.user_id == user_id).values(**values)
+                update(ProjectRow).where(ProjectRow.id == project_id, ProjectRow.user_id == user_id).values(**values),
             )
             await session.commit()
-            if cursor.rowcount == 0:  # type: ignore[union-attr]
+            if cursor.rowcount == 0:
                 return None
 
         return await self.get(user_id, project_id)
@@ -88,7 +77,7 @@ class SqliteProjectRepository:
     async def delete(self, user_id: str, project_id: str) -> bool:
         async with self._session_factory() as session:
             cursor = await session.execute(
-                delete(ProjectRow).where(ProjectRow.id == project_id, ProjectRow.user_id == user_id)
+                delete(ProjectRow).where(ProjectRow.id == project_id, ProjectRow.user_id == user_id),
             )
             await session.commit()
-            return bool(cursor.rowcount)  # type: ignore[union-attr]
+            return bool(cursor.rowcount)

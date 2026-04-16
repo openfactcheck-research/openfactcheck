@@ -9,7 +9,8 @@ import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat
 
-from openfactcheck.api.auth.cognito import DEV_USER, CognitoVerifier, DevVerifier
+from openfactcheck.api.auth.cognito import CognitoVerifier
+from openfactcheck.api.auth.dev import DEV_USER, DevVerifier
 from openfactcheck.api.errors import AuthError
 
 REGION = "us-east-1"

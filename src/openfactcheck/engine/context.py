@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from openfactcheck.engine.errors import UnknownBlockError
-from openfactcheck.engine.handler import HANDLERS  # noqa: TC001 — runtime import, not type-only
+from openfactcheck.engine.handler import HANDLERS
 
 MAX_OUTPUT_BYTES = 65_536
 
@@ -35,8 +35,8 @@ class ExecutionContext:
         variables: Shared variable storage for ``variables_set``/``variables_get`` blocks.
     """
 
-    output_lines: list[str] = field(default_factory=lambda: [])
-    variables: dict[str, Any] = field(default_factory=lambda: {})
+    output_lines: list[str] = field(default_factory=list)
+    variables: dict[str, Any] = field(default_factory=dict)
     _output_bytes: int = 0
     _truncated: bool = False
 
@@ -57,7 +57,7 @@ class ExecutionContext:
         self._output_bytes += line_bytes
         self.output_lines.append(line)
 
-    def execute_block(self, block: Block) -> Any:  # noqa: ANN401
+    def execute_block(self, block: Block) -> object:
         """Dispatch a block to its registered handler and return the result.
 
         Raises:

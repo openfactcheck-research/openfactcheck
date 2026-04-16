@@ -9,11 +9,11 @@ MAX_ITERATIONS = 10_000
 """Safety limit to prevent infinite loops."""
 
 
-class BreakLoop(Exception):
+class BreakLoop(Exception):  # noqa: N818 - control flow signal, not an error.
     """Raised by controls_flow_statements to break out of a loop."""
 
 
-class ContinueLoop(Exception):
+class ContinueLoop(Exception):  # noqa: N818 - control flow signal, not an error.
     """Raised by controls_flow_statements to skip to the next iteration."""
 
 
@@ -87,7 +87,7 @@ def controls_for_each(block: Block, ctx: ExecutionContext) -> None:
 
 
 @handler("controls_flow_statements")
-def controls_flow_statements(block: Block, ctx: ExecutionContext) -> None:
+def controls_flow_statements(block: Block, _ctx: ExecutionContext) -> None:
     """Break or continue. FLOW field: BREAK or CONTINUE."""
     if block.get_field("FLOW", default="BREAK") == "BREAK":
         raise BreakLoop

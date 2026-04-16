@@ -10,7 +10,7 @@ from openfactcheck.engine.handler import handler
 
 
 @handler("math_number")
-def math_number(block: Block, ctx: ExecutionContext) -> float:
+def math_number(block: Block, _ctx: ExecutionContext) -> float:
     """Return the numeric value from the NUM field."""
     return float(block.get_field("NUM", default="0"))
 
@@ -87,7 +87,7 @@ MATH_CONSTANTS: dict[str, float] = {
 
 
 @handler("math_constant")
-def math_constant(block: Block, ctx: ExecutionContext) -> float:
+def math_constant(block: Block, _ctx: ExecutionContext) -> float:
     """Return a named math constant."""
     return MATH_CONSTANTS.get(block.get_field("CONSTANT", default="PI"), 0.0)
 
@@ -140,7 +140,10 @@ def math_modulo(block: Block, ctx: ExecutionContext) -> float:
 @handler("math_constrain")
 def math_constrain(block: Block, ctx: ExecutionContext) -> float:
     """Clamp VALUE between LOW and HIGH."""
-    return max(resolve.num(block, ctx, "LOW"), min(resolve.num(block, ctx, "VALUE"), resolve.num(block, ctx, "HIGH")))
+    return max(
+        resolve.num(block, ctx, "LOW"),
+        min(resolve.num(block, ctx, "VALUE"), resolve.num(block, ctx, "HIGH")),
+    )
 
 
 @handler("math_random_int")
@@ -152,7 +155,7 @@ def math_random_int(block: Block, ctx: ExecutionContext) -> int:
 
 
 @handler("math_random_float")
-def math_random_float(block: Block, ctx: ExecutionContext) -> float:
+def math_random_float(_block: Block, _ctx: ExecutionContext) -> float:
     """Random float in [0, 1)."""
     return random.random()
 
@@ -162,7 +165,7 @@ def math_on_list(block: Block, ctx: ExecutionContext) -> float:
     """Aggregate operation on a list of numbers."""
     op = block.get_field("OP", default="SUM")
     raw = resolve.items(block, ctx, "LIST")
-    nums = [float(x) for x in raw if x is not None]  # type: ignore[arg-type]
+    nums = [float(x) for x in raw if x is not None]
     if not nums:
         return 0.0
     if op == "SUM":
@@ -190,9 +193,9 @@ def math_on_list(block: Block, ctx: ExecutionContext) -> float:
 
 
 def _is_prime(n: int) -> bool:
-    if n < 2:
+    if n < 2:  # noqa: PLR2004 - mathematical constant in primality test.
         return False
-    if n < 4:
+    if n < 4:  # noqa: PLR2004 - mathematical constant in primality test.
         return True
     if n % 2 == 0 or n % 3 == 0:
         return False

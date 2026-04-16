@@ -1,18 +1,10 @@
-"""Cognito JWT verification and dev bypass."""
-
-from typing import Protocol
+"""Cognito JWT verification — validates ID tokens against JWKS."""
 
 import jwt
 from jwt import PyJWKClient
 
 from openfactcheck.api.errors import AuthError
 from openfactcheck.api.models import AuthUser
-
-
-class TokenVerifier(Protocol):
-    """Interface for verifying an Authorization bearer token."""
-
-    def verify(self, token: str) -> AuthUser: ...
 
 
 class CognitoVerifier:
@@ -62,18 +54,3 @@ class CognitoVerifier:
             name = ""
 
         return AuthUser(sub=sub, email=email, name=name)
-
-
-DEV_USER = AuthUser(
-    sub="dev-user-00000000",
-    email="dev@localhost",
-    name="Dev User",
-)
-
-
-class DevVerifier:
-    """Bypass verifier for local development. Always returns a fixed dev user."""
-
-    def verify(self, token: str) -> AuthUser:  # noqa: ARG002
-        """Return the hardcoded dev user regardless of the token value."""
-        return DEV_USER

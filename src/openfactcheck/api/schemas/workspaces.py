@@ -1,11 +1,18 @@
 """Workspace request/response schemas."""
 
+from __future__ import annotations
+
 from datetime import datetime
 from typing import Annotated
 
 from pydantic import BaseModel, Field
 
 from openfactcheck.api.models import Workspace, WorkspaceSettings
+from openfactcheck.api.models.types import JSONObject
+
+# ---------------------------------------------------------------------------
+# Requests
+# ---------------------------------------------------------------------------
 
 
 class CreateWorkspaceRequest(BaseModel):
@@ -22,13 +29,18 @@ class UpdateWorkspaceRequest(BaseModel):
     description: str | None = Field(default=None, max_length=10000)
     locked: bool | None = None
     settings: WorkspaceSettings | None = None
-    content: dict[str, object] | None = None
+    content: JSONObject | None = None
 
 
 class ReorderWorkspacesRequest(BaseModel):
     """Body for PUT /api/v1/projects/{pid}/workspaces/reorder."""
 
     ordered_ids: list[Annotated[str, Field(max_length=20)]] = Field(min_length=1, max_length=5)
+
+
+# ---------------------------------------------------------------------------
+# Responses
+# ---------------------------------------------------------------------------
 
 
 class WorkspaceResponse(BaseModel):
@@ -41,12 +53,12 @@ class WorkspaceResponse(BaseModel):
     locked: bool
     sort_order: int
     settings: WorkspaceSettings
-    content: dict[str, object] | None = None
+    content: JSONObject | None = None
     created_at: datetime
     updated_at: datetime
 
     @staticmethod
-    def from_model(ws: Workspace) -> "WorkspaceResponse":
+    def from_model(ws: Workspace) -> WorkspaceResponse:
         """Convert a domain Workspace to a response schema."""
         return WorkspaceResponse(
             id=ws.id,

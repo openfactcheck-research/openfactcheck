@@ -1,24 +1,16 @@
-# pyright: reportMissingTypeStubs=false, reportUnknownMemberType=false, reportUnknownVariableType=false
 """DynamoDB implementation of the project repository."""
 
 from datetime import UTC, datetime
-from typing import Any
 
 from openfactcheck.api.models import Project, ProjectCreate, ProjectUpdate
 from openfactcheck.api.repositories.constants import MAX_PROJECTS_PER_USER, generate_id
 from openfactcheck.api.repositories.dynamodb.base import BaseDynamoRepository
-from openfactcheck.api.repositories.dynamodb.keys import project_pk, project_sk, workspace_pk
-
-
-def _item_to_model(item: dict[str, Any]) -> Project:
-    return Project(
-        id=item["id"],
-        user_id=item["userId"],
-        name=item["name"],
-        description=item.get("description", ""),
-        created_at=datetime.fromisoformat(item["createdAt"]),
-        updated_at=datetime.fromisoformat(item["updatedAt"]),
-    )
+from openfactcheck.api.repositories.dynamodb.keys import (
+    project_pk,
+    project_sk,
+    workspace_pk,
+)
+from openfactcheck.api.repositories.dynamodb.types import DynamoItem
 
 
 class DynamoProjectRepository(BaseDynamoRepository):
@@ -26,12 +18,12 @@ class DynamoProjectRepository(BaseDynamoRepository):
 
     async def list_by_user(self, user_id: str, limit: int = 50, offset: int = 0) -> list[Project]:
         items = await self._query_by_pk(project_pk(user_id), sk_prefix="PROJECT#")
-        projects = sorted((_item_to_model(item) for item in items), key=lambda p: p.created_at)
+        projects = sorted((Project.model_validate(item) for item in items), key=lambda p: p.created_at)
         return projects[offset : offset + limit]
 
     async def get(self, user_id: str, project_id: str) -> Project | None:
         item = await self._get(project_pk(user_id), project_sk(project_id))
-        return _item_to_model(item) if item else None
+        return Project.model_validate(item) if item else None
 
     async def create(self, user_id: str, data: ProjectCreate) -> Project | None:
         items = await self._query_by_pk(project_pk(user_id), sk_prefix="PROJECT#")
@@ -40,7 +32,7 @@ class DynamoProjectRepository(BaseDynamoRepository):
 
         now = datetime.now(UTC)
         pid = generate_id()
-        item: dict[str, Any] = {
+        item: DynamoItem = {
             "PK": project_pk(user_id),
             "SK": project_sk(pid),
             "id": pid,
@@ -51,7 +43,7 @@ class DynamoProjectRepository(BaseDynamoRepository):
             "updatedAt": now.isoformat(),
         }
         await self._put(item)
-        return _item_to_model(item)
+        return Project.model_validate(item)
 
     async def update(self, user_id: str, project_id: str, data: ProjectUpdate) -> Project | None:
         values = data.model_dump(exclude_none=True)
@@ -59,7 +51,7 @@ class DynamoProjectRepository(BaseDynamoRepository):
             return await self.get(user_id, project_id)
 
         attrs = await self._update(project_pk(user_id), project_sk(project_id), values)
-        return _item_to_model(attrs) if attrs else None
+        return Project.model_validate(attrs) if attrs else None
 
     async def delete(self, user_id: str, project_id: str) -> bool:
         deleted = await self._delete(project_pk(user_id), project_sk(project_id))

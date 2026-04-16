@@ -6,11 +6,11 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
 from openfactcheck.api.app import create_app
-from openfactcheck.api.auth.cognito import DEV_USER
+from openfactcheck.api.auth.dev import DEV_USER
 from openfactcheck.api.config import APIConfig
 from openfactcheck.api.dependencies import get_current_user, get_project_repo, get_workspace_repo
 from openfactcheck.api.models import AuthUser
-from openfactcheck.api.repositories.sqlite.engine import create_engine_and_tables, session_factory
+from openfactcheck.api.repositories.sqlite.engine import create_engine, create_session_factory, create_tables
 from openfactcheck.api.repositories.sqlite.projects import SqliteProjectRepository
 from openfactcheck.api.repositories.sqlite.workspaces import SqliteWorkspaceRepository
 
@@ -20,8 +20,9 @@ TEST_USER = DEV_USER
 @pytest_asyncio.fixture(loop_scope="function")
 async def client() -> AsyncIterator[AsyncClient]:
     """Yield an httpx AsyncClient wired to a test app with in-memory SQLite and mock auth."""
-    engine = await create_engine_and_tables(":memory:")
-    sf = session_factory(engine)
+    engine = create_engine(":memory:")
+    await create_tables(engine)
+    sf = create_session_factory(engine)
     project_repo = SqliteProjectRepository(sf)
     workspace_repo = SqliteWorkspaceRepository(sf)
 

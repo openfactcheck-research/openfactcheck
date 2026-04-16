@@ -1,13 +1,8 @@
 """Shared helpers for SQLite repository implementations."""
 
-from datetime import UTC, datetime
+from openfactcheck.api.repositories.sqlite.engine import Base
 
 
-def ensure_utc(dt: datetime) -> datetime:
-    """Attach UTC tzinfo to a naive datetime from SQLite."""
-    return dt.replace(tzinfo=UTC)
-
-
-def ensure_utc_optional(dt: datetime | None) -> datetime | None:
-    """Attach UTC tzinfo to an optional naive datetime from SQLite."""
-    return dt.replace(tzinfo=UTC) if dt else None
+def row_to_dict(row: Base) -> dict[str, object]:
+    """Extract mapped column values from an ORM row, excluding ORM internals."""
+    return {c.key: getattr(row, c.key) for c in row.__table__.columns}

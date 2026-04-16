@@ -1,4 +1,3 @@
-# pyright: reportUnknownVariableType=false, reportUnknownMemberType=false, reportUnknownArgumentType=false
 """Blockly workspace JSON parser — extracts top-level blocks from workspace state."""
 
 from typing import Any

@@ -8,7 +8,11 @@ from openfactcheck.api.dependencies import get_current_user, get_project_repo
 from openfactcheck.api.errors import NotFoundError, ProjectLimitError
 from openfactcheck.api.models import AuthUser, ProjectCreate, ProjectUpdate
 from openfactcheck.api.repositories.protocols import ProjectRepository
-from openfactcheck.api.schemas.projects import CreateProjectRequest, ProjectResponse, UpdateProjectRequest
+from openfactcheck.api.schemas.projects import (
+    CreateProjectRequest,
+    ProjectResponse,
+    UpdateProjectRequest,
+)
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -36,7 +40,7 @@ async def create_project(
     """Create a new project."""
     project = await repo.create(user.sub, ProjectCreate(name=body.name, description=body.description))
     if project is None:
-        raise ProjectLimitError()
+        raise ProjectLimitError
     return ProjectResponse.from_model(project)
 
 
@@ -61,7 +65,11 @@ async def update_project(
     repo: Annotated[ProjectRepository, Depends(get_project_repo)],
 ) -> ProjectResponse:
     """Update a project."""
-    project = await repo.update(user.sub, project_id, ProjectUpdate(name=body.name, description=body.description))
+    project = await repo.update(
+        user.sub,
+        project_id,
+        ProjectUpdate(name=body.name, description=body.description),
+    )
     if project is None:
         raise NotFoundError(f"Project {project_id} not found")
     return ProjectResponse.from_model(project)

@@ -1,7 +1,5 @@
 """Variable block handlers — ``variables_get``, ``variables_set``."""
 
-from typing import Any
-
 from openfactcheck.engine import resolve
 from openfactcheck.engine.block import Block
 from openfactcheck.engine.context import ExecutionContext
@@ -9,7 +7,7 @@ from openfactcheck.engine.handler import handler
 
 
 @handler("variables_get")
-def variables_get(block: Block, ctx: ExecutionContext) -> Any:  # noqa: ANN401
+def variables_get(block: Block, ctx: ExecutionContext) -> object:
     """Return the value of the named variable."""
     return ctx.variables.get(block.get_field("VAR", default="item"), "")
 

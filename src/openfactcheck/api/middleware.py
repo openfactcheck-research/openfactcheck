@@ -38,8 +38,8 @@ async def generic_error_handler(_request: Request, exc: Exception) -> JSONRespon
 
 def register_middleware(app: FastAPI, cors_origins: list[str]) -> None:
     """Register all middleware and exception handlers on the app."""
-    app.add_exception_handler(AppError, app_error_handler)  # type: ignore[arg-type]
-    app.add_exception_handler(Exception, generic_error_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(AppError, app_error_handler)  # pyright: ignore[reportArgumentType] - Starlette handler type is broader than actual dispatch.
+    app.add_exception_handler(Exception, generic_error_handler)  # pyright: ignore[reportArgumentType] - Starlette handler type is broader than actual dispatch.
 
     app.add_middleware(
         CORSMiddleware,
