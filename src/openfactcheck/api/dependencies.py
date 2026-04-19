@@ -1,4 +1,4 @@
-"""FastAPI dependency injection — settings, auth, repositories."""
+"""FastAPI dependency injection: settings, auth, repositories."""
 
 from functools import lru_cache
 from typing import Annotated

@@ -1,4 +1,4 @@
-"""SQLAlchemy async engine, session factory, and declarative base."""
+"""SQLite async engine, session factory, and declarative base."""
 
 import sqlite3
 from pathlib import Path
@@ -14,7 +14,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
-    """Declarative base for all ORM table models."""
+    """Declarative base for ORM table models."""
 
 
 def _resolve_url(sqlite_path: str) -> str:
@@ -27,11 +27,13 @@ def _resolve_url(sqlite_path: str) -> str:
 
 
 def create_engine(sqlite_path: str) -> AsyncEngine:
-    """Create an async SQLite engine with foreign key enforcement.
+    """Create an async SQLite engine with foreign key enforcement enabled.
 
-    Pass ``":memory:"`` for an in-memory database. Note: in-memory databases
-    are not shared across connections and all data is lost when the engine
-    is disposed. Use only for tests.
+    Pass ``":memory:"`` for an in-memory database.
+
+    Warning:
+        In-memory databases are not shared across connections and all data is
+        lost when the engine is disposed. Use only for tests.
     """
     engine = create_async_engine(_resolve_url(sqlite_path))
 
@@ -45,11 +47,11 @@ def create_engine(sqlite_path: str) -> AsyncEngine:
 
 
 async def create_tables(engine: AsyncEngine) -> None:
-    """Create all tables defined on the declarative base."""
+    """Create all tables registered on the declarative ``Base``."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
 
 def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-    """Return a session factory bound to *engine*."""
+    """Return a session factory bound to the given engine."""
     return async_sessionmaker(engine, expire_on_commit=False)

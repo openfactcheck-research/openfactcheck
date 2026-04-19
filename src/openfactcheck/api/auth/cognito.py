@@ -1,4 +1,4 @@
-"""Cognito JWT verification — validates ID tokens against JWKS."""
+"""Cognito JWT verification against a user pool's JWKS."""
 
 import jwt
 from jwt import PyJWKClient
@@ -8,10 +8,11 @@ from openfactcheck.api.models import AuthUser
 
 
 class CognitoVerifier:
-    """Verify Cognito ID tokens using JWKS.
+    """Verify Cognito ID tokens against a user pool's JWKS.
 
-    Fetches the public keys from the Cognito user pool and validates:
-    RS256 signature, expiration, issuer, audience, and token_use=id.
+    Validates the RS256 signature, expiration, issuer, audience, and the
+    ``token_use=id`` claim. Returns the authenticated user or raises
+    [`AuthError`][AuthError] on any failure.
     """
 
     def __init__(
@@ -22,12 +23,34 @@ class CognitoVerifier:
         *,
         jwk_client: PyJWKClient | None = None,
     ) -> None:
+        """Build a verifier bound to a specific Cognito user pool.
+
+        Args:
+            region: AWS region of the user pool, e.g. ``"us-east-1"``.
+            user_pool_id: Cognito user pool identifier.
+            client_id: App client identifier that tokens must be issued to.
+            jwk_client: JWK client to use. Typically omitted so the verifier
+                creates its own from the pool's JWKS endpoint; inject a
+                custom one in tests.
+        """
         self._issuer = f"https://cognito-idp.{region}.amazonaws.com/{user_pool_id}"
         self._client_id = client_id
         self._jwk_client = jwk_client or PyJWKClient(f"{self._issuer}/.well-known/jwks.json")
 
     def verify(self, token: str) -> AuthUser:
-        """Decode and validate a Cognito ID token, returning the authenticated user."""
+        """Decode and validate a Cognito ID token.
+
+        Args:
+            token: The raw JWT string as received from the client.
+
+        Returns:
+            The authenticated user, populated from the token's ``sub``,
+            ``email``, and ``name`` claims.
+
+        Raises:
+            AuthError: If the token is invalid, expired, not an ID token,
+                or missing required claims.
+        """
         try:
             signing_key = self._jwk_client.get_signing_key_from_jwt(token)
             payload: dict[str, object] = jwt.decode(

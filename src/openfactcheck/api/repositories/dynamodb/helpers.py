@@ -10,8 +10,13 @@ class UpdateExpression(NamedTuple):
     """DynamoDB SET update expression with attribute name/value mappings."""
 
     expression: str
+    """The SET clause, e.g. ``"SET #name = :name, #age = :age"``."""
+
     attr_names: AttrNames
+    """Mapping of ``#alias`` to field name for ``ExpressionAttributeNames``."""
+
     attr_values: AttrValues
+    """Mapping of ``:placeholder`` to value for ``ExpressionAttributeValues``."""
 
 
 def build_update_expression(
@@ -20,7 +25,11 @@ def build_update_expression(
 ) -> UpdateExpression:
     """Build a DynamoDB SET update expression from a values dict.
 
-    Automatically appends an updatedAt timestamp.
+    Automatically sets a timestamp field to the current UTC time.
+
+    Args:
+        values: Field-to-value mapping to be SET on the item.
+        timestamp_field: Name of the field that receives the auto-generated timestamp.
     """
     update_parts: list[str] = []
     attr_names: AttrNames = {}

@@ -1,4 +1,4 @@
-"""Dev bypass verifier — always returns a fixed user, no token validation."""
+"""Dev bypass verifier that returns the same user on every call, without validating the token."""
 
 from openfactcheck.api.models import AuthUser
 
@@ -7,11 +7,25 @@ DEV_USER = AuthUser(
     email="dev@localhost",
     name="Dev User",
 )
+"""User returned by [`DevVerifier`][DevVerifier] on every call."""
 
 
 class DevVerifier:
-    """Bypass verifier for local development. Always returns a fixed dev user."""
+    """Bypass verifier for local development.
 
-    def verify(self, token: str) -> AuthUser:  # noqa: ARG002 - required by TokenVerifier protocol.
-        """Return the hardcoded dev user regardless of the token value."""
+    Returns [`DEV_USER`][DEV_USER] on every call, without validating the token.
+
+    Warning:
+        Never use in production.
+    """
+
+    def verify(self, token: str) -> AuthUser:
+        """Return the dev user regardless of the token value.
+
+        Args:
+            token: Ignored; present only to match the verifier protocol.
+
+        Returns:
+            The [`DEV_USER`][DEV_USER] constant on every call.
+        """
         return DEV_USER

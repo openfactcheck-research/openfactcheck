@@ -1,8 +1,8 @@
 """DynamoDB single-table key composition with PK + SK.
 
 Table design:
-    PK (hash key)  — partition key, groups related items
-    SK (sort key)  — distinguishes entity types within a partition
+    PK (hash key): partition key, groups related items.
+    SK (sort key): distinguishes entity types within a partition.
 
 Project keys:
     PK: USER#<userId>
@@ -23,7 +23,7 @@ Run keys:
 
 
 def project_pk(user_id: str) -> str:
-    """Partition key for project items — groups all projects for a user."""
+    """Partition key grouping all projects for a user."""
     return f"USER#{user_id}"
 
 
@@ -38,7 +38,7 @@ def project_sk(project_id: str) -> str:
 
 
 def workspace_pk(user_id: str, project_id: str) -> str:
-    """Partition key for workspace items — groups all children of a project."""
+    """Partition key grouping all workspaces (and their runs) within a project."""
     return f"USER#{user_id}#PROJECT#{project_id}"
 
 

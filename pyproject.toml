@@ -18,13 +18,17 @@ classifiers = [
 dependencies = [
     "pydantic>=2.11",
     "pydantic-settings[yaml]>=2.9",
-    "langgraph>=1.1",
-    "langchain-core>=1.2",
-    "langchain-litellm>=0.6",
-    "litellm>=1.83",
 ]
 
 [project.optional-dependencies]
+langchain = [
+    "langchain-core>=1.2",
+    "langchain-openai>=1.0",
+    "langchain-anthropic>=1.0",
+]
+litellm = ["litellm>=1.83"]
+openai = ["openai>=2.0"]
+anthropic = ["anthropic>=0.69"]
 api = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.34",
@@ -92,6 +96,35 @@ reportUnknownMemberType = false
 reportUnknownArgumentType = false
 reportArgumentType = false
 
+[[tool.pyright.executionEnvironments]]
+root = "src/openfactcheck/chat/backends/langchain"
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src/openfactcheck/chat/backends/litellm"
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportMissingTypeStubs = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src/openfactcheck/chat/backends/openai"
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportAttributeAccessIssue = false
+reportArgumentType = false
+reportCallIssue = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src/openfactcheck/chat/backends/anthropic"
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportAttributeAccessIssue = false
+reportArgumentType = false
+reportCallIssue = false
+
 ###############################################################################
 # Linting
 ###############################################################################
@@ -101,7 +134,12 @@ indent-width = 4
 target-version = "py312"
 
 [tool.ruff.lint]
+preview = true                # required for DOC rules (pydoclint).
+explicit-preview-rules = true # only enable preview rules listed explicitly — don't pull in previews from other groups.
 select = [
+    # --- Docs (Google convention — see [tool.ruff.lint.pydocstyle] below) ---
+    "D",     ## pydocstyle
+    "DOC",   ## pydoclint
     # --- Correctness ---
     "E",     ## pycodestyle errors
     "W",     ## pycodestyle warnings
@@ -156,9 +194,6 @@ select = [
     "PT",    ## flake8-pytest-style
 ]
 ignore = [
-    # --- Docs (temporarily disabled) ---
-    "D",     ## pydocstyle
-    "DOC",   ## pydoclint
     # --- Not relevant ---
     "AIR",   ## Airflow
     "CPY",   ## flake8-copyright
@@ -172,6 +207,7 @@ ignore = [
 "S104",  ## possible-binding-to-all-interfaces (server config needs 0.0.0.0)
     "TRY003", ## raise-vanilla-args (same rationale as EM)
     "EM",    ## flake8-errmsg
+    "ARG002", ## unused-method-argument (fires on protocol impls with unused params)
 "COM812", ## missing-trailing-comma (formatter handles this)
     "Q",     ## flake8-quotes (formatter handles this)
     "SLOT",  ## flake8-slots (Pydantic handles this)
@@ -186,10 +222,24 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 "src/openfactcheck/api/*" = [
     "TCH",  ## Pydantic needs to evaluate types at runtime.
 ]
+"src/openfactcheck/engine/**" = [
+    "D",    ## engine docstrings deferred — not a current priority.
+    "DOC",
+]
 "src/openfactcheck/engine/handlers/*" = [
     "PLR0911",  ## dispatch-style handlers have many return statements.
     "S311",     ## Blockly handlers use random for non-crypto purposes.
 ]
+"src/openfactcheck/chat/backends/*" = [
+    "PLC0415",  ## lazy framework imports are the design of backends.
+]
+"tests/**" = [
+    "D",    ## test names already describe intent; no need for docstrings.
+    "DOC",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"  # docstring standard for OpenFactCheck — pairs with mkdocstrings for future doc generation.
 
 ###############################################################################
 # Formatting
@@ -199,7 +249,7 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
-docstring-code-format = false
+docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
 ###############################################################################
@@ -207,7 +257,7 @@ docstring-code-line-length = "dynamic"
 ###############################################################################
 [dependency-groups]
 dev = [
-    "openfactcheck[api,cloud]",
+    "openfactcheck[api,cloud,langchain,litellm,openai,anthropic]",
     "pyright>=1.1",
     "pre-commit>=4.5.1",
     "pytest>=9.0.2",
@@ -218,4 +268,10 @@ dev = [
     "boto3-stubs[dynamodb]>=1.35",
     "moto[dynamodb]>=5.1",
     "ruff>=0.15.8",
+]
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.7",
+    "mkdocstrings[python]>=1.0",
+    "neoteroi-mkdocs>=1.2",
 ]

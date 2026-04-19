@@ -33,6 +33,7 @@ class ExecutionContext:
     Attributes:
         output_lines: Captured print output, one string per line.
         variables: Shared variable storage for ``variables_set``/``variables_get`` blocks.
+
     """
 
     output_lines: list[str] = field(default_factory=list)
@@ -62,6 +63,7 @@ class ExecutionContext:
 
         Raises:
             UnknownBlockError: If no handler is registered for ``block.type``.
+
         """
         handler_fn = HANDLERS.get(block.type)
         if handler_fn is None:

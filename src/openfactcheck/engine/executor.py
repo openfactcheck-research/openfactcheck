@@ -28,6 +28,7 @@ class ExecutionResult:
         success: ``True`` if the pipeline completed without engine errors.
         output: Captured stdout (newline-joined print output).
         error: Error message if ``success`` is ``False``, otherwise ``None``.
+
     """
 
     success: bool

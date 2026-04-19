@@ -1,0 +1,67 @@
+/* ---------------------------------------------------------------------- */
+/* Brand colors — aligned with the playground design system               */
+/* ---------------------------------------------------------------------- */
+
+/* Light mode. ``primary: white`` (mkdocs.yml) handles the white header;
+   only the accent and playground's exact code-bg need overrides here. */
+:root > * {
+    --md-accent-fg-color: #005355;
+    --md-accent-fg-color--transparent: rgba(0, 83, 85, 0.1);
+    --md-typeset-a-color: #005355;
+    --md-code-bg-color: #f5f5f5;
+}
+
+/* Dark mode. Body + header share #171717 (playground's ``--card``), code
+   blocks sit on the elevated #262626, and accent/link use the playground's
+   dark-mode teal. */
+[data-md-color-scheme="slate"] {
+    --md-default-bg-color: #171717;
+    --md-default-fg-color: #fafafa;
+    --md-primary-fg-color: #171717;
+    --md-code-bg-color: #262626;
+    --md-accent-fg-color: #2f9e8f;
+    --md-accent-fg-color--transparent: rgba(47, 158, 143, 0.12);
+    --md-typeset-a-color: #2f9e8f;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Header logo                                                            */
+/* ---------------------------------------------------------------------- */
+
+/* Size the wordmark so it reads clearly but doesn't clip against the
+   header's inner height. */
+.md-header__button.md-logo {
+    padding: 0.2rem 0.4rem;
+}
+.md-header__button.md-logo img {
+    height: 1.6rem;
+    width: auto;
+    display: block;
+}
+
+/* Swap to the white wordmark in dark mode (free-tier workaround for
+   Material Insiders' per-palette ``logo`` option). */
+[data-md-color-scheme="slate"] .md-header__button.md-logo img {
+    content: url("../assets/logo/logo_light.svg");
+}
+
+/* Hide the redundant static ``site_name`` (logo wordmark carries it) while
+   preserving the scroll-in page title that Material slides in via
+   ``data-md-component="header-topic"``. */
+.md-header__title .md-header__topic:not([data-md-component="header-topic"]) .md-ellipsis {
+    display: none;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Content                                                                */
+/* ---------------------------------------------------------------------- */
+
+/* Center Mermaid diagrams. */
+.md-typeset .mermaid {
+    text-align: center;
+}
+
+/* Align mkdocstrings' h3 class headings with h2's lighter weight. */
+.md-typeset h3 {
+    font-weight: 300;
+}

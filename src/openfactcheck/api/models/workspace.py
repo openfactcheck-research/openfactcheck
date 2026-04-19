@@ -20,20 +20,46 @@ class WorkspaceRunStatus(StrEnum):
     """Lifecycle states for a pipeline run."""
 
     RUNNING = "running"
+    """Pipeline is currently executing."""
+
     COMPLETED = "completed"
+    """Pipeline finished successfully."""
+
     FAILED = "failed"
+    """Pipeline finished with an error."""
 
 
 class WorkspaceRun(BaseModel):
-    """Latest pipeline run state for a workspace."""
+    """Latest pipeline run state for a workspace.
 
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    Note:
+        Valid state combinations:
+
+        - ``running``: ``started_at`` is set; ``completed_at`` and ``error`` are not.
+        - ``completed``: ``completed_at`` is set; ``error`` is not.
+        - ``failed``: ``completed_at`` and ``error`` are both set.
+    """
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        use_attribute_docstrings=True,
+    )
 
     status: WorkspaceRunStatus
+    """Current lifecycle state of the run."""
+
     output: str = ""
+    """Captured text output from the pipeline execution."""
+
     error: str = ""
+    """Error message. Populated when ``status`` is ``failed``."""
+
     started_at: datetime | None = None
+    """Timestamp the run started. ``None`` before any execution."""
+
     completed_at: datetime | None = None
+    """Timestamp the run finished. ``None`` while the run is still in progress."""
 
     _normalize_datetime = field_validator("started_at", "completed_at", mode="before")(normalize_datetime_optional)
 
@@ -81,9 +107,14 @@ class WorkspaceRun(BaseModel):
 class WorkspaceSettings(BaseModel):
     """Optional per-workspace configuration."""
 
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        use_attribute_docstrings=True,
+    )
 
     verbose_mode: bool = False
+    """Emit verbose execution logs during pipeline runs."""
 
 
 # ---------------------------------------------------------------------------
@@ -94,22 +125,57 @@ class WorkspaceSettings(BaseModel):
 class Workspace(BaseModel):
     """A workspace within a project, containing a single pipeline configuration."""
 
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, extra="ignore")
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        extra="ignore",
+        use_attribute_docstrings=True,
+    )
 
     id: str
+    """Opaque unique identifier for the workspace."""
+
     user_id: str
+    """Identifier of the user who owns the workspace."""
+
     project_id: str
+    """Identifier of the project the workspace belongs to."""
+
     name: str
+    """Human-readable workspace name."""
+
     description: str = ""
+    """Freeform workspace description."""
+
     locked: bool = False
+    """When ``True``, the workspace is read-only."""
+
     sort_order: int = 0
+    """Ordering hint for display; lower values appear first."""
+
     settings: WorkspaceSettings = Field(
-        default_factory=WorkspaceSettings, validation_alias=AliasChoices("settings", "settings_json")
+        default_factory=WorkspaceSettings,
+        validation_alias=AliasChoices("settings", "settings_json"),
     )
-    content: JSONObject | None = Field(default=None, validation_alias=AliasChoices("content", "content_json"))
-    run: WorkspaceRun | None = Field(default=None, validation_alias=AliasChoices("run", "run_json"))
+    """Workspace-level configuration."""
+
+    content: JSONObject | None = Field(
+        default=None,
+        validation_alias=AliasChoices("content", "content_json"),
+    )
+    """Pipeline configuration as a JSON object. ``None`` for an empty workspace."""
+
+    run: WorkspaceRun | None = Field(
+        default=None,
+        validation_alias=AliasChoices("run", "run_json"),
+    )
+    """Latest pipeline run state, or ``None`` when the workspace has never been run."""
+
     created_at: datetime
+    """Timestamp the workspace was created."""
+
     updated_at: datetime
+    """Timestamp of the most recent modification."""
 
     _normalize_datetime = field_validator("created_at", "updated_at", mode="before")(normalize_datetime)
 
@@ -150,19 +216,39 @@ class Workspace(BaseModel):
 class WorkspaceCreate(BaseModel):
     """Fields required to create a new workspace."""
 
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        use_attribute_docstrings=True,
+    )
 
     name: str = Field(min_length=1, max_length=255)
+    """Human-readable workspace name, 1 to 255 characters."""
+
     description: str = Field(default="", max_length=10000)
+    """Freeform workspace description, up to 10000 characters."""
 
 
 class WorkspaceUpdate(BaseModel):
     """Fields that can be updated on a workspace. All optional."""
 
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        use_attribute_docstrings=True,
+    )
 
     name: str | None = Field(default=None, min_length=1, max_length=255)
+    """New workspace name, 1 to 255 characters. ``None`` leaves the existing name unchanged."""
+
     description: str | None = Field(default=None, max_length=10000)
+    """New description, up to 10000 characters. ``None`` leaves the existing description unchanged."""
+
     locked: bool | None = None
+    """New lock state. ``None`` leaves the existing value unchanged."""
+
     settings: WorkspaceSettings | None = None
+    """Replacement settings. ``None`` leaves the existing settings unchanged."""
+
     content: JSONObject | None = None
+    """Replacement pipeline configuration. ``None`` leaves the existing content unchanged."""

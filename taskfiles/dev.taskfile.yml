@@ -58,6 +58,23 @@ tasks:
     cmds:
       - uv run uvicorn openfactcheck.api.app:app --host "${OPENFACTCHECK_HOST:-0.0.0.0}" --port "${OPENFACTCHECK_PORT:-8000}" --reload
 
+  docs:openapi:
+    desc: Dump FastAPI OpenAPI spec to docs/reference/rest/openapi.json
+    cmds:
+      - uv run --group docs python -c 'import json; from openfactcheck.api.app import create_app; open("docs/reference/rest/openapi.json", "w").write(json.dumps(create_app().openapi(), indent=2))'
+
+  docs:
+    desc: Serve mkdocs site with live reload at http://127.0.0.1:8000
+    deps: [docs:openapi]
+    cmds:
+      - uv run --group docs mkdocs serve
+
+  docs:build:
+    desc: Build static docs site into ./site (strict — fails on warnings)
+    deps: [docs:openapi]
+    cmds:
+      - uv run --group docs mkdocs build --strict
+
   version:
     desc: Show current version
     cmds:

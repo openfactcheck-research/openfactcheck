@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM table definitions for projects and workspaces."""
+"""ORM table definitions for projects and workspaces."""
 
 from datetime import datetime
 

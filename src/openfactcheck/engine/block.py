@@ -33,6 +33,7 @@ class Block:
     Attributes:
         type: Block type identifier (e.g. ``'text_print'``, ``'text'``).
         id: Unique block instance ID assigned by Blockly.
+
     """
 
     __slots__ = ("_fields", "_inputs", "_next_data", "id", "type")

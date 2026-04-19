@@ -1,4 +1,4 @@
-"""Workspace CRUD + run endpoints — /api/v1/projects/{project_id}/workspaces."""
+"""Workspace CRUD and pipeline-run endpoints."""
 
 import asyncio
 import json

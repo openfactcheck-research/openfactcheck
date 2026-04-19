@@ -1,0 +1,154 @@
+site_name: OpenFactCheck
+site_description: Python framework for fact-checking with LLM pipelines.
+site_url: https://docs.openfactcheck.com/
+repo_url: https://github.com/openfactcheck-research/openfactcheck
+repo_name: openfactcheck
+edit_uri: edit/main/docs/
+
+# Rebuild the docs when Python source changes, not just markdown/config.
+watch:
+  - src
+
+theme:
+  name: material
+  logo: assets/logo/logo_dark.svg
+  favicon: assets/logo/favicon.svg
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+    - search.highlight
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  generator: false
+
+extra_css:
+  - stylesheets/extra.css
+  - stylesheets/mkdocsoad.css
+
+extra_javascript:
+  - javascripts/nav-code.js
+
+hooks:
+  - docs/hooks/inventory_version.py
+
+plugins:
+  - search
+  - neoteroi.mkdocsoad:
+      use_pymdownx: true
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            docstring_section_style: spacy  # FastAPI-style: 2-column table with TYPE/DEFAULT inside the description cell.
+            merge_init_into_class: true     # show __init__ inline with the class, not as a sub-entry.
+            show_docstring_returns: false   # hide Returns section in rendered docs (still enforced in docstrings by DOC201).
+            show_docstring_raises: false    # hide Raises section in rendered docs (still enforced in docstrings by DOC501).
+            show_root_heading: false     # .md files carry the section heading; no need to duplicate.
+            show_root_full_path: false   # when a root heading IS shown (per-page override), use short name only.
+            show_root_toc_entry: false   # don't pollute the TOC with module paths.
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_source: true
+            scoped_crossrefs: true  # shorter autorefs form: [X][X] resolves via Python scope.
+            show_signature_annotations: true
+            separate_signature: true
+            members_order: source
+            filters: ["!^_"]
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Reference:
+      - reference/index.md
+      - REST API: reference/rest/index.md
+      - Chat:
+          - reference/chat/index.md
+          - reference/chat/client.md
+          - Messages: reference/chat/messages.md
+          - Requests: reference/chat/requests.md
+          - Responses: reference/chat/responses.md
+          - Config: reference/chat/config.md
+          - Errors: reference/chat/errors.md
+          - Providers:
+              - reference/chat/providers/index.md
+              - reference/chat/providers/base.md
+              - reference/chat/providers/openai.md
+              - reference/chat/providers/anthropic.md
+          - Backends:
+              - reference/chat/backends/index.md
+              - reference/chat/backends/base.md
+              - reference/chat/backends/openai.md
+              - reference/chat/backends/anthropic.md
+              - reference/chat/backends/langchain.md
+              - reference/chat/backends/litellm.md
+      - API:
+          - reference/api/index.md
+          - Auth:
+              - reference/api/auth/index.md
+              - reference/api/auth/protocol.md
+              - reference/api/auth/cognito.md
+              - reference/api/auth/dev.md
+          - Models:
+              - reference/api/models/index.md
+              - reference/api/models/project.md
+              - reference/api/models/workspace.md
+              - reference/api/models/user.md
+          - Repositories:
+              - reference/api/repositories/index.md
+              - reference/api/repositories/protocols.md
+              - reference/api/repositories/constants.md
+              - DynamoDB:
+                  - reference/api/repositories/dynamodb/index.md
+                  - reference/api/repositories/dynamodb/base.md
+                  - reference/api/repositories/dynamodb/projects.md
+                  - reference/api/repositories/dynamodb/workspaces.md
+              - SQLite:
+                  - reference/api/repositories/sqlite/index.md
+                  - reference/api/repositories/sqlite/projects.md
+                  - reference/api/repositories/sqlite/workspaces.md
+          - Errors: reference/api/errors.md

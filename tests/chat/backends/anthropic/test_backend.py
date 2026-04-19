@@ -1,0 +1,205 @@
+"""Tests for AnthropicBackend with mocked anthropic SDK."""
+
+from types import SimpleNamespace
+
+import pytest
+
+from openfactcheck.chat.backends.anthropic import AnthropicBackend
+from openfactcheck.chat.config import AnthropicConfig, RuntimeConfig
+from openfactcheck.chat.errors import AuthenticationError
+from openfactcheck.chat.messages import SystemMessage, UserMessage
+from openfactcheck.chat.requests import ChatRequest
+from openfactcheck.chat.responses import FinishReason, StreamEnd, TextDelta
+
+
+def _build_request(*, include_system: bool = False) -> ChatRequest:
+    messages = [SystemMessage(content="You are terse.")] if include_system else []
+    messages.append(UserMessage(content="Hi"))
+    return ChatRequest(
+        messages=messages,
+        config=AnthropicConfig(model="claude-sonnet-4-6", max_output_tokens=100),
+        runtime=RuntimeConfig(),
+    )
+
+
+def _fake_response() -> SimpleNamespace:
+    return SimpleNamespace(
+        content=[SimpleNamespace(type="text", text="Hello!")],
+        usage=SimpleNamespace(input_tokens=5, output_tokens=3),
+        stop_reason="end_turn",
+    )
+
+
+def _fake_stream_events():  # noqa: ANN202
+    """Sync iterable mimicking Anthropic's RawMessageStreamEvent union."""
+    yield SimpleNamespace(
+        type="message_start",
+        message=SimpleNamespace(usage=SimpleNamespace(input_tokens=5)),
+    )
+    yield SimpleNamespace(
+        type="content_block_delta",
+        delta=SimpleNamespace(type="text_delta", text="Hello"),
+    )
+    yield SimpleNamespace(
+        type="content_block_delta",
+        delta=SimpleNamespace(type="text_delta", text=", world!"),
+    )
+    yield SimpleNamespace(
+        type="message_delta",
+        delta=SimpleNamespace(stop_reason="end_turn"),
+        usage=SimpleNamespace(output_tokens=3),
+    )
+    yield SimpleNamespace(type="message_stop")
+
+
+async def _fake_astream_events():  # noqa: ANN202
+    """Async iterable of streaming events."""
+    for event in _fake_stream_events():
+        yield event
+
+
+def _patch_sync_client(mocker, response) -> object:  # noqa: ANN001
+    """Mock the sync Anthropic client to return the given response."""
+    mock_client = SimpleNamespace(
+        messages=SimpleNamespace(create=mocker.MagicMock(return_value=response)),
+    )
+    mock_cls = mocker.MagicMock(return_value=mock_client)
+    mocker.patch("openfactcheck.chat.backends.anthropic.backend.load_anthropic", return_value=mock_cls)
+    return mock_client.messages.create
+
+
+def _patch_async_client(mocker, response, *, is_coro: bool = True):  # noqa: ANN001, ANN202
+    """Mock the async Anthropic client to return the given response."""
+    if is_coro:
+
+        async def _create(**kwargs):  # noqa: ANN002, ANN003, ANN202, ARG001
+            return response
+    else:
+
+        def _create(**kwargs):  # noqa: ANN002, ANN003, ANN202, ARG001
+            return response
+
+    mock_create = mocker.MagicMock(side_effect=_create)
+    mock_client = SimpleNamespace(
+        messages=SimpleNamespace(create=mock_create),
+    )
+    mock_cls = mocker.MagicMock(return_value=mock_client)
+    mocker.patch("openfactcheck.chat.backends.anthropic.backend.load_async_anthropic", return_value=mock_cls)
+    return mock_create
+
+
+# ---------------------------------------------------------------------------
+# Sync: completion
+# ---------------------------------------------------------------------------
+
+
+def test_AnthropicBackend_completion_sync(mocker) -> None:  # noqa: ANN001
+    """AnthropicBackend.completion calls the SDK and maps the response."""
+    mock_create = _patch_sync_client(mocker, _fake_response())
+    backend = AnthropicBackend()
+
+    response = backend.completion(_build_request())
+
+    assert response.message.content == "Hello!"
+    assert response.finish_reason == FinishReason.STOP
+    mock_create.assert_called_once()
+    call_kwargs = mock_create.call_args.kwargs
+    assert call_kwargs["model"] == "claude-sonnet-4-6"
+    assert call_kwargs["max_tokens"] == 100
+    assert call_kwargs["messages"] == [{"role": "user", "content": "Hi"}]
+    assert "system" not in call_kwargs
+
+
+def test_AnthropicBackend_completion_routes_system_prompt(mocker) -> None:  # noqa: ANN001
+    """SystemMessage is passed via top-level system= kwarg, not inside messages."""
+    mock_create = _patch_sync_client(mocker, _fake_response())
+    backend = AnthropicBackend()
+
+    backend.completion(_build_request(include_system=True))
+
+    call_kwargs = mock_create.call_args.kwargs
+    assert call_kwargs["system"] == "You are terse."
+    assert call_kwargs["messages"] == [{"role": "user", "content": "Hi"}]
+
+
+def test_AnthropicBackend_completion_maps_errors_sync(mocker) -> None:  # noqa: ANN001
+    """Sync completion translates Anthropic errors."""
+    import httpx
+    from anthropic import AuthenticationError as AnthropicAuth
+
+    err = AnthropicAuth(
+        message="bad key",
+        response=httpx.Response(status_code=401, request=httpx.Request("POST", "https://api.anthropic.com")),
+        body=None,
+    )
+    mock_client = SimpleNamespace(
+        messages=SimpleNamespace(create=mocker.MagicMock(side_effect=err)),
+    )
+    mock_cls = mocker.MagicMock(return_value=mock_client)
+    mocker.patch("openfactcheck.chat.backends.anthropic.backend.load_anthropic", return_value=mock_cls)
+    backend = AnthropicBackend()
+
+    with pytest.raises(AuthenticationError):
+        backend.completion(_build_request())
+
+
+# ---------------------------------------------------------------------------
+# Async: acompletion
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_AnthropicBackend_acompletion(mocker) -> None:  # noqa: ANN001
+    """AnthropicBackend.acompletion calls the async SDK and maps the response."""
+    mock_create = _patch_async_client(mocker, _fake_response())
+    backend = AnthropicBackend()
+
+    response = await backend.acompletion(_build_request())
+
+    assert response.message.content == "Hello!"
+    assert response.finish_reason == FinishReason.STOP
+    mock_create.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# Sync: stream
+# ---------------------------------------------------------------------------
+
+
+def test_AnthropicBackend_stream_sync(mocker) -> None:  # noqa: ANN001
+    """AnthropicBackend.stream yields TextDelta chunks and a final StreamEnd."""
+    _patch_sync_client(mocker, _fake_stream_events())
+    backend = AnthropicBackend()
+
+    events = list(backend.stream(_build_request()))
+
+    deltas = [e for e in events if isinstance(e, TextDelta)]
+    ends = [e for e in events if isinstance(e, StreamEnd)]
+    assert [d.content for d in deltas] == ["Hello", ", world!"]
+    assert len(ends) == 1
+    assert ends[0].finish_reason == FinishReason.STOP
+    assert ends[0].usage is not None
+    assert ends[0].usage.input_tokens == 5
+    assert ends[0].usage.output_tokens == 3
+
+
+# ---------------------------------------------------------------------------
+# Async: astream
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_AnthropicBackend_astream_yields_events(mocker) -> None:  # noqa: ANN001
+    """AnthropicBackend.astream yields TextDelta chunks and a final StreamEnd."""
+    _patch_async_client(mocker, _fake_astream_events())
+    backend = AnthropicBackend()
+
+    events = [event async for event in backend.astream(_build_request())]
+
+    deltas = [e for e in events if isinstance(e, TextDelta)]
+    ends = [e for e in events if isinstance(e, StreamEnd)]
+    assert [d.content for d in deltas] == ["Hello", ", world!"]
+    assert len(ends) == 1
+    assert ends[0].finish_reason == FinishReason.STOP
+    assert ends[0].usage is not None
+    assert ends[0].usage.output_tokens == 3

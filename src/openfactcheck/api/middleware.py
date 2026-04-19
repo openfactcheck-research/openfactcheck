@@ -1,4 +1,4 @@
-"""Middleware — error handling and CORS."""
+"""Middleware: error handling and CORS."""
 
 import logging
 
@@ -24,7 +24,7 @@ async def app_error_handler(_request: Request, exc: AppError) -> JSONResponse:
 
 
 async def generic_error_handler(_request: Request, exc: Exception) -> JSONResponse:
-    """Catch-all handler — prevents stack traces from leaking to clients."""
+    """Catch-all handler that prevents stack traces from leaking to clients."""
     logger.exception("Unhandled exception: %s", exc)
     return JSONResponse(
         status_code=500,

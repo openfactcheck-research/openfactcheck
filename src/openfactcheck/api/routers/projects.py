@@ -1,4 +1,4 @@
-"""Project CRUD endpoints — /api/v1/projects."""
+"""Project CRUD endpoints."""
 
 from typing import Annotated
 

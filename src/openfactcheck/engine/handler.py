@@ -34,6 +34,7 @@ def handler(block_type: str) -> Callable[[HandlerFn], HandlerFn]:
 
     Returns:
         The unmodified function, now registered in :data:`HANDLERS`.
+
     """
 
     def decorator(fn: HandlerFn) -> HandlerFn:

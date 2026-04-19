@@ -1,4 +1,4 @@
-"""SQLite repository implementations using SQLAlchemy 2.0 async."""
+"""SQLite-backed repository implementations."""
 
 from openfactcheck.api.repositories.sqlite.projects import SqliteProjectRepository
 from openfactcheck.api.repositories.sqlite.workspaces import SqliteWorkspaceRepository

@@ -1,4 +1,4 @@
-"""Generic DynamoDB repository base — models own their keys, base handles CRUD."""
+"""Generic DynamoDB repository base for single-table entities."""
 
 import asyncio
 
@@ -14,11 +14,13 @@ class BaseDynamoRepository:
     """
 
     def __init__(self, table_name: str, region_name: str = "us-east-1") -> None:
-        self._table = get_table(table_name, region_name)
+        """Build a repository bound to a specific DynamoDB table.
 
-    # ---------------------------------------------------------------------------
-    # Core operations
-    # ---------------------------------------------------------------------------
+        Args:
+            table_name: Name of the DynamoDB table.
+            region_name: AWS region where the table lives.
+        """
+        self._table = get_table(table_name, region_name)
 
     async def _put(self, item: DynamoItem) -> None:
         """Write an item to the table."""
@@ -71,10 +73,6 @@ class BaseDynamoRepository:
             return True
 
         return await asyncio.to_thread(_do)
-
-    # ---------------------------------------------------------------------------
-    # Query operations
-    # ---------------------------------------------------------------------------
 
     async def _query_by_pk(
         self,

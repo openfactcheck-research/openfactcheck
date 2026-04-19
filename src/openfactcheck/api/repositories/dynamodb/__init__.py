@@ -1,4 +1,4 @@
-"""DynamoDB repository implementations using boto3 with asyncio.to_thread."""
+"""DynamoDB-backed repository implementations."""
 
 from openfactcheck.api.repositories.dynamodb.projects import DynamoProjectRepository
 from openfactcheck.api.repositories.dynamodb.workspaces import DynamoWorkspaceRepository

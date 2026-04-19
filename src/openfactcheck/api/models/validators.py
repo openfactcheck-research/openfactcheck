@@ -1,4 +1,4 @@
-"""Shared Pydantic validators and config helpers for model fields."""
+"""Datetime normalization and naming helpers shared by API model fields."""
 
 from datetime import UTC, datetime
 

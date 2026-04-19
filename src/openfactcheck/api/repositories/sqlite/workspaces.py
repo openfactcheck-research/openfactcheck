@@ -1,4 +1,4 @@
-"""SQLite implementation of the workspace repository."""
+"""SQLite-backed workspace repository."""
 
 import json
 from datetime import UTC, datetime
@@ -21,9 +21,14 @@ from openfactcheck.api.repositories.sqlite.tables import WorkspaceRow
 
 
 class SqliteWorkspaceRepository:
-    """Workspace CRUD backed by SQLite via SQLAlchemy async."""
+    """SQLite-backed repository for workspace CRUD, duplication, and reordering."""
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
+        """Build a repository that opens sessions from the given factory.
+
+        Args:
+            session_factory: Async session factory bound to a SQLite engine.
+        """
         self._session_factory = session_factory
 
     async def _count(self, session: AsyncSession, user_id: str, project_id: str) -> int:
@@ -43,6 +48,7 @@ class SqliteWorkspaceRepository:
         return result.scalar_one() + 1
 
     async def list_by_project(self, user_id: str, project_id: str) -> list[Workspace]:
+        """List the project's workspaces, ordered by ``sort_order`` (display order)."""
         async with self._session_factory() as session:
             result = await session.execute(
                 select(WorkspaceRow)
@@ -55,6 +61,7 @@ class SqliteWorkspaceRepository:
             return [Workspace.model_validate(row_to_dict(row)) for row in result.scalars()]
 
     async def get(self, user_id: str, project_id: str, workspace_id: str) -> Workspace | None:
+        """Return the workspace, or ``None`` if no workspace with that ID exists in the project."""
         async with self._session_factory() as session:
             result = await session.execute(
                 select(WorkspaceRow).where(
@@ -67,6 +74,11 @@ class SqliteWorkspaceRepository:
             return Workspace.model_validate(row_to_dict(row)) if row else None
 
     async def create(self, user_id: str, project_id: str, data: WorkspaceCreate) -> Workspace | None:
+        """Create a new workspace at the end of the project's sort order.
+
+        Returns ``None`` if the project has already reached
+        [`MAX_WORKSPACES_PER_PROJECT`][MAX_WORKSPACES_PER_PROJECT].
+        """
         async with self._session_factory() as session:
             if await self._count(session, user_id, project_id) >= MAX_WORKSPACES_PER_PROJECT:
                 return None
@@ -89,6 +101,10 @@ class SqliteWorkspaceRepository:
             return Workspace.model_validate(row_to_dict(row))
 
     async def update(self, user_id: str, project_id: str, workspace_id: str, data: WorkspaceUpdate) -> Workspace | None:
+        """Apply a partial update and return the updated workspace, or ``None`` if it doesn't exist.
+
+        An update with no fields set returns the workspace unchanged.
+        """
         values: dict[str, object] = {}
         if data.name is not None:
             values["name"] = data.name
@@ -123,6 +139,7 @@ class SqliteWorkspaceRepository:
         return await self.get(user_id, project_id, workspace_id)
 
     async def delete(self, user_id: str, project_id: str, workspace_id: str) -> bool:
+        """Delete the workspace. Returns ``False`` if it doesn't exist."""
         async with self._session_factory() as session:
             cursor = await session.execute(
                 delete(WorkspaceRow).where(
@@ -135,6 +152,11 @@ class SqliteWorkspaceRepository:
             return bool(cursor.rowcount)
 
     async def duplicate(self, user_id: str, project_id: str, workspace_id: str) -> Workspace | None:
+        """Copy the workspace and append ``(copy)`` to its name.
+
+        Returns ``None`` if the source workspace doesn't exist, or if the project has already reached
+        [`MAX_WORKSPACES_PER_PROJECT`][MAX_WORKSPACES_PER_PROJECT].
+        """
         source = await self.get(user_id, project_id, workspace_id)
         if source is None:
             return None
@@ -162,6 +184,11 @@ class SqliteWorkspaceRepository:
             return Workspace.model_validate(row_to_dict(row))
 
     async def reorder(self, user_id: str, project_id: str, ordered_ids: list[str]) -> None:
+        """Reassign ``sort_order`` for the listed workspaces in the given sequence.
+
+        Each ID in ``ordered_ids`` is numbered ``1..N``. IDs not in the list keep
+        their current ``sort_order``.
+        """
         async with self._session_factory() as session:
             for index, ws_id in enumerate(ordered_ids, start=1):
                 await session.execute(
@@ -176,7 +203,7 @@ class SqliteWorkspaceRepository:
             await session.commit()
 
     async def set_run(self, user_id: str, project_id: str, workspace_id: str, run: WorkspaceRun) -> None:
-        """Update the latest run state on the workspace."""
+        """Replace the workspace's latest run state with the given run."""
         async with self._session_factory() as session:
             await session.execute(
                 update(WorkspaceRow)

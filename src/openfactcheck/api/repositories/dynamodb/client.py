@@ -1,4 +1,4 @@
-"""boto3 DynamoDB table resource factory."""
+"""DynamoDB table resource helpers."""
 
 from __future__ import annotations
 
@@ -11,8 +11,7 @@ if TYPE_CHECKING:
 
 
 def get_table(table_name: str, region_name: str = "us-east-1") -> Table:
-    """Return a boto3 DynamoDB Table resource."""
-
+    """Return a handle to the named DynamoDB table in the given AWS region."""
     resource: DynamoDBServiceResource = boto3.resource(
         "dynamodb",
         region_name=region_name,
