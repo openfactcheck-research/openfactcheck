@@ -24,6 +24,10 @@ solver_templates_paths = [
     str(pkg_resources.files(solver_templates_dir) / "webservice"),
     str(pkg_resources.files(solver_templates_dir) / "factool"),
     str(pkg_resources.files(solver_templates_dir) / "urdufactcheck"),
+    str(pkg_resources.files(solver_templates_dir) / "arabicfactcheck"),
+    str(pkg_resources.files(solver_templates_dir) / "chinesefactcheck"),
+    str(pkg_resources.files(solver_templates_dir) / "italianfactcheck"),
+    str(pkg_resources.files(solver_templates_dir) / "bulgarianfactcheck"),
 ]
 
 # Load environment variables from .env file
