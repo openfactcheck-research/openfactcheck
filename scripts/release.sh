@@ -42,16 +42,16 @@ if ! [[ $VERSION =~ $rx ]]; then
     exit 1
 fi
 
-# Require main branch for release
-if [ "$BRANCH" != "main" ]
+# Require v1 branch for release
+if [ "$BRANCH" != "v1" ]
 then
-    c_echo $RED "You must release on the main branch"
+    c_echo $RED "You must release on the v1 branch"
     exit 1
 fi
 
-# make sure you have the most recent from remote main
+# make sure you have the most recent from remote v1
 git fetch
-git pull origin main
+git pull origin v1
 
 if [ x"$(git rev-parse $BRANCH)" != x"$(git rev-parse origin/$BRANCH)" ]
 then

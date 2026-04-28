@@ -58,7 +58,7 @@ jobs:
 
       - name: Setup Git Config
         run: |
-          git checkout main
+          git checkout v1
           git config --global user.email "34169605+hasaniqbal777@users.noreply.github.com"
           git config --global user.name "Hasan Iqbal"
 
@@ -76,4 +76,4 @@ jobs:
       - name: Push to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://hasaniqbal777:$HF_TOKEN@huggingface.co/spaces/hasaniqbal777/OpenFactCheck-Prerelease main --force
+        run: git push https://hasaniqbal777:$HF_TOKEN@huggingface.co/spaces/hasaniqbal777/OpenFactCheck-Prerelease v1:main --force
