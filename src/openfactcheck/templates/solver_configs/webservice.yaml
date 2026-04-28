@@ -63,3 +63,75 @@ urdufactcheck_thresholded_translator_retriever:
 urdufactcheck_verifier:
   input_name: claims_with_evidences
   output_name: label
+arabicfactcheck_claimprocessor:
+  input_name: response
+  output_name: claims
+arabicfactcheck_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+arabicfactcheck_translator_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+arabicfactcheck_thresholded_translator_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+arabicfactcheck_verifier:
+  input_name: claims_with_evidences
+  output_name: label
+chinesefactcheck_claimprocessor:
+  input_name: response
+  output_name: claims
+chinesefactcheck_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+chinesefactcheck_translator_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+chinesefactcheck_thresholded_translator_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+chinesefactcheck_verifier:
+  input_name: claims_with_evidences
+  output_name: label
+italianfactcheck_claimprocessor:
+  input_name: response
+  output_name: claims
+italianfactcheck_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+italianfactcheck_translator_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+italianfactcheck_thresholded_translator_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+italianfactcheck_verifier:
+  input_name: claims_with_evidences
+  output_name: label
+bulgarianfactcheck_claimprocessor:
+  input_name: response
+  output_name: claims
+bulgarianfactcheck_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+bulgarianfactcheck_translator_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+bulgarianfactcheck_thresholded_translator_retriever:
+  input_name: claims
+  output_name: claims_with_evidences
+  snippet_cnt: 10
+bulgarianfactcheck_verifier:
+  input_name: claims_with_evidences
+  output_name: label

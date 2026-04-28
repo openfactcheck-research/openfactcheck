@@ -33,6 +33,10 @@ def evaluate_response(ofc: OpenFactCheck):
         "Factool ClaimProcessor": "factool_claimprocessor",
         "FactCheckGPT ClaimProcessor": "factcheckgpt_claimprocessor",
         "UrduFactCheck ClaimProcessor": "urdufactcheck_claimprocessor",
+        "ArabicFactCheck ClaimProcessor": "arabicfactcheck_claimprocessor",
+        "ChineseFactCheck ClaimProcessor": "chinesefactcheck_claimprocessor",
+        "ItalianFactCheck ClaimProcessor": "italianfactcheck_claimprocessor",
+        "BulgarianFactCheck ClaimProcessor": "bulgarianfactcheck_claimprocessor",
     }
     st.session_state.retrievers = {
         "Factool Retriever": "factool_retriever",
@@ -40,11 +44,27 @@ def evaluate_response(ofc: OpenFactCheck):
         "UrduFactCheck Retriever": "urdufactcheck_retriever",
         "UrduFactCheck Translator Retriever": "urdufactcheck_translator_retriever",
         "UrduFactCheck Thresholded Translator Retriever": "urdufactcheck_thresholded_translator_retriever",
+        "ArabicFactCheck Retriever": "arabicfactcheck_retriever",
+        "ArabicFactCheck Translator Retriever": "arabicfactcheck_translator_retriever",
+        "ArabicFactCheck Thresholded Translator Retriever": "arabicfactcheck_thresholded_translator_retriever",
+        "ChineseFactCheck Retriever": "chinesefactcheck_retriever",
+        "ChineseFactCheck Translator Retriever": "chinesefactcheck_translator_retriever",
+        "ChineseFactCheck Thresholded Translator Retriever": "chinesefactcheck_thresholded_translator_retriever",
+        "ItalianFactCheck Retriever": "italianfactcheck_retriever",
+        "ItalianFactCheck Translator Retriever": "italianfactcheck_translator_retriever",
+        "ItalianFactCheck Thresholded Translator Retriever": "italianfactcheck_thresholded_translator_retriever",
+        "BulgarianFactCheck Retriever": "bulgarianfactcheck_retriever",
+        "BulgarianFactCheck Translator Retriever": "bulgarianfactcheck_translator_retriever",
+        "BulgarianFactCheck Thresholded Translator Retriever": "bulgarianfactcheck_thresholded_translator_retriever",
     }
     st.session_state.verifiers = {
         "FactCheckGPT Verifier": "factcheckgpt_verifier",
         "Factool Verifier": "factool_verifier",
         "UrduFactCheck Verifier": "urdufactcheck_verifier",
+        "ArabicFactCheck Verifier": "arabicfactcheck_verifier",
+        "ChineseFactCheck Verifier": "chinesefactcheck_verifier",
+        "ItalianFactCheck Verifier": "italianfactcheck_verifier",
+        "BulgarianFactCheck Verifier": "bulgarianfactcheck_verifier",
     }
     st.session_state.claimprocessor = "Factool ClaimProcessor"
     st.session_state.retriever = "Factool Retriever"
@@ -110,6 +130,9 @@ def evaluate_response(ofc: OpenFactCheck):
         "Elon Musk bought Twitter in 2020 and renamed it to X.",
         "Burj Khalifa is the tallest building in the world and is located in Abu Dhabi. I took a photo in front of it.",
         "برج خلیفہ دنیا کی بلند ترین عمارت ہے اور ابوظہبی میں واقع ہے۔ میں نے اس کے سامنے تصویر کھینچی۔",
+        "برج خليفة هو أطول مبنى في العالم ويقع في أبوظبي. التقطت صورة أمامه.",
+        "中国的长城是联合国教科文组织的世界遗产，据说只用了一年建成。",
+        "Il Colosseo è il più grande anfiteatro mai costruito, originariamente chiamato Anfiteatro Flavio e si trova a Firenze, in Italia. Ho scattato una foto davanti ad esso.",
     ]
 
     # Initialize the state for 'input_text' if not already there
@@ -247,22 +270,22 @@ def evaluate_response(ofc: OpenFactCheck):
                                 if factuality is not None:
                                     claim = detail.get("claim", "")
                                     if factuality == "-1" or factuality == "False":
-                                        detail_text += f'##### :red[{str(i+1) + ". " + extract_text(claim)}]'
+                                        detail_text += f"##### :red[{str(i + 1) + '. ' + extract_text(claim)}]"
                                         detail_text += "\n"
                                         claims += 1
                                         false_claims += 1
                                     elif factuality == "1" or factuality == "True":
-                                        detail_text += f'##### :green[{str(i+1) + ". " + extract_text(claim)}]'
+                                        detail_text += f"##### :green[{str(i + 1) + '. ' + extract_text(claim)}]"
                                         detail_text += "\n"
                                         claims += 1
                                         true_claims += 1
                                     elif factuality == "0":
-                                        detail_text += f'##### :orange[{str(i+1) + ". " + extract_text(claim)}]'
+                                        detail_text += f"##### :orange[{str(i + 1) + '. ' + extract_text(claim)}]"
                                         detail_text += "\n"
                                         claims += 1
                                         controversial_claims += 1
                                     else:
-                                        detail_text += f'##### :purple[{str(i+1) + ". " + extract_text(claim)}]'
+                                        detail_text += f"##### :purple[{str(i + 1) + '. ' + extract_text(claim)}]"
                                         detail_text += "\n"
                                         claims += 1
                                         unverified_claims += 1
