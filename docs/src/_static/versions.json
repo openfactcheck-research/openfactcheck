@@ -5,8 +5,8 @@
     "url": "https://openfactcheck.readthedocs.io/en/dev/"
   },
   {
-    "name": "1.1.1 (stable)",
-    "version": "v1.1.1",
+    "name": "1.1.2 (stable)",
+    "version": "v1.1.2",
     "url": "https://openfactcheck.readthedocs.io/en/stable/",
     "preferred": true
   }
