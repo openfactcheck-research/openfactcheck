@@ -6,6 +6,7 @@ from openfactcheck.chat.errors import ProviderNotFoundError
 from openfactcheck.chat.providers import get_provider
 from openfactcheck.chat.providers.anthropic import AnthropicProvider
 from openfactcheck.chat.providers.openai import OpenAIProvider
+from openfactcheck.chat.providers.openrouter import OpenRouterProvider
 
 
 def test_get_provider_openai() -> None:
@@ -14,6 +15,14 @@ def test_get_provider_openai() -> None:
 
     assert isinstance(provider, OpenAIProvider)
     assert provider.name == "openai"
+
+
+def test_get_provider_openrouter() -> None:
+    """Registry returns OpenRouterProvider for 'openrouter'."""
+    provider = get_provider("openrouter")
+
+    assert isinstance(provider, OpenRouterProvider)
+    assert provider.name == "openrouter"
 
 
 def test_get_provider_anthropic() -> None:

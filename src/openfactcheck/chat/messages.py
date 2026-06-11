@@ -49,7 +49,7 @@ class ToolCall(BaseModel):
         ```
     """
 
-    model_config = ConfigDict(extra="forbid", use_attribute_docstrings=True)
+    model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
     id: str
     """Unique identifier for this call, referenced by the matching [`ToolMessage`][ToolMessage]."""
@@ -74,7 +74,7 @@ class SystemMessage(BaseModel):
         ```
     """
 
-    model_config = ConfigDict(extra="forbid", use_attribute_docstrings=True)
+    model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
     role: Literal["system"] = "system"
     """Role tag identifying this as a system instruction."""
@@ -92,7 +92,7 @@ class UserMessage(BaseModel):
         ```
     """
 
-    model_config = ConfigDict(extra="forbid", use_attribute_docstrings=True)
+    model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
     role: Literal["user"] = "user"
     """Role tag identifying this as user input."""
@@ -113,7 +113,7 @@ class AssistantMessage(BaseModel):
         ```
     """
 
-    model_config = ConfigDict(extra="forbid", use_attribute_docstrings=True)
+    model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
     role: Literal["assistant"] = "assistant"
     """Role tag identifying this as a model reply."""
@@ -134,7 +134,7 @@ class ToolMessage(BaseModel):
         ```
     """
 
-    model_config = ConfigDict(extra="forbid", use_attribute_docstrings=True)
+    model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
     role: Literal["tool"] = "tool"
     """Role tag identifying this as a tool result."""

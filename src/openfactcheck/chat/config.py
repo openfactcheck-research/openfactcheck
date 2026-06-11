@@ -24,7 +24,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Discriminator, Field, model_validator
 
-type ProviderName = Literal["openai", "anthropic"]
+type ProviderName = Literal["openai", "anthropic", "openrouter"]
 """Identifier for a chat provider."""
 
 
@@ -69,21 +69,12 @@ class BaseModelConfig(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class OpenAIConfig(BaseModelConfig):
-    """Configuration for an OpenAI model.
+class OpenAICompatibleConfig(BaseModelConfig):
+    """Sampling parameters shared by OpenAI-compatible provider configs.
 
-    Example:
-        ```python
-        config = OpenAIConfig(
-            model="gpt-4o",
-            temperature=0.2,
-            max_output_tokens=500,
-        )
-        ```
+    Not instantiated directly; a concrete subclass adds its own ``provider``
+    discriminator.
     """
-
-    provider: Literal["openai"] = "openai"
-    """Identifies this configuration as OpenAI's."""
 
     temperature: float | None = Field(default=None, ge=0.0, le=2.0)
     """How random the model's output is. Lower is more focused, higher more varied.
@@ -108,6 +99,44 @@ class OpenAIConfig(BaseModelConfig):
 
     reasoning_effort: Literal["low", "medium", "high"] | None = None
     """Reasoning budget hint. Ignored by non-reasoning models."""
+
+
+class OpenAIConfig(OpenAICompatibleConfig):
+    """Configuration for an OpenAI model.
+
+    Example:
+        ```python
+        config = OpenAIConfig(
+            model="gpt-4o",
+            temperature=0.2,
+            max_output_tokens=500,
+        )
+        ```
+    """
+
+    provider: Literal["openai"] = "openai"
+    """Identifies this configuration as OpenAI's."""
+
+
+class OpenRouterConfig(OpenAICompatibleConfig):
+    """Configuration for a model served through OpenRouter.
+
+    OpenRouter exposes an OpenAI-compatible Chat Completions API. Address a
+    model by its namespaced OpenRouter id, for example ``"openai/gpt-4o"`` or
+    ``"anthropic/claude-sonnet-4"``.
+
+    Example:
+        ```python
+        config = OpenRouterConfig(
+            model="anthropic/claude-sonnet-4",
+            temperature=0.2,
+            max_output_tokens=500,
+        )
+        ```
+    """
+
+    provider: Literal["openrouter"] = "openrouter"
+    """Identifies this configuration as OpenRouter's."""
 
 
 class AnthropicConfig(BaseModelConfig):
@@ -171,7 +200,7 @@ class AnthropicConfig(BaseModelConfig):
 # ---------------------------------------------------------------------------
 
 
-type ModelConfig = Annotated[OpenAIConfig | AnthropicConfig, Discriminator("provider")]
+type ModelConfig = Annotated[OpenAIConfig | AnthropicConfig | OpenRouterConfig, Discriminator("provider")]
 """Union of every provider configuration.
 
 Accept this type in code that must work with any provider; branch on

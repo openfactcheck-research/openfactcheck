@@ -43,6 +43,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Discriminator
 
+from openfactcheck.chat.config import ProviderName  # noqa: TC001 - Pydantic needs this at runtime.
 from openfactcheck.chat.messages import AssistantMessage  # noqa: TC001 - Pydantic needs this at runtime.
 
 
@@ -99,7 +100,7 @@ class ChatResponse(BaseModel):
     model: str
     """Identifier of the model that produced the response, e.g. ``"gpt-4o"``."""
 
-    provider: Literal["openai", "anthropic"]
+    provider: ProviderName
     """Provider that served the response."""
 
     usage: Usage | None = None

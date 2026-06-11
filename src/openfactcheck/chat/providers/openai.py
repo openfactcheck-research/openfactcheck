@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from openfactcheck.chat.config import OpenAIConfig
 from openfactcheck.chat.errors import ProviderError
 from openfactcheck.chat.providers.base import BaseProvider, ProviderCapabilities
 
@@ -39,7 +40,5 @@ class OpenAIProvider(BaseProvider):
             ProviderError: If ``config`` is not an
                 [`OpenAIConfig`][OpenAIConfig].
         """
-        from openfactcheck.chat.config import OpenAIConfig  # noqa: PLC0415 - avoid circular import.
-
         if not isinstance(config, OpenAIConfig):
             raise ProviderError(f"Expected OpenAIConfig, got {type(config).__name__}.")

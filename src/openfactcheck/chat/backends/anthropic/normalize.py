@@ -97,7 +97,6 @@ def to_stream_end(stop_reason: str | None, input_tokens: int, output_tokens: int
 _STOP_REASON_TO_FINISH: dict[str, FinishReason] = {
     "end_turn": FinishReason.STOP,
     "stop_sequence": FinishReason.STOP,
-    "pause_turn": FinishReason.STOP,
     "max_tokens": FinishReason.LENGTH,
     "tool_use": FinishReason.TOOL_CALLS,
     "refusal": FinishReason.CONTENT_FILTER,

@@ -31,14 +31,14 @@ Example:
 
 from openfactcheck.chat.backends.anthropic import AnthropicBackend
 from openfactcheck.chat.backends.base import ChatBackend
-from openfactcheck.chat.backends.langchain import LangChainBackend
-from openfactcheck.chat.backends.litellm import LiteLLMBackend
 from openfactcheck.chat.backends.openai import OpenAIBackend
+from openfactcheck.chat.backends.openrouter import OpenRouterBackend
 from openfactcheck.chat.client import ChatClient
 from openfactcheck.chat.config import (
     AnthropicConfig,
     ModelConfig,
     OpenAIConfig,
+    OpenRouterConfig,
     ProviderName,
     RuntimeConfig,
 )
@@ -62,37 +62,62 @@ from openfactcheck.chat.providers.base import BaseProvider, ProviderCapabilities
 from openfactcheck.chat.requests import ChatRequest
 from openfactcheck.chat.responses import ChatResponse, FinishReason, StreamEnd, StreamEvent, TextDelta, Usage
 
+# Client
 __all__ = [
-    "AnthropicBackend",
-    "AnthropicConfig",
-    "AssistantMessage",
-    "AuthenticationError",
-    "BaseProvider",
-    "ChatBackend",
     "ChatClient",
-    "ChatModelError",
+]
+
+# Configuration
+__all__ += [
+    "AnthropicConfig",
+    "ModelConfig",
+    "OpenAIConfig",
+    "OpenRouterConfig",
+    "ProviderName",
+    "RuntimeConfig",
+]
+
+# Messages
+__all__ += [
+    "AssistantMessage",
+    "Message",
+    "SystemMessage",
+    "ToolCall",
+    "ToolMessage",
+    "UserMessage",
+]
+
+# Requests and responses
+__all__ += [
     "ChatRequest",
     "ChatResponse",
     "FinishReason",
-    "LangChainBackend",
-    "LiteLLMBackend",
-    "Message",
-    "ModelConfig",
-    "OpenAIBackend",
-    "OpenAIConfig",
-    "ProviderCapabilities",
-    "ProviderError",
-    "ProviderName",
-    "ProviderNotFoundError",
-    "RateLimitError",
-    "RuntimeConfig",
     "StreamEnd",
     "StreamEvent",
-    "SystemMessage",
     "TextDelta",
-    "ToolCall",
-    "ToolMessage",
-    "UnsupportedFeatureError",
     "Usage",
-    "UserMessage",
+]
+
+# Errors
+__all__ += [
+    "AuthenticationError",
+    "ChatModelError",
+    "ProviderError",
+    "ProviderNotFoundError",
+    "RateLimitError",
+    "UnsupportedFeatureError",
+]
+
+# Providers
+__all__ += [
+    "BaseProvider",
+    "ProviderCapabilities",
+]
+
+# Backends
+__all__ += [
+    "AnthropicBackend",
+    "ChatBackend",
+    "OpenAIBackend",
+    "OpenRouterBackend",
 ]

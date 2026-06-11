@@ -12,7 +12,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 # IAM Role — Integration (main branch only)
 # ##############################################################################
 resource "aws_iam_role" "github_actions_integration" {
-  name = "github-actions-openfactcheck-integration"
+  name = "github-actions-openfactcheck-integration-${var.aws_region}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -26,7 +26,10 @@ resource "aws_iam_role" "github_actions_integration" {
         Condition = {
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-            "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:sub" = [
+              "repo:${var.github_org}/${var.github_repo_openfactcheck}:ref:refs/heads/main",
+              "repo:${var.github_org}/${var.github_repo_playground}:ref:refs/heads/main",
+            ]
           }
         }
       }
@@ -43,7 +46,7 @@ resource "aws_iam_role_policy_attachment" "github_actions_integration" {
 # IAM Role — Production (version tags only)
 # ##############################################################################
 resource "aws_iam_role" "github_actions_production" {
-  name = "github-actions-openfactcheck-production"
+  name = "github-actions-openfactcheck-production-${var.aws_region}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -59,7 +62,10 @@ resource "aws_iam_role" "github_actions_production" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}/${var.github_repo}:ref:refs/tags/v*"
+            "token.actions.githubusercontent.com:sub" = [
+              "repo:${var.github_org}/${var.github_repo_openfactcheck}:ref:refs/tags/v*",
+              "repo:${var.github_org}/${var.github_repo_playground}:ref:refs/tags/v*",
+            ]
           }
         }
       }

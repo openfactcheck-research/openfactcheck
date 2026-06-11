@@ -28,7 +28,12 @@ variable "github_org" {
   type        = string
 }
 
-variable "github_repo" {
-  description = "GitHub repository name"
+variable "github_repo_openfactcheck" {
+  description = "GitHub repository name for the openfactcheck library"
+  type        = string
+}
+
+variable "github_repo_playground" {
+  description = "GitHub repository name for the playground frontend"
   type        = string
 }

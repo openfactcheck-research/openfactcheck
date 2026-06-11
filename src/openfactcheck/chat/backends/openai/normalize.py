@@ -97,11 +97,19 @@ def to_stream_end(last_chunk: ChatCompletionChunk | None, accumulated_usage: obj
     return StreamEnd(finish_reason=finish_reason, usage=usage)
 
 
+_FINISH_REASON_BY_OPENAI: dict[str, FinishReason] = {
+    "stop": FinishReason.STOP,
+    "length": FinishReason.LENGTH,
+    "tool_calls": FinishReason.TOOL_CALLS,
+    "content_filter": FinishReason.CONTENT_FILTER,
+}
+
+
 def _to_finish_reason(raw: str | None) -> FinishReason | None:
     """Convert a raw OpenAI finish_reason string to our enum, if recognized."""
-    if raw in FinishReason.__members__.values():
-        return FinishReason(raw)
-    return None
+    if raw is None:
+        return None
+    return _FINISH_REASON_BY_OPENAI.get(raw)
 
 
 def map_error(exc: Exception) -> ChatModelError:
@@ -113,7 +121,7 @@ def map_error(exc: Exception) -> ChatModelError:
 
     msg = str(exc)
     if isinstance(exc, OpenAIAuthError):
-        return AuthenticationError(f"Authentication failed. Set the OPENAI_API_KEY environment variable. ({msg})")
+        return AuthenticationError(f"Authentication failed; check your API key. ({msg})")
     if isinstance(exc, OpenAINotFoundError):
         # Upstream 404 (model/resource missing). Keep as ProviderError;
         # ProviderNotFoundError is reserved for our own provider-lookup layer.
