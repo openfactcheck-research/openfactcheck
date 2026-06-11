@@ -17,22 +17,31 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Iterable
-from dataclasses import dataclass
+from contextlib import suppress
+from dataclasses import dataclass, replace
+from time import perf_counter
 from typing import TYPE_CHECKING, Literal, Self, cast
 
 from openfactcheck.graph.errors import GraphRuntimeError
+from openfactcheck.graph.events import NodeFailed, NodeFinished, NodeStarted, RunFinished
 from openfactcheck.graph.forks import ForkStackItem
 from openfactcheck.graph.join import ReducerContext
 from openfactcheck.graph.step import EdgeKind, StepContext
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
     from openfactcheck.graph.decision import Branch
+    from openfactcheck.graph.events import GraphEvent, GraphObserver
     from openfactcheck.graph.forks import ForkStack
     from openfactcheck.graph.join import AnyJoin
     from openfactcheck.graph.step import AnyStep, Edge
 
 _UNSET: object = object()
 """Sentinel for "the end node was never reached"."""
+
+_STREAM_END: object = object()
+"""Sentinel queued after a streamed run ends, signalling the event stream is exhausted."""
 
 DEFAULT_CONCURRENCY = 8
 """Default cap on the number of step invocations running at once in a single run."""
@@ -60,6 +69,9 @@ class RunOptions:
     on_error: ErrorPolicy = "fail_fast"
     """How a step error is handled: abort the run, or drop the failed branch and continue."""
 
+    on_event: GraphObserver | None = None
+    """A callback invoked with each progress event during a run, or ``None`` for none."""
+
 
 @dataclass(frozen=True, slots=True)
 class GraphSpec:
@@ -86,6 +98,7 @@ class _TaskResult:
     output: object
     fork_stack: ForkStack
     error: Exception | None
+    duration: float
 
 
 @dataclass(slots=True)
@@ -131,6 +144,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._semaphore = asyncio.Semaphore(options.concurrency)
         self._timeout = options.timeout
         self._on_error = options.on_error
+        self._observer = options.on_event
         self._results: asyncio.Queue[_TaskResult] = asyncio.Queue()
         self._task_stacks: dict[asyncio.Task[None], ForkStack] = {}
         self._active = 0
@@ -162,14 +176,23 @@ class _GraphRun[StateT, DepsT, OutputT]:
                     if result is None:
                         break
                     if result.error is not None:
+                        self._emit(NodeFailed(result.node_id, result.error, result.duration, result.fork_stack))
                         if self._on_error == "fail_fast":
                             raise result.error
                         self._drop_failed(result.fork_stack)
                         continue
+                    self._emit(NodeFinished(result.node_id, result.output, result.duration, result.fork_stack))
                     self.route_output(result.node_id, result.output, result.fork_stack)
         finally:
             await self.cancel_pending()
-        return self.finish()
+        output = self.finish()
+        self._emit(RunFinished(output))
+        return output
+
+    def _emit(self, event: GraphEvent) -> None:
+        """Hand an event to the run's observer, if one is set."""
+        if self._observer is not None:
+            self._observer(event)
 
     def seed(self, inputs: object) -> None:
         """Enqueue the tasks reachable from the start node's edges."""
@@ -356,6 +379,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
 
     def _spawn(self, node_id: str, value: object, stack: ForkStack) -> None:
         """Schedule a step to run, tracking it as in-flight."""
+        self._emit(NodeStarted(node_id, stack))
         self._active += 1
         task = asyncio.create_task(self._worker(node_id, value, stack))
         self._task_stacks[task] = stack
@@ -369,12 +393,13 @@ class _GraphRun[StateT, DepsT, OutputT]:
         """Run one step, with retries and timeout, and report its result."""
         step = self._spec.steps[node_id]
         ctx: StepContext[StateT, DepsT, object] = StepContext(inputs=value, state=self._state, deps=self._deps)
+        started = perf_counter()
         try:
             output = await self._run_step(step, ctx)
         except Exception as error:  # noqa: BLE001 - surfaced to the run loop for ordered handling.
-            await self._results.put(_TaskResult(node_id, None, stack, error))
+            await self._results.put(_TaskResult(node_id, None, stack, error, perf_counter() - started))
             return
-        await self._results.put(_TaskResult(node_id, output, stack, None))
+        await self._results.put(_TaskResult(node_id, output, stack, None, perf_counter() - started))
 
     async def _run_step(self, step: AnyStep, ctx: StepContext[StateT, DepsT, object]) -> object:
         """Invoke a step under the concurrency limit, retrying on failure with backoff.
@@ -547,6 +572,68 @@ class Graph[StateT, DepsT, InputT, OutputT]:
             ValueError: If the configured concurrency is less than one.
         """
         return asyncio.run(self.arun(inputs, state=state, deps=deps, options=options))
+
+    async def astream(
+        self,
+        inputs: InputT,
+        *,
+        state: StateT,
+        deps: DepsT,
+        options: RunOptions | None = None,
+    ) -> AsyncIterator[GraphEvent]:
+        """Run the graph and yield progress events as they happen.
+
+        Yields a [`NodeStarted`][openfactcheck.graph.events.NodeStarted] and a
+        [`NodeFinished`][openfactcheck.graph.events.NodeFinished] (or
+        [`NodeFailed`][openfactcheck.graph.events.NodeFailed]) per task, then a
+        final [`RunFinished`][openfactcheck.graph.events.RunFinished]. Any
+        ``on_event`` set in ``options`` is ignored; the stream is the observer.
+
+        Args:
+            inputs: The value handed to the first node.
+            state: Run-scoped state shared across nodes.
+            deps: Run-scoped dependencies injected into nodes.
+            options: Concurrency, timeout, and error-handling knobs for the run.
+
+        Yields:
+            Each [`GraphEvent`][openfactcheck.graph.events.GraphEvent] in turn.
+
+        Raises:
+            GraphRuntimeError: If the run finishes without reaching the end node.
+            TimeoutError: If the run's timeout elapses.
+            ValueError: If the configured concurrency is less than one.
+        """
+        resolved = options if options is not None else RunOptions()
+        if resolved.concurrency < 1:
+            raise ValueError(f"concurrency must be at least 1, got {resolved.concurrency}")
+        events: asyncio.Queue[GraphEvent | object] = asyncio.Queue()
+        streaming = replace(resolved, on_event=events.put_nowait)
+        run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(self._spec, state=state, deps=deps, options=streaming)
+        drive = asyncio.create_task(self._drain_run(run, inputs, events))
+        try:
+            while True:
+                event = await events.get()
+                if event is _STREAM_END:
+                    break
+                yield cast("GraphEvent", event)
+            await drive
+        finally:
+            if not drive.done():
+                drive.cancel()
+                with suppress(asyncio.CancelledError):
+                    await drive
+
+    @staticmethod
+    async def _drain_run(
+        run: _GraphRun[StateT, DepsT, OutputT],
+        inputs: object,
+        events: asyncio.Queue[GraphEvent | object],
+    ) -> None:
+        """Execute a run, then mark its event stream complete."""
+        try:
+            await run.execute(inputs)
+        finally:
+            events.put_nowait(_STREAM_END)
 
     def stepper(
         self,

@@ -43,6 +43,14 @@ from openfactcheck.graph.errors import (
     GraphRuntimeError,
     GraphValidationError,
 )
+from openfactcheck.graph.events import (
+    GraphEvent,
+    GraphObserver,
+    NodeFailed,
+    NodeFinished,
+    NodeStarted,
+    RunFinished,
+)
 from openfactcheck.graph.graph import (
     DEFAULT_CONCURRENCY,
     ErrorPolicy,
@@ -87,6 +95,16 @@ __all__ += [
     "StartNode",
     "Step",
     "StepContext",
+]
+
+# Events
+__all__ += [
+    "GraphEvent",
+    "GraphObserver",
+    "NodeFailed",
+    "NodeFinished",
+    "NodeStarted",
+    "RunFinished",
 ]
 
 # Joins and reducers
