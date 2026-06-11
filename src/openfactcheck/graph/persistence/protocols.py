@@ -67,6 +67,23 @@ class JoinSnapshot:
 
 
 @dataclass(frozen=True, slots=True)
+class PausePoint:
+    """Where a run suspended at a pause node, and what it is asking for."""
+
+    node_id: str
+    """Identifier of the pause node the run stopped at."""
+
+    context: object
+    """The value that arrived at the pause node, shown to whoever answers."""
+
+    fork_stack: ForkStack
+    """The fork branch the paused value belongs to."""
+
+    prompt: str | None
+    """A human-readable description of what is being asked, if the node set one."""
+
+
+@dataclass(frozen=True, slots=True)
 class RunSnapshot:
     """A run's resumable state captured at a task boundary."""
 
@@ -102,6 +119,9 @@ class RunSnapshot:
 
     state: object
     """The run-scoped state shared across nodes."""
+
+    paused: PausePoint | None = None
+    """Where the run is suspended when its status is paused, otherwise ``None``."""
 
 
 @runtime_checkable

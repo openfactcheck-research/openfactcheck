@@ -40,6 +40,7 @@ from openfactcheck.graph.decision import Branch, Decision
 from openfactcheck.graph.errors import (
     GraphBuildError,
     GraphError,
+    GraphPaused,
     GraphRuntimeError,
     GraphValidationError,
 )
@@ -71,10 +72,12 @@ from openfactcheck.graph.join import (
     reduce_null,
     reduce_sum,
 )
+from openfactcheck.graph.pause import Pause
 from openfactcheck.graph.persistence import (
     FileStateStore,
     InMemoryStateStore,
     JoinSnapshot,
+    PausePoint,
     RunSnapshot,
     RunStatus,
     StateStore,
@@ -101,6 +104,7 @@ __all__ += [
     "Edge",
     "EdgeKind",
     "EndNode",
+    "Pause",
     "StartNode",
     "Step",
     "StepContext",
@@ -135,6 +139,7 @@ __all__ += [
     "FileStateStore",
     "InMemoryStateStore",
     "JoinSnapshot",
+    "PausePoint",
     "RunSnapshot",
     "RunStatus",
     "StateStore",
@@ -145,6 +150,7 @@ __all__ += [
 __all__ += [
     "GraphBuildError",
     "GraphError",
+    "GraphPaused",
     "GraphRuntimeError",
     "GraphValidationError",
 ]

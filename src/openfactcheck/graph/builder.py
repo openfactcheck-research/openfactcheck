@@ -40,6 +40,7 @@ from openfactcheck.graph.decision import Branch, Decision
 from openfactcheck.graph.errors import GraphBuildError, GraphValidationError
 from openfactcheck.graph.graph import Graph, GraphSpec
 from openfactcheck.graph.join import Join, reduce_list_append
+from openfactcheck.graph.pause import Pause
 from openfactcheck.graph.step import (
     END_ID,
     START_ID,
@@ -59,6 +60,7 @@ if TYPE_CHECKING:
 
     from openfactcheck.graph.decision import AnyDecision
     from openfactcheck.graph.join import AnyJoin, ContextReducer, NormalizedReducer, Reducer, ReducerContext
+    from openfactcheck.graph.pause import AnyPause
 
 _STEP_CONTEXT_ARITY = 3
 """Number of type arguments on ``StepContext[State, Deps, Input]``."""
@@ -135,6 +137,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self._steps: dict[str, AnyStep] = {}
         self._joins: dict[str, AnyJoin] = {}
         self._decisions: dict[str, AnyDecision] = {}
+        self._pauses: dict[str, AnyPause] = {}
         self._edges: list[Edge] = []
         self._branches: list[Branch] = []
         self.start_node: StartNode[InputT] = StartNode()
@@ -190,8 +193,8 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         return node
 
     def _id_taken(self, node_id: str) -> bool:
-        """Whether a node id is already registered as a step, join, or decision."""
-        return node_id in self._steps or node_id in self._joins or node_id in self._decisions
+        """Whether a node id is already registered as a step, join, decision, or pause."""
+        return node_id in self._steps or node_id in self._joins or node_id in self._decisions or node_id in self._pauses
 
     def collect[ItemT](self, item_type: type[ItemT], *, node_id: str | None = None) -> Join[ItemT, list[ItemT]]:
         """Create a fan-in node that gathers each branch's output into an ordered list.
@@ -333,6 +336,49 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self._decisions[decision_id] = decision
         return decision
 
+    def pause[ContextT, AnswerT](
+        self,
+        context_type: type[ContextT],
+        answer_type: type[AnswerT],
+        *,
+        prompt: str | None = None,
+        node_id: str | None = None,
+    ) -> Pause[ContextT, AnswerT]:
+        """Create a node that suspends the run to await an answer.
+
+        When the run reaches it, it snapshots and stops, raising
+        [`GraphPaused`][openfactcheck.graph.errors.GraphPaused] with the value
+        that arrived and ``prompt``. Resume with
+        [`Graph.resume_with`][Graph.resume_with]; the answer becomes the node's
+        output and flows to its successor. Pausing requires a store and run id
+        on the run so the suspended state can be reloaded.
+
+        Args:
+            context_type: The type flowing into the pause, recorded for
+                build-time edge validation.
+            answer_type: The type supplied on resume, recorded for build-time
+                edge validation.
+            prompt: A description of what is being asked, surfaced on pause.
+            node_id: Identifier for the pause node; defaults to a generated name.
+
+        Returns:
+            The registered [`Pause`][Pause] node.
+
+        Raises:
+            GraphBuildError: If the chosen node id is already in use.
+        """
+        pause_id = node_id or f"__pause_{len(self._pauses)}__"
+        if self._id_taken(pause_id):
+            raise GraphBuildError(f"duplicate node id {pause_id!r}")
+        pause: Pause[ContextT, AnswerT] = Pause(
+            id=pause_id,
+            context_type=context_type,
+            answer_type=answer_type,
+            prompt=prompt,
+        )
+        self._pauses[pause_id] = pause
+        return pause
+
     def edge_from[EdgeOutputT](
         self,
         source: SourceNode[StateT, DepsT, EdgeOutputT],
@@ -384,6 +430,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             steps=self._steps,
             joins=self._joins,
             decisions=self._group_branches(),
+            pauses=self._pauses,
             edges_by_source=edges_by_source,
             fork_join=fork_join,
             start_id=START_ID,
@@ -400,7 +447,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
 
     def _index_edges(self) -> dict[str, list[Edge]]:
         """Group edges by source after checking that every endpoint is known."""
-        node_ids = {START_ID, END_ID, *self._steps, *self._joins, *self._decisions}
+        node_ids = {START_ID, END_ID, *self._steps, *self._joins, *self._decisions, *self._pauses}
         edges_by_source: dict[str, list[Edge]] = {}
         for edge in self._edges:
             if edge.source_id not in node_ids:
@@ -416,7 +463,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             raise GraphValidationError("graph has no entry edge from the start node")
         if all(edge.dest_id != END_ID for edge in self._edges):
             raise GraphValidationError("graph has no edge into the end node")
-        for node_id in (*self._steps, *self._joins, *self._decisions):
+        for node_id in (*self._steps, *self._joins, *self._decisions, *self._pauses):
             if node_id not in edges_by_source:
                 raise GraphValidationError(f"node {node_id!r} has no outgoing edge")
 
@@ -430,7 +477,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
                 if edge.dest_id not in seen:
                     seen.add(edge.dest_id)
                     queue.append(edge.dest_id)
-        unreachable = sorted({*self._steps, *self._joins, *self._decisions} - seen)
+        unreachable = sorted({*self._steps, *self._joins, *self._decisions, *self._pauses} - seen)
         if unreachable:
             raise GraphValidationError(f"nodes are not reachable from the start node: {unreachable}")
         if END_ID not in seen:

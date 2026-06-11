@@ -15,6 +15,7 @@ from openfactcheck.graph.persistence.file import FileStateStore
 from openfactcheck.graph.persistence.in_memory import InMemoryStateStore
 from openfactcheck.graph.persistence.protocols import (
     JoinSnapshot,
+    PausePoint,
     RunSnapshot,
     RunStatus,
     StateStore,
@@ -25,6 +26,7 @@ __all__ = [
     "FileStateStore",
     "InMemoryStateStore",
     "JoinSnapshot",
+    "PausePoint",
     "RunSnapshot",
     "RunStatus",
     "StateStore",

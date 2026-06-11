@@ -22,11 +22,11 @@ from dataclasses import dataclass, replace
 from time import perf_counter
 from typing import TYPE_CHECKING, Literal, Self, cast
 
-from openfactcheck.graph.errors import GraphRuntimeError
+from openfactcheck.graph.errors import GraphPaused, GraphRuntimeError
 from openfactcheck.graph.events import NodeFailed, NodeFinished, NodeStarted, RunFinished
 from openfactcheck.graph.forks import ForkStackItem
 from openfactcheck.graph.join import ReducerContext
-from openfactcheck.graph.persistence.protocols import JoinSnapshot, RunSnapshot, RunStatus, TaskSnapshot
+from openfactcheck.graph.persistence.protocols import JoinSnapshot, PausePoint, RunSnapshot, RunStatus, TaskSnapshot
 from openfactcheck.graph.step import EdgeKind, StepContext
 
 if TYPE_CHECKING:
@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from openfactcheck.graph.events import GraphEvent, GraphObserver
     from openfactcheck.graph.forks import ForkStack
     from openfactcheck.graph.join import AnyJoin
+    from openfactcheck.graph.pause import AnyPause
     from openfactcheck.graph.persistence.protocols import StateStore
     from openfactcheck.graph.step import AnyStep, Edge
 
@@ -92,6 +93,7 @@ class GraphSpec:
     steps: dict[str, AnyStep]
     joins: dict[str, AnyJoin]
     decisions: dict[str, list[Branch]]
+    pauses: dict[str, AnyPause]
     edges_by_source: dict[str, list[Edge]]
     fork_join: dict[str, str]
     start_id: str
@@ -168,6 +170,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._loops: dict[tuple[str, str, ForkStack], int] = {}
         self._fork_seq = 0
         self._final: object = _UNSET
+        self._paused: PausePoint | None = None
 
     async def execute(self, inputs: object) -> OutputT:
         """Run to completion and return the value routed into the end node.
@@ -200,10 +203,10 @@ class _GraphRun[StateT, DepsT, OutputT]:
         return await self._drive()
 
     async def _drive(self) -> OutputT:
-        """Drain the work queue to completion, snapshotting after each task."""
+        """Drain the work queue, snapshotting after each task; stop early at a pause."""
         try:
             async with asyncio.timeout(self._timeout):
-                while True:
+                while self._paused is None:
                     result = await self.pump()
                     if result is None:
                         break
@@ -217,13 +220,39 @@ class _GraphRun[StateT, DepsT, OutputT]:
                     else:
                         self._emit(NodeFinished(result.node_id, result.output, result.duration, result.fork_stack))
                         self.route_output(result.node_id, result.output, result.fork_stack)
-                    await self._save(RunStatus.RUNNING)
+                    if self._paused is None:
+                        await self._save(RunStatus.RUNNING)
         finally:
             await self.cancel_pending()
+        if self._paused is not None:
+            await self._save(RunStatus.PAUSED, paused=self._paused)
+            raise GraphPaused(
+                f"run paused at {self._paused.node_id!r}",
+                node_id=self._paused.node_id,
+                context=self._paused.context,
+                prompt=self._paused.prompt,
+                run_id=self._run_id,
+            )
         output = self.finish()
         await self._save(RunStatus.SUCCEEDED, final_output=output)
         self._emit(RunFinished(output))
         return output
+
+    async def resume_with(self, paused: PausePoint, value: object) -> OutputT:
+        """Inject ``value`` as the paused node's output and finish the run.
+
+        Returns:
+            The value routed into the end node.
+
+        Raises:
+            GraphRuntimeError: If the run finishes without reaching the end node.
+            GraphPaused: If the run reaches another pause node.
+            TimeoutError: If the run's timeout elapses.
+        """
+        for task in self._restored:
+            self._spawn(task.node_id, task.value, task.fork_stack)
+        self.route_output(paused.node_id, value, paused.fork_stack)
+        return await self._drive()
 
     def load(self, snapshot: RunSnapshot) -> None:
         """Restore run state from a snapshot so [`resume`][_GraphRun.resume] can continue it."""
@@ -238,13 +267,15 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._final = snapshot.final if snapshot.has_final else _UNSET
         self._restored = list(snapshot.pending)
 
-    async def _save(self, status: RunStatus, *, final_output: object = _UNSET) -> None:
+    async def _save(
+        self, status: RunStatus, *, final_output: object = _UNSET, paused: PausePoint | None = None
+    ) -> None:
         """Persist a snapshot of the current run state, if a store is configured."""
         if self._store is None or self._run_id is None:
             return
-        await self._store.save(self._snapshot(status, self._run_id, final_output))
+        await self._store.save(self._snapshot(status, self._run_id, final_output, paused))
 
-    def _snapshot(self, status: RunStatus, run_id: str, final_output: object) -> RunSnapshot:
+    def _snapshot(self, status: RunStatus, run_id: str, final_output: object, paused: PausePoint | None) -> RunSnapshot:
         """Capture the run's resumable state as a snapshot."""
         final = final_output if final_output is not _UNSET else self._final
         return RunSnapshot(
@@ -262,6 +293,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
             has_final=final is not _UNSET,
             final=final if final is not _UNSET else None,
             state=self._state,
+            paused=paused,
         )
 
     def _emit(self, event: GraphEvent) -> None:
@@ -305,15 +337,22 @@ class _GraphRun[StateT, DepsT, OutputT]:
             self._route(edge.dest_id, value, stack)
 
     def _route(self, dest_id: str, value: object, stack: ForkStack) -> None:
-        """Deliver a value to a node: finish, accumulate at a join, branch, or spawn a step."""
+        """Deliver a value to a node: finish, accumulate, branch, pause, or spawn a step."""
         if dest_id == self._spec.end_id:
             self._final = value
         elif dest_id in self._spec.joins:
             self._accumulate(dest_id, value, stack)
         elif dest_id in self._spec.decisions:
             self._decide(dest_id, value, stack)
+        elif dest_id in self._spec.pauses:
+            self._pause(dest_id, value, stack)
         else:
             self._spawn(dest_id, value, stack)
+
+    def _pause(self, pause_id: str, value: object, stack: ForkStack) -> None:
+        """Mark the run as suspended at a pause node, to stop after the current task."""
+        prompt = self._spec.pauses[pause_id].prompt
+        self._paused = PausePoint(node_id=pause_id, context=value, fork_stack=stack, prompt=prompt)
 
     def _decide(self, decision_id: str, value: object, stack: ForkStack) -> None:
         """Route a value to the first matching branch of a decision, or its default."""
@@ -813,3 +852,76 @@ class Graph[StateT, DepsT, InputT, OutputT]:
             ValueError: If the configured concurrency is less than one.
         """
         return asyncio.run(self.aresume(run_id, store=store, deps=deps, options=options))
+
+    async def aresume_with(
+        self,
+        run_id: str,
+        *,
+        store: StateStore,
+        deps: DepsT,
+        value: object,
+        options: RunOptions | None = None,
+    ) -> OutputT:
+        """Resume a paused run, injecting ``value`` as the pause node's output.
+
+        Args:
+            run_id: The id the paused run was snapshotted under.
+            store: The store holding the run's snapshots.
+            deps: Run-scoped dependencies injected into nodes.
+            value: The answer to inject; becomes the pause node's output.
+            options: Concurrency, timeout, and error-handling knobs.
+
+        Returns:
+            The value routed into the end node.
+
+        Raises:
+            GraphRuntimeError: If no snapshot exists for ``run_id``, the snapshot
+                is not paused, or the run finishes without reaching the end node.
+            GraphPaused: If the run reaches another pause node.
+            ValueError: If the configured concurrency is less than one.
+        """
+        snapshot = await store.load(run_id)
+        if snapshot is None:
+            raise GraphRuntimeError(f"no snapshot found for run {run_id!r}")
+        if snapshot.paused is None:
+            raise GraphRuntimeError(f"run {run_id!r} is not paused")
+        resolved = replace(self._validated(options), store=store, run_id=run_id)
+        run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(
+            self._spec,
+            state=cast("StateT", snapshot.state),
+            deps=deps,
+            options=resolved,
+        )
+        run.load(snapshot)
+        return await run.resume_with(snapshot.paused, value)
+
+    def resume_with(
+        self,
+        run_id: str,
+        *,
+        store: StateStore,
+        deps: DepsT,
+        value: object,
+        options: RunOptions | None = None,
+    ) -> OutputT:
+        """Resume a paused run synchronously, injecting ``value`` as the pause node's output.
+
+        A blocking wrapper over [`aresume_with`][Graph.aresume_with].
+
+        Args:
+            run_id: The id the paused run was snapshotted under.
+            store: The store holding the run's snapshots.
+            deps: Run-scoped dependencies injected into nodes.
+            value: The answer to inject; becomes the pause node's output.
+            options: Concurrency, timeout, and error-handling knobs.
+
+        Returns:
+            The value routed into the end node.
+
+        Raises:
+            GraphRuntimeError: If no snapshot exists for ``run_id``, the snapshot
+                is not paused, or the run finishes without reaching the end node.
+            GraphPaused: If the run reaches another pause node.
+            ValueError: If the configured concurrency is less than one.
+        """
+        return asyncio.run(self.aresume_with(run_id, store=store, deps=deps, value=value, options=options))
