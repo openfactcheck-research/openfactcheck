@@ -18,7 +18,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Literal, Self, cast
 
 from openfactcheck.graph.errors import GraphRuntimeError
 from openfactcheck.graph.forks import ForkStackItem
@@ -98,6 +98,23 @@ class _JoinState:
     items: list[tuple[int, object]]
 
 
+@dataclass(frozen=True, slots=True)
+class StepResult:
+    """One finished task surfaced by a step-by-step run."""
+
+    node_id: str
+    """Identifier of the node that ran."""
+
+    output: object
+    """The node's output, or ``None`` when it raised."""
+
+    error: Exception | None
+    """The error the node raised, or ``None`` on success."""
+
+    fork_stack: ForkStack
+    """The fork branch the task belonged to."""
+
+
 class _GraphRun[StateT, DepsT, OutputT]:
     """Drives one execution of a graph: a concurrent worklist over a task queue.
 
@@ -137,29 +154,50 @@ class _GraphRun[StateT, DepsT, OutputT]:
             GraphRuntimeError: If the run finishes without reaching the end node.
             TimeoutError: If the whole-run timeout elapses.
         """
-        for edge in self._spec.edges_by_source.get(self._spec.start_id, []):
-            self._dispatch(edge, inputs, ())
+        self.seed(inputs)
         try:
             async with asyncio.timeout(self._timeout):
-                while self._active > 0:
-                    result = await self._results.get()
-                    self._active -= 1
+                while True:
+                    result = await self.pump()
+                    if result is None:
+                        break
                     if result.error is not None:
                         if self._on_error == "fail_fast":
                             raise result.error
                         self._drop_failed(result.fork_stack)
                         continue
-                    self._advance(result.node_id, result.output, result.fork_stack)
+                    self.route_output(result.node_id, result.output, result.fork_stack)
         finally:
-            await self._cancel_pending()
-        if self._final is _UNSET:
-            raise GraphRuntimeError("run finished without reaching the end node")
-        return cast("OutputT", self._final)
+            await self.cancel_pending()
+        return self.finish()
 
-    def _advance(self, node_id: str, output: object, stack: ForkStack) -> None:
+    def seed(self, inputs: object) -> None:
+        """Enqueue the tasks reachable from the start node's edges."""
+        for edge in self._spec.edges_by_source.get(self._spec.start_id, []):
+            self._dispatch(edge, inputs, ())
+
+    async def pump(self) -> _TaskResult | None:
+        """Wait for the next finished task and account for it, or ``None`` when the run is idle."""
+        if self._active == 0:
+            return None
+        result = await self._results.get()
+        self._active -= 1
+        return result
+
+    def route_output(self, node_id: str, output: object, stack: ForkStack) -> None:
         """Enqueue successors for every edge leaving a finished node."""
         for edge in self._spec.edges_by_source.get(node_id, []):
             self._dispatch(edge, output, stack)
+
+    def finish(self) -> OutputT:
+        """Return the value routed into the end node, or fail if it was never reached.
+
+        Raises:
+            GraphRuntimeError: If the run finished without reaching the end node.
+        """
+        if self._final is _UNSET:
+            raise GraphRuntimeError("run finished without reaching the end node")
+        return cast("OutputT", self._final)
 
     def _dispatch(self, edge: Edge, value: object, stack: ForkStack) -> None:
         """Route one outgoing edge: fan out an iterable, or deliver the whole value."""
@@ -361,7 +399,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._fork_seq += 1
         return f"r{self._fork_seq}"
 
-    async def _cancel_pending(self) -> None:
+    async def cancel_pending(self) -> None:
         """Cancel and drain any still-running step tasks."""
         pending = list(self._task_stacks)
         for task in pending:
@@ -370,12 +408,87 @@ class _GraphRun[StateT, DepsT, OutputT]:
             await asyncio.gather(*pending, return_exceptions=True)
 
 
+class GraphStepper[StateT, DepsT, OutputT]:
+    """A handle that advances a run one task at a time.
+
+    Obtained from [`Graph.stepper`][Graph.stepper] and used as an async context
+    manager. Call [`advance`][GraphStepper.advance] to run the next task and get
+    a [`StepResult`][StepResult] describing it, looping until ``advance`` returns
+    ``None``. A failed task can be resumed with [`recover`][GraphStepper.recover];
+    once the run is complete, read [`output`][GraphStepper.output].
+
+    Example:
+        ```python
+        async with graph.stepper(inputs, state=None, deps=None) as run:
+            while (step := await run.advance()) is not None:
+                if step.error is not None:
+                    run.recover(step, fallback)
+        result = run.output
+        ```
+    """
+
+    def __init__(self, run: _GraphRun[StateT, DepsT, OutputT], inputs: object) -> None:
+        """Wrap an executor and the input that seeds it; construct via [`Graph.stepper`][Graph.stepper]."""
+        self._run = run
+        self._inputs = inputs
+
+    async def __aenter__(self) -> Self:
+        """Seed the run from the graph input and return the handle."""
+        self._run.seed(self._inputs)
+        return self
+
+    async def __aexit__(self, exc_type: object, exc: object, traceback: object) -> None:
+        """Cancel any tasks still running when the block exits."""
+        await self._run.cancel_pending()
+
+    async def advance(self) -> StepResult | None:
+        """Run the next task, dispatch its successors on success, and report it.
+
+        Returns:
+            The finished task's [`StepResult`][StepResult], or ``None`` once no
+            tasks remain. A result with an ``error`` has not been routed onward;
+            call [`recover`][GraphStepper.recover] to resume it or leave it to
+            drop the branch.
+        """
+        result = await self._run.pump()
+        if result is None:
+            return None
+        if result.error is None:
+            self._run.route_output(result.node_id, result.output, result.fork_stack)
+        return StepResult(
+            node_id=result.node_id,
+            output=result.output,
+            error=result.error,
+            fork_stack=result.fork_stack,
+        )
+
+    def recover(self, step: StepResult, output: object) -> None:
+        """Resume a failed task by routing ``output`` as if its node had returned it.
+
+        Args:
+            step: The failed [`StepResult`][StepResult] from
+                [`advance`][GraphStepper.advance].
+            output: The value to route onward in place of the missing output.
+        """
+        self._run.route_output(step.node_id, output, step.fork_stack)
+
+    @property
+    def output(self) -> OutputT:
+        """The value routed into the end node, valid once the run is complete.
+
+        Raises:
+            GraphRuntimeError: If the end node was never reached.
+        """
+        return self._run.finish()
+
+
 class Graph[StateT, DepsT, InputT, OutputT]:
     """An executable graph of typed nodes.
 
     Assembled by [`GraphBuilder.build`][GraphBuilder]; construct it through the
     builder rather than directly. Run it with [`run`][Graph.run] or its async
-    peer [`arun`][Graph.arun].
+    peer [`arun`][Graph.arun], or drive it one task at a time with
+    [`stepper`][Graph.stepper].
     """
 
     def __init__(self, spec: GraphSpec, *, name: str) -> None:
@@ -434,3 +547,36 @@ class Graph[StateT, DepsT, InputT, OutputT]:
             ValueError: If the configured concurrency is less than one.
         """
         return asyncio.run(self.arun(inputs, state=state, deps=deps, options=options))
+
+    def stepper(
+        self,
+        inputs: InputT,
+        *,
+        state: StateT,
+        deps: DepsT,
+        options: RunOptions | None = None,
+    ) -> GraphStepper[StateT, DepsT, OutputT]:
+        """Drive the graph one task at a time for inspection or recovery.
+
+        Returns an async-context-manager handle; see
+        [`GraphStepper`][GraphStepper] for the loop.
+
+        Args:
+            inputs: The value handed to the first node.
+            state: Run-scoped state shared across nodes.
+            deps: Run-scoped dependencies injected into nodes.
+            options: Concurrency, timeout, and error-handling knobs; note the
+                whole-run timeout and ``on_error`` policy do not apply while
+                stepping, since the caller drives and handles each task.
+
+        Returns:
+            A [`GraphStepper`][GraphStepper] over a fresh run.
+
+        Raises:
+            ValueError: If the configured concurrency is less than one.
+        """
+        resolved = options if options is not None else RunOptions()
+        if resolved.concurrency < 1:
+            raise ValueError(f"concurrency must be at least 1, got {resolved.concurrency}")
+        run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(self._spec, state=state, deps=deps, options=resolved)
+        return GraphStepper(run, inputs)

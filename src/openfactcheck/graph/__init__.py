@@ -43,7 +43,14 @@ from openfactcheck.graph.errors import (
     GraphRuntimeError,
     GraphValidationError,
 )
-from openfactcheck.graph.graph import DEFAULT_CONCURRENCY, ErrorPolicy, Graph, RunOptions
+from openfactcheck.graph.graph import (
+    DEFAULT_CONCURRENCY,
+    ErrorPolicy,
+    Graph,
+    GraphStepper,
+    RunOptions,
+    StepResult,
+)
 from openfactcheck.graph.join import (
     ContextReducer,
     Join,
@@ -65,7 +72,9 @@ __all__ = [
     "ErrorPolicy",
     "Graph",
     "GraphBuilder",
+    "GraphStepper",
     "RunOptions",
+    "StepResult",
 ]
 
 # Nodes and edges
