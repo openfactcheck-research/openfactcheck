@@ -3,7 +3,7 @@
 # ##############################################################################
 
 data "aws_ecr_repository" "api" {
-  name = "openfactcheck-api-${terraform.workspace}"
+  name = "openfactcheck-api-${terraform.workspace}-${var.aws_region}"
 }
 
 data "aws_ecr_image" "api" {
@@ -82,7 +82,7 @@ resource "aws_lambda_permission" "api_gateway_proxy" {
 # ##############################################################################
 
 data "aws_ecr_repository" "engine" {
-  name = "openfactcheck-engine-${terraform.workspace}"
+  name = "openfactcheck-engine-${terraform.workspace}-${var.aws_region}"
 }
 
 data "aws_ecr_image" "engine" {

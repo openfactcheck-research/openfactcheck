@@ -81,7 +81,7 @@ set_workspace() {
     AWS_REGION="$(jq -r '.aws_region' "$env_tfvars")"
     AWS_PROFILE="$(jq -r '.aws_profile' "$env_tfvars")"
 
-    ECR_REPO_NAME="openfactcheck-${TARGET}-${WORKSPACE}"
+    ECR_REPO_NAME="openfactcheck-${TARGET}-${WORKSPACE}-${AWS_REGION}"
     ECR_REPO_URL="${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}"
     IMAGE_TAG="${ECR_REPO_URL}:latest"
 

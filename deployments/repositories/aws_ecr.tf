@@ -3,7 +3,7 @@
 # ##############################################################################
 
 resource "aws_ecr_repository" "openfactcheck_api" {
-  name                 = "openfactcheck-api-${terraform.workspace}"
+  name                 = "openfactcheck-api-${terraform.workspace}-${var.aws_region}"
   image_tag_mutability = "MUTABLE"
   force_delete         = terraform.workspace != "production"
 
@@ -12,7 +12,7 @@ resource "aws_ecr_repository" "openfactcheck_api" {
   }
 
   tags = {
-    Name = "OpenFactCheck - ECR - API - ${terraform.workspace}"
+    Name = "OpenFactCheck - ECR - API - ${terraform.workspace} - ${var.aws_region}"
   }
 }
 
@@ -42,7 +42,7 @@ resource "aws_ecr_lifecycle_policy" "openfactcheck_api" {
 # ##############################################################################
 
 resource "aws_ecr_repository" "openfactcheck_engine" {
-  name                 = "openfactcheck-engine-${terraform.workspace}"
+  name                 = "openfactcheck-engine-${terraform.workspace}-${var.aws_region}"
   image_tag_mutability = "MUTABLE"
   force_delete         = terraform.workspace != "production"
 
@@ -51,7 +51,7 @@ resource "aws_ecr_repository" "openfactcheck_engine" {
   }
 
   tags = {
-    Name = "OpenFactCheck - ECR - Engine - ${terraform.workspace}"
+    Name = "OpenFactCheck - ECR - Engine - ${terraform.workspace} - ${var.aws_region}"
   }
 }
 
