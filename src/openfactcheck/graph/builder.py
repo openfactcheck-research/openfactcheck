@@ -196,6 +196,44 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         """Whether a node id is already registered as a step, join, decision, or pause."""
         return node_id in self._steps or node_id in self._joins or node_id in self._decisions or node_id in self._pauses
 
+    def subgraph[SubInputT, SubOutputT](
+        self,
+        graph: Graph[StateT, DepsT, SubInputT, SubOutputT],
+        *,
+        node_id: str | None = None,
+    ) -> Step[StateT, DepsT, SubInputT, SubOutputT]:
+        """Wrap a built graph as a node that runs it and forwards its output.
+
+        The inner graph runs with the outer run's state and dependencies, so its
+        state and dependency types must match this builder's. Wire the returned
+        node like any other; its input and output types are the inner graph's.
+
+        Args:
+            graph: A built [`Graph`][Graph] to embed as a node.
+            node_id: Identifier for the node; defaults to the inner graph's name.
+
+        Returns:
+            A [`Step`][Step] that runs the inner graph.
+
+        Raises:
+            GraphBuildError: If the chosen node id is already in use.
+        """
+
+        async def run_subgraph(ctx: StepContext[StateT, DepsT, SubInputT]) -> SubOutputT:
+            """Run the embedded graph with the outer run's state and dependencies."""
+            return await graph.arun(ctx.inputs, state=ctx.state, deps=ctx.deps)
+
+        node: Step[StateT, DepsT, SubInputT, SubOutputT] = Step(
+            id=node_id or graph.name,
+            call=run_subgraph,
+            input_type=None,
+            output_type=None,
+        )
+        if self._id_taken(node.id):
+            raise GraphBuildError(f"duplicate node id {node.id!r}")
+        self._steps[node.id] = node
+        return node
+
     def collect[ItemT](self, item_type: type[ItemT], *, node_id: str | None = None) -> Join[ItemT, list[ItemT]]:
         """Create a fan-in node that gathers each branch's output into an ordered list.
 
