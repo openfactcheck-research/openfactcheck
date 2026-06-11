@@ -22,11 +22,13 @@ from typing import TYPE_CHECKING, cast
 
 from openfactcheck.graph.errors import GraphRuntimeError
 from openfactcheck.graph.forks import ForkStackItem
+from openfactcheck.graph.join import ReducerContext
 from openfactcheck.graph.step import END_ID, START_ID, EdgeKind, StepContext
 
 if TYPE_CHECKING:
     from openfactcheck.graph.forks import ForkStack
-    from openfactcheck.graph.step import AnyJoin, AnyStep, Edge
+    from openfactcheck.graph.join import AnyJoin
+    from openfactcheck.graph.step import AnyStep, Edge
 
 _UNSET: object = object()
 """Sentinel for "the end node was never reached"."""
@@ -62,6 +64,8 @@ class _JoinState:
     """Branch outputs accumulated for one firing of one join."""
 
     downstream_stack: ForkStack
+    acc: object
+    count: int
     items: list[tuple[int, object]]
 
 
@@ -83,6 +87,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._tasks: set[asyncio.Task[None]] = set()
         self._active = 0
         self._reducers: dict[tuple[str, str], _JoinState] = {}
+        self._finalized: set[tuple[str, str]] = set()
         self._expected: dict[str, int] = {}
         self._fork_seq = 0
         self._final: object = _UNSET
@@ -142,30 +147,60 @@ class _GraphRun[StateT, DepsT, OutputT]:
         items: list[object] = list(cast("Iterable[object]", value))
         self._expected[fork_run_id] = len(items)
         if not items:
-            self._fire(self._spec.fork_join[fork_id], [], stack)
+            join_id = self._spec.fork_join[fork_id]
+            self._finalized.add((join_id, fork_run_id))
+            self._fire(join_id, self._spec.joins[join_id].initial_factory(), stack)
             return
         for index, item in enumerate(items):
             self._spawn(edge.dest_id, item, (*stack, ForkStackItem(fork_id, fork_run_id, index)))
 
     def _accumulate(self, join_id: str, value: object, stack: ForkStack) -> None:
-        """Collect one branch's value at a join; fire the join once every branch has arrived."""
+        """Fold one branch's value into a join; fire it when complete or stopped early."""
         if not stack:
             raise GraphRuntimeError(f"join {join_id!r} received a value that is not inside any fork")
         top = stack[-1]
         key = (join_id, top.fork_run_id)
+        if key in self._finalized:
+            return
+        join = self._spec.joins[join_id]
         state = self._reducers.get(key)
         if state is None:
-            state = self._reducers[key] = _JoinState(downstream_stack=stack[:-1], items=[])
-        state.items.append((top.branch_index, value))
-        if len(state.items) == self._expected.get(top.fork_run_id):
-            del self._reducers[key]
-            ordered = [item for _, item in sorted(state.items)]
-            self._fire(join_id, ordered, state.downstream_stack)
+            state = self._reducers[key] = _JoinState(
+                downstream_stack=stack[:-1],
+                acc=join.initial_factory(),
+                count=0,
+                items=[],
+            )
+        expected = self._expected.get(top.fork_run_id)
+        if join.ordered:
+            state.items.append((top.branch_index, value))
+            if len(state.items) == expected:
+                self._finalize_and_fire(join_id, key, self._fold_ordered(join, state), state.downstream_stack)
+            return
+        ctx: ReducerContext[StateT, DepsT] = ReducerContext(state=self._state, deps=self._deps)
+        state.acc = join.reducer(ctx, state.acc, value)
+        state.count += 1
+        if ctx.stopped or state.count == expected:
+            self._finalize_and_fire(join_id, key, state.acc, state.downstream_stack)
 
-    def _fire(self, join_id: str, items: list[object], stack: ForkStack) -> None:
-        """Forward a completed join's collected list to its successors."""
+    def _fold_ordered(self, join: AnyJoin, state: _JoinState) -> object:
+        """Fold a join's branch values in source order, starting from its seeded accumulator."""
+        ctx: ReducerContext[StateT, DepsT] = ReducerContext(state=self._state, deps=self._deps)
+        acc = state.acc
+        for _, value in sorted(state.items, key=lambda pair: pair[0]):
+            acc = join.reducer(ctx, acc, value)
+        return acc
+
+    def _finalize_and_fire(self, join_id: str, key: tuple[str, str], acc: object, stack: ForkStack) -> None:
+        """Mark a join firing complete and forward its folded value to its successors."""
+        self._reducers.pop(key, None)
+        self._finalized.add(key)
+        self._fire(join_id, acc, stack)
+
+    def _fire(self, join_id: str, value: object, stack: ForkStack) -> None:
+        """Forward a completed join's folded value to its successors."""
         for edge in self._spec.edges_by_source.get(join_id, []):
-            self._dispatch(edge, items, stack)
+            self._dispatch(edge, value, stack)
 
     def _spawn(self, node_id: str, value: object, stack: ForkStack) -> None:
         """Schedule a step to run, tracking it as in-flight."""

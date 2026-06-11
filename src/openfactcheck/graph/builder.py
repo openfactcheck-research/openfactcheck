@@ -31,22 +31,22 @@ Example:
 
 from __future__ import annotations
 
+import inspect
 from collections import deque
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, get_args, get_type_hints
 
 from openfactcheck.graph.errors import GraphBuildError, GraphValidationError
 from openfactcheck.graph.graph import Graph
+from openfactcheck.graph.join import Join, reduce_list_append
 from openfactcheck.graph.step import (
     END_ID,
     START_ID,
-    AnyJoin,
     AnyStep,
     DestNode,
     Edge,
     EdgeKind,
     EndNode,
-    Join,
     SourceNode,
     StartNode,
     Step,
@@ -56,8 +56,16 @@ from openfactcheck.graph.step import (
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Iterable
 
+    from openfactcheck.graph.join import AnyJoin, ContextReducer, NormalizedReducer, Reducer, ReducerContext
+
 _STEP_CONTEXT_ARITY = 3
 """Number of type arguments on ``StepContext[State, Deps, Input]``."""
+
+_PLAIN_REDUCER_ARITY = 2
+"""Parameter count of a plain ``(accumulator, value)`` reducer."""
+
+_CONTEXT_REDUCER_ARITY = 3
+"""Parameter count of a ``(context, accumulator, value)`` reducer."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -156,15 +164,53 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self._steps[node.id] = node
         return node
 
-    def join[ItemT](self, item_type: type[ItemT], *, node_id: str | None = None) -> Join[ItemT, list[ItemT]]:
-        """Create a fan-in node that collects each branch's output into a list.
+    def collect[ItemT](self, item_type: type[ItemT], *, node_id: str | None = None) -> Join[ItemT, list[ItemT]]:
+        """Create a fan-in node that gathers each branch's output into an ordered list.
 
         Wire it as the destination of a fanned-out subpath (the
         [`map`][EdgePathBuilder.map] target's successor) and as the source of
         the edge carrying the collected list. The list preserves the source
-        collection's order.
+        collection's order regardless of the order branches finish in.
 
         Args:
+            item_type: The type of each branch's value, recorded for build-time
+                edge validation.
+            node_id: Identifier for the join node; defaults to a generated name.
+
+        Returns:
+            The registered [`Join`][Join] node, collecting into a list.
+
+        Raises:
+            GraphBuildError: If the chosen node id is already in use.
+        """
+        return self._add_join(
+            item_type=item_type,
+            reducer=self._normalize_reducer(reduce_list_append),
+            initial_factory=list,
+            ordered=True,
+            node_id=node_id,
+        )
+
+    def reduce[ItemT, AccT](
+        self,
+        reducer: Reducer[AccT, ItemT] | ContextReducer[StateT, DepsT, AccT, ItemT],
+        initial_factory: Callable[[], AccT],
+        *,
+        item_type: type[ItemT],
+        node_id: str | None = None,
+    ) -> Join[ItemT, AccT]:
+        """Create a fan-in node that folds each branch's output with a reducer.
+
+        The reducer takes the running accumulator and one branch's value and
+        returns the next accumulator, or takes a
+        [`ReducerContext`][ReducerContext] first to read run state and stop
+        early. Branches are folded in the order they finish, so a reducer should
+        not depend on order; use [`collect`][GraphBuilder.collect] when order
+        matters.
+
+        Args:
+            reducer: The fold applied to each branch's value.
+            initial_factory: Builds the accumulator each time the join fires.
             item_type: The type of each branch's value, recorded for build-time
                 edge validation.
             node_id: Identifier for the join node; defaults to a generated name.
@@ -173,14 +219,59 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             The registered [`Join`][Join] node.
 
         Raises:
-            GraphBuildError: If the chosen node id is already in use.
+            GraphBuildError: If the chosen node id is already in use, or the
+                reducer takes neither two nor three parameters.
         """
+        return self._add_join(
+            item_type=item_type,
+            reducer=self._normalize_reducer(reducer),
+            initial_factory=initial_factory,
+            ordered=False,
+            node_id=node_id,
+        )
+
+    def _add_join(
+        self,
+        *,
+        item_type: object,
+        reducer: NormalizedReducer,
+        initial_factory: Callable[[], object],
+        ordered: bool,
+        node_id: str | None,
+    ) -> AnyJoin:
+        """Register a join node, generating an id when one is not given."""
         join_id = node_id or f"__join_{len(self._joins)}__"
         if join_id in self._joins or join_id in self._steps:
             raise GraphBuildError(f"duplicate node id {join_id!r}")
-        join: Join[ItemT, list[ItemT]] = Join(id=join_id, item_type=item_type)
+        join: AnyJoin = Join(
+            id=join_id,
+            item_type=item_type,
+            reducer=reducer,
+            initial_factory=initial_factory,
+            ordered=ordered,
+        )
         self._joins[join_id] = join
         return join
+
+    @staticmethod
+    def _normalize_reducer(reducer: Callable[..., object]) -> NormalizedReducer:
+        """Wrap a plain ``(accumulator, value)`` reducer to the context-taking form.
+
+        Raises:
+            GraphBuildError: If the reducer takes neither two nor three parameters.
+        """
+        arity = len(inspect.signature(reducer).parameters)
+        if arity == _CONTEXT_REDUCER_ARITY:
+            return reducer
+        if arity == _PLAIN_REDUCER_ARITY:
+
+            def with_context(ctx: ReducerContext[object, object], acc: object, value: object) -> object:  # noqa: ARG001 - context unused for a plain reducer.
+                return reducer(acc, value)
+
+            return with_context
+        raise GraphBuildError(
+            f"reducer must take (accumulator, value) or (context, accumulator, value), got {arity} parameters",
+        )
 
     def edge_from[EdgeOutputT](
         self,

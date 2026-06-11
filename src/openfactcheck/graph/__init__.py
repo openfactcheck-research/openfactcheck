@@ -43,7 +43,19 @@ from openfactcheck.graph.errors import (
     GraphValidationError,
 )
 from openfactcheck.graph.graph import DEFAULT_CONCURRENCY, Graph
-from openfactcheck.graph.step import Edge, EdgeKind, EndNode, Join, StartNode, Step, StepContext
+from openfactcheck.graph.join import (
+    ContextReducer,
+    Join,
+    Reducer,
+    ReducerContext,
+    reduce_dict_update,
+    reduce_first,
+    reduce_list_append,
+    reduce_list_extend,
+    reduce_null,
+    reduce_sum,
+)
+from openfactcheck.graph.step import Edge, EdgeKind, EndNode, StartNode, Step, StepContext
 
 # Builder and graph
 __all__ = [
@@ -58,10 +70,23 @@ __all__ += [
     "Edge",
     "EdgeKind",
     "EndNode",
-    "Join",
     "StartNode",
     "Step",
     "StepContext",
+]
+
+# Joins and reducers
+__all__ += [
+    "ContextReducer",
+    "Join",
+    "Reducer",
+    "ReducerContext",
+    "reduce_dict_update",
+    "reduce_first",
+    "reduce_list_append",
+    "reduce_list_extend",
+    "reduce_null",
+    "reduce_sum",
 ]
 
 # Errors

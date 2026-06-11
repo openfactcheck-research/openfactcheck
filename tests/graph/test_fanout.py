@@ -21,7 +21,7 @@ def test_Graph_run_fanout_collects_in_source_order() -> None:
         await asyncio.sleep(0.01 if ctx.inputs == "a" else 0.0)
         return ctx.inputs.upper()
 
-    collect = g.join(str)
+    collect = g.collect(str)
     g.add(
         g.edge_from(g.start_node).to(split),
         g.edge_from(split).map().to(shout),
@@ -45,7 +45,7 @@ def test_Graph_run_fanout_empty_collection() -> None:
     async def shout(ctx: StepContext[None, None, str]) -> str:
         return ctx.inputs.upper()
 
-    collect = g.join(str)
+    collect = g.collect(str)
     g.add(
         g.edge_from(g.start_node).to(passthrough),
         g.edge_from(passthrough).map().to(shout),
@@ -81,7 +81,7 @@ def test_Graph_arun_bounds_concurrency() -> None:
         ctx.state.current -= 1
         return ctx.inputs
 
-    collect = g.join(int)
+    collect = g.collect(int)
     g.add(
         g.edge_from(g.start_node).to(fan),
         g.edge_from(fan).map().to(work),
@@ -96,9 +96,9 @@ def test_Graph_arun_bounds_concurrency() -> None:
     assert probe.peak <= 2
 
 
-def test_Graph_join_duplicate_id() -> None:
+def test_Graph_collect_duplicate_id() -> None:
     g = GraphBuilder[None, None, str, list[str]]()
-    g.join(str, node_id="dup")
+    g.collect(str, node_id="dup")
 
     with pytest.raises(GraphBuildError):
-        g.join(str, node_id="dup")
+        g.collect(str, node_id="dup")

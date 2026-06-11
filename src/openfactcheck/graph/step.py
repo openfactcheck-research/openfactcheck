@@ -17,6 +17,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
+from openfactcheck.graph.join import Join
+
 START_ID = "__start__"
 """Fixed identifier of every graph's start node."""
 
@@ -126,32 +128,8 @@ class Edge:
     """Whether the edge delivers the whole output or fans an iterable per item."""
 
 
-@dataclass(frozen=True, slots=True)
-class Join[ItemT, AccT]:
-    """A fan-in node that combines the branch outputs of a fork into one value.
-
-    Collects the outputs of a fanned-out subpath, gathering each branch's value
-    into a list. The result flows to its single successor once every branch of
-    the fork has arrived.
-    """
-
-    id: str
-    """Stable identifier of this join node."""
-
-    item_type: object | None
-    """The per-branch input type, recorded for build-time edge validation."""
-
-    if TYPE_CHECKING:
-        # Pin ItemT to a contravariant position so a join reads as a valid edge
-        # destination for its item type. Type-checker only; no runtime method.
-        def _accepts(self, value: ItemT) -> None: ...
-
-
 type AnyStep = Step[Any, Any, Any, Any]
 """A step with its type parameters erased, for the executor's wiring layer."""
-
-type AnyJoin = Join[Any, Any]
-"""A join with its type parameters erased, for the executor's wiring layer."""
 
 type SourceNode[StateT, DepsT, OutputT] = Step[StateT, DepsT, Any, OutputT] | StartNode[OutputT] | Join[Any, OutputT]
 """A node an edge may leave, projected to the output type it emits.
