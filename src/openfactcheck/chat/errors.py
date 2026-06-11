@@ -33,6 +33,13 @@ Example:
     ```
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pydantic import ValidationError
+
 
 class ChatModelError(Exception):
     """Base exception for every chat layer error.
@@ -47,10 +54,8 @@ class ProviderNotFoundError(ChatModelError):
 
     Raised when [`ChatClient`][ChatClient] is constructed with a
     [`ModelConfig`][ModelConfig] whose provider has no registered
-    [`BaseProvider`][BaseProvider], or when a backend's optional SDK
-    dependency is missing from the environment (install with
-    ``pip install 'openfactcheck[openai]'``, ``openfactcheck[anthropic]``,
-    and so on).
+    [`BaseProvider`][BaseProvider], or when a backend's provider SDK cannot
+    be imported.
     """
 
 
@@ -88,3 +93,19 @@ class UnsupportedFeatureError(ChatModelError):
     behavior the provider can't satisfy, for example tool calls on a model
     that doesn't support them.
     """
+
+
+class StructuredOutputError(ChatModelError):
+    """A structured-output reply could not be validated against the requested model.
+
+    Raised by [`ChatClient.completion_as`][ChatClient.completion_as] and its
+    async peer after the reply fails validation and any configured reprompts
+    are exhausted. The raw reply text and the underlying validation error are
+    attached for inspection.
+    """
+
+    def __init__(self, message: str, *, raw: str, validation_error: ValidationError) -> None:
+        """Record the raw reply text and the validation error that rejected it."""
+        self.raw = raw
+        self.validation_error = validation_error
+        super().__init__(message)

@@ -105,15 +105,28 @@ def test_to_chat_response_concatenates_text_blocks() -> None:
     assert result.message.content == "Part one. Part two."
 
 
-def test_to_chat_response_rejects_no_text_blocks() -> None:
-    """A response with only non-text blocks raises UnsupportedFeatureError."""
+def test_to_chat_response_tool_use_becomes_json() -> None:
+    """A forced-tool reply JSON-encodes the tool input into the message content."""
     response = SimpleNamespace(
-        content=[SimpleNamespace(type="tool_use", id="tu_1")],
+        content=[SimpleNamespace(type="tool_use", id="tu_1", name="Person", input={"name": "Ada", "age": 36})],
         usage=SimpleNamespace(input_tokens=10, output_tokens=3),
         stop_reason="tool_use",
     )
 
-    with pytest.raises(UnsupportedFeatureError, match="no text blocks"):
+    result = to_chat_response(response, model="claude-sonnet-4-6", provider="anthropic")
+
+    assert result.message.content == '{"name": "Ada", "age": 36}'
+
+
+def test_to_chat_response_rejects_blocks_without_text_or_tool_use() -> None:
+    """A response with neither text nor tool_use blocks raises UnsupportedFeatureError."""
+    response = SimpleNamespace(
+        content=[SimpleNamespace(type="thinking", thinking="...")],
+        usage=SimpleNamespace(input_tokens=10, output_tokens=3),
+        stop_reason="end_turn",
+    )
+
+    with pytest.raises(UnsupportedFeatureError, match="no text or tool_use blocks"):
         to_chat_response(response, model="claude-sonnet-4-6", provider="anthropic")
 
 

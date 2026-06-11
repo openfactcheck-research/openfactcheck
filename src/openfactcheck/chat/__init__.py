@@ -48,6 +48,7 @@ from openfactcheck.chat.errors import (
     ProviderError,
     ProviderNotFoundError,
     RateLimitError,
+    StructuredOutputError,
     UnsupportedFeatureError,
 )
 from openfactcheck.chat.messages import (
@@ -59,7 +60,7 @@ from openfactcheck.chat.messages import (
     UserMessage,
 )
 from openfactcheck.chat.providers.base import BaseProvider, ProviderCapabilities
-from openfactcheck.chat.requests import ChatRequest
+from openfactcheck.chat.requests import ChatRequest, ResponseFormat
 from openfactcheck.chat.responses import ChatResponse, FinishReason, StreamEnd, StreamEvent, TextDelta, Usage
 
 # Client
@@ -92,6 +93,7 @@ __all__ += [
     "ChatRequest",
     "ChatResponse",
     "FinishReason",
+    "ResponseFormat",
     "StreamEnd",
     "StreamEvent",
     "TextDelta",
@@ -105,6 +107,7 @@ __all__ += [
     "ProviderError",
     "ProviderNotFoundError",
     "RateLimitError",
+    "StructuredOutputError",
     "UnsupportedFeatureError",
 ]
 

@@ -24,7 +24,7 @@ from openfactcheck.chat.backends.anthropic.normalize import (
     to_chat_response,
     to_stream_end,
 )
-from openfactcheck.chat.backends.anthropic.params import Kwargs, config_to_kwargs
+from openfactcheck.chat.backends.anthropic.params import Kwargs, config_to_kwargs, response_format_kwargs
 from openfactcheck.chat.responses import TextDelta
 
 if TYPE_CHECKING:
@@ -61,6 +61,8 @@ class AnthropicBackend:
         system, messages = to_anthropic_messages(request.messages)
         if system is not None:
             kwargs["system"] = system
+        if request.response_format is not None:
+            kwargs.update(response_format_kwargs(request.response_format))
         return kwargs, messages
 
     def completion(self, request: ChatRequest) -> ChatResponse:

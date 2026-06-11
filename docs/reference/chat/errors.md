@@ -38,3 +38,8 @@
     options:
       show_root_heading: true
       heading_level: 3
+
+::: openfactcheck.chat.errors.StructuredOutputError
+    options:
+      show_root_heading: true
+      heading_level: 3

@@ -234,3 +234,14 @@ class RuntimeConfig(BaseModel):
 
     Set to ``0`` to disable. Must be non-negative.
     """
+
+    max_parse_retries: int = Field(default=0, ge=0)
+    """Reprompts allowed when a structured-output reply fails validation.
+
+    Applies only to [`ChatClient.completion_as`][ChatClient.completion_as] and
+    its async peer. ``0`` raises on the first validation failure; a positive
+    value re-sends the validation error to the model up to that many times
+    before raising. Distinct from
+    [`max_retries`][RuntimeConfig.max_retries], which retries transport
+    failures. Must be non-negative.
+    """

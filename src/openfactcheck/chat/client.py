@@ -29,10 +29,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pydantic import BaseModel, ValidationError
+
 from openfactcheck.chat.backends import _default_backend  # pyright: ignore[reportPrivateUsage] - internal API.
 from openfactcheck.chat.config import RuntimeConfig
+from openfactcheck.chat.errors import StructuredOutputError, UnsupportedFeatureError
+from openfactcheck.chat.messages import UserMessage
 from openfactcheck.chat.providers import get_provider
-from openfactcheck.chat.requests import ChatRequest
+from openfactcheck.chat.requests import ChatRequest, ResponseFormat
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator
@@ -90,8 +94,18 @@ class ChatClient:
         self._provider.validate_config(config)
         self._backend: ChatBackend = backend if backend is not None else _default_backend(config.provider)
 
-    def _build_request(self, messages: list[Message]) -> ChatRequest:
-        return ChatRequest(messages=messages, config=self._config, runtime=self._runtime)
+    def _build_request(self, messages: list[Message], response_format: ResponseFormat | None = None) -> ChatRequest:
+        return ChatRequest(
+            messages=messages,
+            config=self._config,
+            runtime=self._runtime,
+            response_format=response_format,
+        )
+
+    def _require_structured_output(self) -> None:
+        """Raise if the configured provider does not support structured output."""
+        if not self._provider.capabilities.structured_output:
+            raise UnsupportedFeatureError(f"provider '{self._config.provider}' does not support structured output.")
 
     def completion(self, messages: list[Message]) -> ChatResponse:
         """Send messages and return a complete response.
@@ -139,3 +153,100 @@ class ChatClient:
         """
         async for event in self._backend.astream(self._build_request(messages)):
             yield event
+
+    def completion_as[T: BaseModel](self, messages: list[Message], response_model: type[T]) -> T:
+        """Send messages and return a validated instance of ``response_model``.
+
+        Asks the model to reply with JSON matching ``response_model`` and
+        validates the reply into an instance. On a validation failure, the
+        error is sent back to the model and the call retried up to
+        [`max_parse_retries`][RuntimeConfig.max_parse_retries] times before
+        raising.
+
+        Args:
+            messages: The conversation to send.
+            response_model: The Pydantic model the reply must conform to.
+
+        Returns:
+            A validated instance of ``response_model``.
+
+        Raises:
+            UnsupportedFeatureError: The provider does not support structured
+                output.
+            StructuredOutputError: The reply still failed validation after the
+                allowed retries.
+        """
+        self._require_structured_output()
+        response_format = ResponseFormat(
+            name=response_model.__name__,
+            json_schema=response_model.model_json_schema(),
+        )
+        conversation = list(messages)
+        retries_left = self._runtime.max_parse_retries
+        while True:
+            response = self._backend.completion(self._build_request(conversation, response_format))
+            raw = response.message.content
+            try:
+                return response_model.model_validate_json(raw)
+            except ValidationError as exc:
+                if retries_left <= 0:
+                    raise StructuredOutputError(
+                        f"reply did not match {response_model.__name__} after retries.",
+                        raw=raw,
+                        validation_error=exc,
+                    ) from exc
+                retries_left -= 1
+                reprompt = UserMessage(
+                    content=(
+                        "Your previous reply did not match the required schema. "
+                        f"Fix these errors and return only valid JSON:\n{exc}"
+                    ),
+                )
+                conversation = [*conversation, response.message, reprompt]
+
+    async def acompletion_as[T: BaseModel](self, messages: list[Message], response_model: type[T]) -> T:
+        """Send messages and await a validated instance of ``response_model``.
+
+        Async peer of [`completion_as`][ChatClient.completion_as]; same
+        validation and retry behavior.
+
+        Args:
+            messages: The conversation to send.
+            response_model: The Pydantic model the reply must conform to.
+
+        Returns:
+            A validated instance of ``response_model``.
+
+        Raises:
+            UnsupportedFeatureError: The provider does not support structured
+                output.
+            StructuredOutputError: The reply still failed validation after the
+                allowed retries.
+        """
+        self._require_structured_output()
+        response_format = ResponseFormat(
+            name=response_model.__name__,
+            json_schema=response_model.model_json_schema(),
+        )
+        conversation = list(messages)
+        retries_left = self._runtime.max_parse_retries
+        while True:
+            response = await self._backend.acompletion(self._build_request(conversation, response_format))
+            raw = response.message.content
+            try:
+                return response_model.model_validate_json(raw)
+            except ValidationError as exc:
+                if retries_left <= 0:
+                    raise StructuredOutputError(
+                        f"reply did not match {response_model.__name__} after retries.",
+                        raw=raw,
+                        validation_error=exc,
+                    ) from exc
+                retries_left -= 1
+                reprompt = UserMessage(
+                    content=(
+                        "Your previous reply did not match the required schema. "
+                        f"Fix these errors and return only valid JSON:\n{exc}"
+                    ),
+                )
+                conversation = [*conversation, response.message, reprompt]
