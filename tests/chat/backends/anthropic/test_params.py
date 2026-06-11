@@ -2,9 +2,10 @@
 
 import pytest
 
-from openfactcheck.chat.backends.anthropic.params import config_to_kwargs
+from openfactcheck.chat.backends.anthropic.params import config_to_kwargs, response_format_kwargs
 from openfactcheck.chat.config import AnthropicConfig, OpenAIConfig
 from openfactcheck.chat.errors import ProviderError, UnsupportedFeatureError
+from openfactcheck.chat.requests import ResponseFormat
 
 
 def test_config_to_kwargs_minimal() -> None:
@@ -52,3 +53,14 @@ def test_config_to_kwargs_rejects_openai() -> None:
 
     with pytest.raises(UnsupportedFeatureError, match="does not support provider 'openai'"):
         config_to_kwargs(config)
+
+
+def test_response_format_kwargs_uses_forced_tool() -> None:
+    """Structured output becomes a single forced tool whose input_schema is the model schema."""
+    schema = {"type": "object", "properties": {"name": {"type": "string"}}}
+    response_format = ResponseFormat(name="Person", json_schema=schema)
+
+    kwargs = response_format_kwargs(response_format)
+
+    assert kwargs["tools"] == [{"name": "Person", "input_schema": schema}]
+    assert kwargs["tool_choice"] == {"type": "tool", "name": "Person"}

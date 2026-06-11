@@ -6,6 +6,7 @@ only places in this package that touch ``anthropic`` SDK types directly.
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, TypedDict
 
 from openfactcheck.chat.errors import (
@@ -62,14 +63,23 @@ def to_chat_response(
     model: str,
     provider: ProviderName,
 ) -> ChatResponse:
-    """Convert an Anthropic ``Message`` to our ChatResponse."""
+    """Convert an Anthropic ``Message`` to our ChatResponse.
+
+    For a forced-tool structured-output reply, the tool input is JSON-encoded
+    into the message content so callers see the same JSON-string contract as
+    other backends.
+    """
+    tool_inputs = [block.input for block in response.content if block.type == "tool_use"]
     text_parts = [block.text for block in response.content if block.type == "text"]
-    if not text_parts:
+    if tool_inputs:
+        content = json.dumps(tool_inputs[0])
+    elif text_parts:
+        content = "".join(text_parts)
+    else:
         raise UnsupportedFeatureError(
-            "Anthropic response contained no text blocks (only thinking/tool_use). "
+            "Anthropic response contained no text or tool_use blocks (only thinking). "
             "Non-text content is not yet supported."
         )
-    content = "".join(text_parts)
 
     usage = Usage(
         input_tokens=response.usage.input_tokens,

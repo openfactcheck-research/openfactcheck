@@ -24,7 +24,7 @@ from openfactcheck.chat.backends.openai.normalize import (
     to_openai_messages,
     to_stream_end,
 )
-from openfactcheck.chat.backends.openai.params import Kwargs, config_to_kwargs
+from openfactcheck.chat.backends.openai.params import Kwargs, config_to_kwargs, response_format_kwargs
 from openfactcheck.chat.responses import TextDelta
 
 if TYPE_CHECKING:
@@ -81,6 +81,8 @@ class OpenAIBackend:
     def _prepare(self, request: ChatRequest) -> tuple[Kwargs, list[OpenAIMessage]]:
         """Build SDK kwargs and convert messages for ``request``."""
         kwargs = config_to_kwargs(request.config)
+        if request.response_format is not None:
+            kwargs.update(response_format_kwargs(request.response_format))
         messages = to_openai_messages(request.messages)
         return kwargs, messages
 

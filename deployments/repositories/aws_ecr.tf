@@ -16,6 +16,31 @@ resource "aws_ecr_repository" "openfactcheck_api" {
   }
 }
 
+# Allow the Lambda service to pull images from this repo (fixes ImageAccessDenied).
+resource "aws_ecr_repository_policy" "openfactcheck_api" {
+  repository = aws_ecr_repository.openfactcheck_api.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "LambdaECRImageRetrievalPolicy"
+        Effect    = "Allow"
+        Principal = { Service = "lambda.amazonaws.com" }
+        Action = [
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer"
+        ]
+        Condition = {
+          StringLike = {
+            "aws:sourceArn" = "arn:aws:lambda:${var.aws_region}:${var.aws_account}:function:openfactcheck-*"
+          }
+        }
+      }
+    ]
+  })
+}
+
 resource "aws_ecr_lifecycle_policy" "openfactcheck_api" {
   repository = aws_ecr_repository.openfactcheck_api.name
 
@@ -53,6 +78,31 @@ resource "aws_ecr_repository" "openfactcheck_engine" {
   tags = {
     Name = "OpenFactCheck - ECR - Engine - ${terraform.workspace} - ${var.aws_region}"
   }
+}
+
+# Allow the Lambda service to pull images from this repo (fixes ImageAccessDenied).
+resource "aws_ecr_repository_policy" "openfactcheck_engine" {
+  repository = aws_ecr_repository.openfactcheck_engine.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "LambdaECRImageRetrievalPolicy"
+        Effect    = "Allow"
+        Principal = { Service = "lambda.amazonaws.com" }
+        Action = [
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer"
+        ]
+        Condition = {
+          StringLike = {
+            "aws:sourceArn" = "arn:aws:lambda:${var.aws_region}:${var.aws_account}:function:openfactcheck-*"
+          }
+        }
+      }
+    ]
+  })
 }
 
 resource "aws_ecr_lifecycle_policy" "openfactcheck_engine" {

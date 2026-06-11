@@ -13,6 +13,7 @@ from openfactcheck.chat.errors import ProviderError, UnsupportedFeatureError
 
 if TYPE_CHECKING:
     from openfactcheck.chat.config import ModelConfig
+    from openfactcheck.chat.requests import ResponseFormat
 
 type Kwargs = dict[str, Any]
 """Keyword arguments for ``anthropic.messages.create``.
@@ -52,3 +53,16 @@ def config_to_kwargs(config: ModelConfig) -> Kwargs:
     if config.thinking and config.thinking_budget_tokens is not None:
         params["thinking"] = {"type": "enabled", "budget_tokens": config.thinking_budget_tokens}
     return params
+
+
+def response_format_kwargs(response_format: ResponseFormat) -> Kwargs:
+    """Build forced tool-use kwargs for Anthropic structured output.
+
+    Anthropic has no ``response_format`` parameter, so a single tool whose
+    ``input_schema`` is the requested schema is declared and forced via
+    ``tool_choice``. The model's tool input is then the structured result.
+    """
+    return {
+        "tools": [{"name": response_format.name, "input_schema": response_format.json_schema}],
+        "tool_choice": {"type": "tool", "name": response_format.name},
+    }

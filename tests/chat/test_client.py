@@ -1,14 +1,42 @@
 """Tests for ChatClient with mocked backend."""
 
+from types import SimpleNamespace
+
 import pytest
+from pydantic import BaseModel
 
 from openfactcheck.chat.backends.anthropic import AnthropicBackend
 from openfactcheck.chat.backends.openai import OpenAIBackend
 from openfactcheck.chat.client import ChatClient
 from openfactcheck.chat.config import AnthropicConfig, OpenAIConfig, RuntimeConfig
+from openfactcheck.chat.errors import StructuredOutputError, UnsupportedFeatureError
 from openfactcheck.chat.messages import AssistantMessage, UserMessage
 from openfactcheck.chat.requests import ChatRequest
 from openfactcheck.chat.responses import ChatResponse, FinishReason, StreamEnd, TextDelta, Usage
+
+
+class _Person(BaseModel):
+    name: str
+    age: int
+
+
+class ScriptedBackend:
+    """Backend test double that returns a scripted sequence of reply contents."""
+
+    def __init__(self, contents: list[str]) -> None:
+        self._contents = contents
+        self.requests: list[ChatRequest] = []
+
+    def _next(self, request: ChatRequest) -> ChatResponse:
+        content = self._contents[len(self.requests)]
+        self.requests.append(request)
+        return ChatResponse(message=AssistantMessage(content=content), model="gpt-4o", provider="openai")
+
+    def completion(self, request: ChatRequest) -> ChatResponse:
+        return self._next(request)
+
+    async def acompletion(self, request: ChatRequest) -> ChatResponse:
+        return self._next(request)
 
 
 class FakeBackend:
@@ -152,3 +180,62 @@ def test_ChatClient_default_backend_anthropic_uses_direct_sdk() -> None:
     client = ChatClient(config=config)
 
     assert isinstance(client._backend, AnthropicBackend)
+
+
+def test_ChatClient_completion_as_returns_model(openai_config: OpenAIConfig) -> None:
+    """completion_as validates the reply into the requested model and sets a response_format."""
+    backend = ScriptedBackend(['{"name": "Ada", "age": 36}'])
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    person = client.completion_as([UserMessage(content="Make a person")], _Person)
+
+    assert person == _Person(name="Ada", age=36)
+    assert backend.requests[0].response_format is not None
+    assert backend.requests[0].response_format.name == "_Person"
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_ChatClient_acompletion_as_returns_model(openai_config: OpenAIConfig) -> None:
+    """acompletion_as validates the reply into the requested model."""
+    backend = ScriptedBackend(['{"name": "Ada", "age": 36}'])
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    person = await client.acompletion_as([UserMessage(content="Make a person")], _Person)
+
+    assert person == _Person(name="Ada", age=36)
+
+
+def test_ChatClient_completion_as_raises_on_invalid(openai_config: OpenAIConfig) -> None:
+    """With max_parse_retries=0, an invalid reply raises StructuredOutputError without retrying."""
+    backend = ScriptedBackend(['{"name": "Ada"}'])
+    client = ChatClient(config=openai_config, runtime=RuntimeConfig(max_parse_retries=0), backend=backend)  # type: ignore[arg-type]
+
+    with pytest.raises(StructuredOutputError) as excinfo:
+        client.completion_as([UserMessage(content="Make a person")], _Person)
+
+    assert len(backend.requests) == 1
+    assert excinfo.value.raw == '{"name": "Ada"}'
+
+
+def test_ChatClient_completion_as_retries_then_succeeds(openai_config: OpenAIConfig) -> None:
+    """A validation failure is reprompted, and the retried reply is returned."""
+    backend = ScriptedBackend(['{"name": "Ada"}', '{"name": "Ada", "age": 36}'])
+    client = ChatClient(config=openai_config, runtime=RuntimeConfig(max_parse_retries=2), backend=backend)  # type: ignore[arg-type]
+
+    person = client.completion_as([UserMessage(content="Make a person")], _Person)
+
+    assert person == _Person(name="Ada", age=36)
+    assert len(backend.requests) == 2
+    # The retry carries the original turn plus the failed reply and a reprompt.
+    assert len(backend.requests[1].messages) == 3
+    assert isinstance(backend.requests[1].messages[-1], UserMessage)
+
+
+def test_ChatClient_completion_as_unsupported_raises(openai_config: OpenAIConfig, mocker) -> None:  # noqa: ANN001 - pytest-mock fixture.
+    """completion_as raises when the provider does not support structured output."""
+    backend = ScriptedBackend(['{"name": "Ada", "age": 36}'])
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+    mocker.patch.object(client._provider, "capabilities", SimpleNamespace(structured_output=False))
+
+    with pytest.raises(UnsupportedFeatureError):
+        client.completion_as([UserMessage(content="Make a person")], _Person)
