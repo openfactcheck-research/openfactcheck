@@ -35,7 +35,7 @@ Example:
     ```
 """
 
-from openfactcheck.graph.builder import EdgeBuilder, GraphBuilder
+from openfactcheck.graph.builder import EdgePathBuilder, GraphBuilder
 from openfactcheck.graph.errors import (
     GraphBuildError,
     GraphError,
@@ -47,7 +47,7 @@ from openfactcheck.graph.step import Edge, EndNode, StartNode, Step, StepContext
 
 # Builder and graph
 __all__ = [
-    "EdgeBuilder",
+    "EdgePathBuilder",
     "Graph",
     "GraphBuilder",
 ]

@@ -72,16 +72,24 @@ class Step[StateT, DepsT, InputT, OutputT]:
 
 
 @dataclass(frozen=True, slots=True)
-class StartNode:
-    """The graph's entry node; the graph input flows out of it."""
+class StartNode[OutputT]:
+    """The graph's entry node; the graph's input value flows out of it.
+
+    Its type parameter is the graph input type, matched against the first
+    step's input type when wiring the entry edge.
+    """
 
     id: str = START_ID
     """Fixed start-node identifier."""
 
 
 @dataclass(frozen=True, slots=True)
-class EndNode:
-    """The graph's terminal node; the value routed into it is the graph output."""
+class EndNode[InputT]:
+    """The graph's terminal node; the value routed into it is the graph output.
+
+    Its type parameter is the graph output type, matched against the last
+    step's output type when wiring the exit edge.
+    """
 
     id: str = END_ID
     """Fixed end-node identifier."""
@@ -101,8 +109,17 @@ class Edge:
 type AnyStep = Step[Any, Any, Any, Any]
 """A step with its type parameters erased, for the executor's wiring layer."""
 
-type SourceNode = AnyStep | StartNode
-"""A node an edge may leave: a step or the start node."""
+type SourceNode[StateT, DepsT, OutputT] = Step[StateT, DepsT, Any, OutputT] | StartNode[OutputT]
+"""A node an edge may leave, projected to the output type it emits.
 
-type DestNode = AnyStep | EndNode
-"""A node an edge may enter: a step or the end node."""
+Lets [`GraphBuilder.edge_from`][GraphBuilder.edge_from] capture a source node's
+output type regardless of what input the node accepts.
+"""
+
+type DestNode[StateT, DepsT, InputT] = Step[StateT, DepsT, InputT, Any] | EndNode[InputT]
+"""A node an edge may enter, projected to the input type it accepts.
+
+Lets [`EdgePathBuilder.to`][EdgePathBuilder.to] require a destination whose
+input type the source node's output can feed, regardless of what the
+destination emits.
+"""

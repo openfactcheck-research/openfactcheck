@@ -54,22 +54,24 @@ _STEP_CONTEXT_ARITY = 3
 
 
 @dataclass(frozen=True, slots=True)
-class EdgeBuilder:
+class EdgePathBuilder[StateT, DepsT, OutputT]:
     """A partially-built edge, awaiting its destination.
 
-    Returned by [`GraphBuilder.edge_from`][GraphBuilder.edge_from]; call
-    [`to`][EdgeBuilder.to] to name the destination and produce an
-    [`Edge`][Edge].
+    Returned by [`GraphBuilder.edge_from`][GraphBuilder.edge_from], carrying the
+    output type of its source node so [`to`][EdgePathBuilder.to] only accepts a
+    destination whose input type the source can feed. A mismatched destination
+    is a type error, caught before the graph is built.
     """
 
     source_id: str
     """Identifier of the node the edge will leave."""
 
-    def to(self, dest: DestNode) -> Edge:
+    def to(self, dest: DestNode[StateT, DepsT, OutputT]) -> Edge:
         """Complete the edge by naming its destination node.
 
         Args:
-            dest: The node the edge enters.
+            dest: The node the edge enters; its input type must accept the
+                source node's output type.
 
         Returns:
             The finished edge from the recorded source to ``dest``.
@@ -96,8 +98,8 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self._name = name
         self._steps: dict[str, AnyStep] = {}
         self._edges: list[Edge] = []
-        self.start_node = StartNode()
-        self.end_node = EndNode()
+        self.start_node: StartNode[InputT] = StartNode()
+        self.end_node: EndNode[OutputT] = EndNode()
 
     def step[StepInputT, StepOutputT](
         self,
@@ -127,16 +129,21 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self._steps[node.id] = node
         return node
 
-    def edge_from(self, source: SourceNode) -> EdgeBuilder:
+    def edge_from[EdgeOutputT](
+        self,
+        source: SourceNode[StateT, DepsT, EdgeOutputT],
+    ) -> EdgePathBuilder[StateT, DepsT, EdgeOutputT]:
         """Begin an edge leaving ``source``.
 
         Args:
             source: The step or start node the edge leaves.
 
         Returns:
-            A builder whose [`to`][EdgeBuilder.to] names the destination.
+            A builder whose [`to`][EdgePathBuilder.to] names the destination,
+            carrying ``source``'s output type so an incompatible destination is
+            a type error.
         """
-        return EdgeBuilder(source.id)
+        return EdgePathBuilder(source.id)
 
     def add(self, *edges: Edge) -> None:
         """Register one or more edges into the graph being built.
