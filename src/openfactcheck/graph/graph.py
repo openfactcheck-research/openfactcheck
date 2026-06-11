@@ -26,6 +26,7 @@ from openfactcheck.graph.errors import GraphPaused, GraphRuntimeError
 from openfactcheck.graph.events import NodeFailed, NodeFinished, NodeStarted, RunFinished
 from openfactcheck.graph.forks import ForkStackItem
 from openfactcheck.graph.join import ReducerContext
+from openfactcheck.graph.mermaid import to_mermaid
 from openfactcheck.graph.persistence.protocols import JoinSnapshot, PausePoint, RunSnapshot, RunStatus, TaskSnapshot
 from openfactcheck.graph.step import EdgeKind, StepContext
 
@@ -36,6 +37,7 @@ if TYPE_CHECKING:
     from openfactcheck.graph.events import GraphEvent, GraphObserver
     from openfactcheck.graph.forks import ForkStack
     from openfactcheck.graph.join import AnyJoin
+    from openfactcheck.graph.mermaid import Direction
     from openfactcheck.graph.pause import AnyPause
     from openfactcheck.graph.persistence.protocols import StateStore
     from openfactcheck.graph.step import AnyStep, Edge
@@ -642,6 +644,25 @@ class Graph[StateT, DepsT, InputT, OutputT]:
         """
         self._spec = spec
         self.name = name
+
+    def mermaid(
+        self, *, direction: Direction = "TD", title: str | None = None, highlight: Iterable[str] | None = None
+    ) -> str:
+        """Render this graph as Mermaid flowchart source.
+
+        Args:
+            direction: Layout direction of the flowchart.
+            title: An optional title shown above the diagram.
+            highlight: Node ids to draw with a highlight style.
+
+        Returns:
+            Mermaid flowchart source as a string.
+        """
+        return to_mermaid(self._spec, direction=direction, title=title, highlight=highlight)
+
+    def __str__(self) -> str:
+        """Return this graph as Mermaid flowchart source."""
+        return to_mermaid(self._spec)
 
     @staticmethod
     def _validated(options: RunOptions | None) -> RunOptions:

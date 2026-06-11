@@ -72,6 +72,7 @@ from openfactcheck.graph.join import (
     reduce_null,
     reduce_sum,
 )
+from openfactcheck.graph.mermaid import to_mermaid
 from openfactcheck.graph.pause import Pause
 from openfactcheck.graph.persistence import (
     FileStateStore,
@@ -132,6 +133,11 @@ __all__ += [
     "reduce_list_extend",
     "reduce_null",
     "reduce_sum",
+]
+
+# Visualization
+__all__ += [
+    "to_mermaid",
 ]
 
 # Persistence
