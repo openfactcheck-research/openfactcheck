@@ -43,6 +43,9 @@ class Branch:
     condition: Matcher | None
     """The test that selects this branch, or ``None`` for the default branch."""
 
+    max_iterations: int | None = None
+    """For a branch that loops back to an earlier node, the most times it may be taken before the run fails."""
+
 
 class Decision[StateT, DepsT, InputT]:
     """A routing node that forwards its input to the first matching branch.
@@ -57,52 +60,78 @@ class Decision[StateT, DepsT, InputT]:
         self.id = node_id
         self.input_type = input_type
 
-    def when(self, predicate: Callable[[InputT], bool], dest: DestNode[StateT, DepsT, Any]) -> Branch:
+    def when(
+        self,
+        predicate: Callable[[InputT], bool],
+        dest: DestNode[StateT, DepsT, Any],
+        *,
+        max_iterations: int | None = None,
+    ) -> Branch:
         """Route to ``dest`` when ``predicate`` returns true for the value.
 
         Args:
             predicate: Test applied to the routed value.
             dest: The node this branch routes to.
+            max_iterations: When this branch loops back to an earlier node, the
+                most times it may be taken before the run fails.
 
         Returns:
             The branch to register with [`GraphBuilder.add`][GraphBuilder.add].
         """
-        return Branch(self.id, dest.id, cast("Matcher", predicate))
+        return Branch(self.id, dest.id, cast("Matcher", predicate), max_iterations)
 
-    def when_type(self, cls: type, dest: DestNode[StateT, DepsT, Any]) -> Branch:
+    def when_type(
+        self,
+        cls: type,
+        dest: DestNode[StateT, DepsT, Any],
+        *,
+        max_iterations: int | None = None,
+    ) -> Branch:
         """Route to ``dest`` when the value is an instance of ``cls``.
 
         Args:
             cls: Type the value is tested against with ``isinstance``.
             dest: The node this branch routes to.
+            max_iterations: When this branch loops back to an earlier node, the
+                most times it may be taken before the run fails.
 
         Returns:
             The branch to register with [`GraphBuilder.add`][GraphBuilder.add].
         """
-        return Branch(self.id, dest.id, lambda value: isinstance(value, cls))
+        return Branch(self.id, dest.id, lambda value: isinstance(value, cls), max_iterations)
 
-    def when_equals(self, expected: object, dest: DestNode[StateT, DepsT, Any]) -> Branch:
+    def when_equals(
+        self,
+        expected: object,
+        dest: DestNode[StateT, DepsT, Any],
+        *,
+        max_iterations: int | None = None,
+    ) -> Branch:
         """Route to ``dest`` when the value equals ``expected``.
 
         Args:
             expected: Value compared against the routed value with ``==``.
             dest: The node this branch routes to.
+            max_iterations: When this branch loops back to an earlier node, the
+                most times it may be taken before the run fails.
 
         Returns:
             The branch to register with [`GraphBuilder.add`][GraphBuilder.add].
         """
-        return Branch(self.id, dest.id, lambda value: value == expected)
+        return Branch(self.id, dest.id, lambda value: value == expected, max_iterations)
 
-    def otherwise(self, dest: DestNode[StateT, DepsT, Any]) -> Branch:
+    def otherwise(self, dest: DestNode[StateT, DepsT, Any], *, max_iterations: int | None = None) -> Branch:
         """Route to ``dest`` when no other branch matched.
 
         Args:
             dest: The node values reaching no other branch route to.
+            max_iterations: When this branch loops back to an earlier node, the
+                most times it may be taken before the run fails.
 
         Returns:
             The default branch to register with [`GraphBuilder.add`][GraphBuilder.add].
         """
-        return Branch(self.id, dest.id, None)
+        return Branch(self.id, dest.id, None, max_iterations)
 
     if TYPE_CHECKING:
         # Pin InputT to a contravariant position so a decision reads as a valid

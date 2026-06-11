@@ -95,6 +95,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._reducers: dict[tuple[str, str], _JoinState] = {}
         self._finalized: set[tuple[str, str]] = set()
         self._expected: dict[str, int] = {}
+        self._loops: dict[tuple[str, str, ForkStack], int] = {}
         self._fork_seq = 0
         self._final: object = _UNSET
 
@@ -150,19 +151,31 @@ class _GraphRun[StateT, DepsT, OutputT]:
 
     def _decide(self, decision_id: str, value: object, stack: ForkStack) -> None:
         """Route a value to the first matching branch of a decision, or its default."""
-        default_dest: str | None = None
+        default: Branch | None = None
         for branch in self._spec.decisions[decision_id]:
             if branch.condition is None:
-                default_dest = branch.dest_id
+                default = branch
             elif branch.condition(value):
-                self._route(branch.dest_id, value, stack)
+                self._take_branch(branch, value, stack)
                 return
-        if default_dest is not None:
-            self._route(default_dest, value, stack)
+        if default is not None:
+            self._take_branch(default, value, stack)
             return
         raise GraphRuntimeError(
             f"decision {decision_id!r} had no matching branch for a value of type {type(value).__name__}",
         )
+
+    def _take_branch(self, branch: Branch, value: object, stack: ForkStack) -> None:
+        """Route a chosen branch, enforcing its loop bound when it has one."""
+        if branch.max_iterations is not None:
+            key = (branch.source_id, branch.dest_id, stack)
+            count = self._loops.get(key, 0) + 1
+            self._loops[key] = count
+            if count > branch.max_iterations:
+                raise GraphRuntimeError(
+                    f"loop {branch.source_id!r} -> {branch.dest_id!r} exceeded its bound of {branch.max_iterations}",
+                )
+        self._route(branch.dest_id, value, stack)
 
     def _fan_out(self, edge: Edge, value: object, stack: ForkStack) -> None:
         """Fan an iterable output out to one branch per item, recording the branch count."""
