@@ -23,9 +23,10 @@ from typing import TYPE_CHECKING, cast
 from openfactcheck.graph.errors import GraphRuntimeError
 from openfactcheck.graph.forks import ForkStackItem
 from openfactcheck.graph.join import ReducerContext
-from openfactcheck.graph.step import END_ID, START_ID, EdgeKind, StepContext
+from openfactcheck.graph.step import EdgeKind, StepContext
 
 if TYPE_CHECKING:
+    from openfactcheck.graph.decision import Branch
     from openfactcheck.graph.forks import ForkStack
     from openfactcheck.graph.join import AnyJoin
     from openfactcheck.graph.step import AnyStep, Edge
@@ -38,11 +39,16 @@ DEFAULT_CONCURRENCY = 8
 
 
 @dataclass(frozen=True, slots=True)
-class _GraphSpec:
-    """The immutable, validated definition a run executes against."""
+class GraphSpec:
+    """The immutable, validated definition a run executes against.
+
+    Assembled by [`GraphBuilder.build`][GraphBuilder] and handed to a
+    [`Graph`][Graph]; not constructed directly.
+    """
 
     steps: dict[str, AnyStep]
     joins: dict[str, AnyJoin]
+    decisions: dict[str, list[Branch]]
     edges_by_source: dict[str, list[Edge]]
     fork_join: dict[str, str]
     start_id: str
@@ -77,7 +83,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
     table and the final value are updated without races.
     """
 
-    def __init__(self, spec: _GraphSpec, *, state: StateT, deps: DepsT, concurrency: int) -> None:
+    def __init__(self, spec: GraphSpec, *, state: StateT, deps: DepsT, concurrency: int) -> None:
         """Set up an empty run against a graph definition."""
         self._spec = spec
         self._state = state
@@ -125,15 +131,38 @@ class _GraphRun[StateT, DepsT, OutputT]:
             self._dispatch(edge, output, stack)
 
     def _dispatch(self, edge: Edge, value: object, stack: ForkStack) -> None:
-        """Route one outgoing edge: fan out, finish, accumulate at a join, or spawn a step."""
+        """Route one outgoing edge: fan out an iterable, or deliver the whole value."""
         if edge.kind is EdgeKind.MAP:
             self._fan_out(edge, value, stack)
-        elif edge.dest_id == self._spec.end_id:
-            self._final = value
-        elif edge.dest_id in self._spec.joins:
-            self._accumulate(edge.dest_id, value, stack)
         else:
-            self._spawn(edge.dest_id, value, stack)
+            self._route(edge.dest_id, value, stack)
+
+    def _route(self, dest_id: str, value: object, stack: ForkStack) -> None:
+        """Deliver a value to a node: finish, accumulate at a join, branch, or spawn a step."""
+        if dest_id == self._spec.end_id:
+            self._final = value
+        elif dest_id in self._spec.joins:
+            self._accumulate(dest_id, value, stack)
+        elif dest_id in self._spec.decisions:
+            self._decide(dest_id, value, stack)
+        else:
+            self._spawn(dest_id, value, stack)
+
+    def _decide(self, decision_id: str, value: object, stack: ForkStack) -> None:
+        """Route a value to the first matching branch of a decision, or its default."""
+        default_dest: str | None = None
+        for branch in self._spec.decisions[decision_id]:
+            if branch.condition is None:
+                default_dest = branch.dest_id
+            elif branch.condition(value):
+                self._route(branch.dest_id, value, stack)
+                return
+        if default_dest is not None:
+            self._route(default_dest, value, stack)
+            return
+        raise GraphRuntimeError(
+            f"decision {decision_id!r} had no matching branch for a value of type {type(value).__name__}",
+        )
 
     def _fan_out(self, edge: Edge, value: object, stack: ForkStack) -> None:
         """Fan an iterable output out to one branch per item, recording the branch count."""
@@ -243,32 +272,14 @@ class Graph[StateT, DepsT, InputT, OutputT]:
     peer [`arun`][Graph.arun].
     """
 
-    def __init__(
-        self,
-        *,
-        steps: dict[str, AnyStep],
-        joins: dict[str, AnyJoin],
-        edges_by_source: dict[str, list[Edge]],
-        fork_join: dict[str, str],
-        name: str,
-    ) -> None:
-        """Record the validated nodes and edges of a built graph.
+    def __init__(self, spec: GraphSpec, *, name: str) -> None:
+        """Record the validated definition of a built graph.
 
         Args:
-            steps: Work-bearing nodes keyed by id.
-            joins: Fan-in nodes keyed by id.
-            edges_by_source: Outgoing edges grouped by their source node id.
-            fork_join: Each map fork's id mapped to its downstream join id.
+            spec: The validated nodes, edges, and routing from the builder.
             name: Human-readable name for diagrams and logs.
         """
-        self._spec = _GraphSpec(
-            steps=steps,
-            joins=joins,
-            edges_by_source=edges_by_source,
-            fork_join=fork_join,
-            start_id=START_ID,
-            end_id=END_ID,
-        )
+        self._spec = spec
         self.name = name
 
     async def arun(

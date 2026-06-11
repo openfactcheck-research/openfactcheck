@@ -36,6 +36,7 @@ Example:
 """
 
 from openfactcheck.graph.builder import EdgePathBuilder, GraphBuilder
+from openfactcheck.graph.decision import Branch, Decision
 from openfactcheck.graph.errors import (
     GraphBuildError,
     GraphError,
@@ -67,6 +68,8 @@ __all__ = [
 
 # Nodes and edges
 __all__ += [
+    "Branch",
+    "Decision",
     "Edge",
     "EdgeKind",
     "EndNode",

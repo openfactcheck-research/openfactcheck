@@ -19,6 +19,9 @@ from typing import TYPE_CHECKING, Any
 
 from openfactcheck.graph.join import Join
 
+if TYPE_CHECKING:
+    from openfactcheck.graph.decision import Decision
+
 START_ID = "__start__"
 """Fixed identifier of every graph's start node."""
 
@@ -138,7 +141,9 @@ Lets [`GraphBuilder.edge_from`][GraphBuilder.edge_from] capture a source node's
 output type regardless of what input the node accepts.
 """
 
-type DestNode[StateT, DepsT, InputT] = Step[StateT, DepsT, InputT, Any] | EndNode[InputT] | Join[InputT, Any]
+type DestNode[StateT, DepsT, InputT] = (
+    Step[StateT, DepsT, InputT, Any] | EndNode[InputT] | Join[InputT, Any] | Decision[StateT, DepsT, InputT]
+)
 """A node an edge may enter, projected to the input type it accepts.
 
 Lets [`EdgePathBuilder.to`][EdgePathBuilder.to] require a destination whose

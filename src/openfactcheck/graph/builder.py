@@ -36,8 +36,9 @@ from collections import deque
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, get_args, get_type_hints
 
+from openfactcheck.graph.decision import Branch, Decision
 from openfactcheck.graph.errors import GraphBuildError, GraphValidationError
-from openfactcheck.graph.graph import Graph
+from openfactcheck.graph.graph import Graph, GraphSpec
 from openfactcheck.graph.join import Join, reduce_list_append
 from openfactcheck.graph.step import (
     END_ID,
@@ -56,6 +57,7 @@ from openfactcheck.graph.step import (
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Iterable
 
+    from openfactcheck.graph.decision import AnyDecision
     from openfactcheck.graph.join import AnyJoin, ContextReducer, NormalizedReducer, Reducer, ReducerContext
 
 _STEP_CONTEXT_ARITY = 3
@@ -132,7 +134,9 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self._name = name
         self._steps: dict[str, AnyStep] = {}
         self._joins: dict[str, AnyJoin] = {}
+        self._decisions: dict[str, AnyDecision] = {}
         self._edges: list[Edge] = []
+        self._branches: list[Branch] = []
         self.start_node: StartNode[InputT] = StartNode()
         self.end_node: EndNode[OutputT] = EndNode()
 
@@ -159,10 +163,14 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         """
         input_type, output_type = self._io_types(call)
         node = Step(id=call.__name__, call=call, input_type=input_type, output_type=output_type)
-        if node.id in self._steps or node.id in self._joins:
+        if self._id_taken(node.id):
             raise GraphBuildError(f"duplicate node id {node.id!r}")
         self._steps[node.id] = node
         return node
+
+    def _id_taken(self, node_id: str) -> bool:
+        """Whether a node id is already registered as a step, join, or decision."""
+        return node_id in self._steps or node_id in self._joins or node_id in self._decisions
 
     def collect[ItemT](self, item_type: type[ItemT], *, node_id: str | None = None) -> Join[ItemT, list[ItemT]]:
         """Create a fan-in node that gathers each branch's output into an ordered list.
@@ -241,7 +249,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
     ) -> AnyJoin:
         """Register a join node, generating an id when one is not given."""
         join_id = node_id or f"__join_{len(self._joins)}__"
-        if join_id in self._joins or join_id in self._steps:
+        if self._id_taken(join_id):
             raise GraphBuildError(f"duplicate node id {join_id!r}")
         join: AnyJoin = Join(
             id=join_id,
@@ -273,6 +281,37 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             f"reducer must take (accumulator, value) or (context, accumulator, value), got {arity} parameters",
         )
 
+    def decision[DecisionInputT](
+        self,
+        input_type: type[DecisionInputT],
+        *,
+        node_id: str | None = None,
+    ) -> Decision[StateT, DepsT, DecisionInputT]:
+        """Create a routing node that forwards its input to the first matching branch.
+
+        Wire it as the destination of the edge carrying the value to route, then
+        register its branches (from [`Decision.when`][Decision.when] and friends)
+        with [`add`][GraphBuilder.add]. A value matching no branch and reaching
+        no default branch fails the run.
+
+        Args:
+            input_type: The type of value the decision routes, matched against
+                the output of the edge feeding it.
+            node_id: Identifier for the decision node; defaults to a generated name.
+
+        Returns:
+            The registered [`Decision`][Decision] node.
+
+        Raises:
+            GraphBuildError: If the chosen node id is already in use.
+        """
+        decision_id = node_id or f"__decision_{len(self._decisions)}__"
+        if self._id_taken(decision_id):
+            raise GraphBuildError(f"duplicate node id {decision_id!r}")
+        decision: Decision[StateT, DepsT, DecisionInputT] = Decision(node_id=decision_id, input_type=input_type)
+        self._decisions[decision_id] = decision
+        return decision
+
     def edge_from[EdgeOutputT](
         self,
         source: SourceNode[StateT, DepsT, EdgeOutputT],
@@ -289,13 +328,19 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         """
         return EdgePathBuilder(source.id)
 
-    def add(self, *edges: Edge) -> None:
-        """Register one or more edges into the graph being built.
+    def add(self, *items: Edge | Branch) -> None:
+        """Register edges and decision branches into the graph being built.
 
         Args:
-            edges: Edges produced by [`edge_from`][GraphBuilder.edge_from].
+            items: Edges from [`edge_from`][GraphBuilder.edge_from] and branches
+                from a [`Decision`][Decision]'s branch methods, in any mix.
         """
-        self._edges.extend(edges)
+        for item in items:
+            if isinstance(item, Branch):
+                self._branches.append(item)
+                self._edges.append(Edge(source_id=item.source_id, dest_id=item.dest_id))
+            else:
+                self._edges.append(item)
 
     def build(self) -> Graph[StateT, DepsT, InputT, OutputT]:
         """Validate the assembled graph and return a runnable [`Graph`][Graph].
@@ -314,17 +359,27 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self._validate_reachability(edges_by_source)
         self._validate_edge_types()
         fork_join = self._resolve_fork_joins(edges_by_source)
-        return Graph(
+        spec = GraphSpec(
             steps=self._steps,
             joins=self._joins,
+            decisions=self._group_branches(),
             edges_by_source=edges_by_source,
             fork_join=fork_join,
-            name=self._name,
+            start_id=START_ID,
+            end_id=END_ID,
         )
+        return Graph(spec, name=self._name)
+
+    def _group_branches(self) -> dict[str, list[Branch]]:
+        """Group each decision's branches in registration order."""
+        decisions: dict[str, list[Branch]] = {decision_id: [] for decision_id in self._decisions}
+        for branch in self._branches:
+            decisions[branch.source_id].append(branch)
+        return decisions
 
     def _index_edges(self) -> dict[str, list[Edge]]:
         """Group edges by source after checking that every endpoint is known."""
-        node_ids = {START_ID, END_ID, *self._steps, *self._joins}
+        node_ids = {START_ID, END_ID, *self._steps, *self._joins, *self._decisions}
         edges_by_source: dict[str, list[Edge]] = {}
         for edge in self._edges:
             if edge.source_id not in node_ids:
@@ -340,7 +395,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             raise GraphValidationError("graph has no entry edge from the start node")
         if all(edge.dest_id != END_ID for edge in self._edges):
             raise GraphValidationError("graph has no edge into the end node")
-        for node_id in (*self._steps, *self._joins):
+        for node_id in (*self._steps, *self._joins, *self._decisions):
             if node_id not in edges_by_source:
                 raise GraphValidationError(f"node {node_id!r} has no outgoing edge")
 
@@ -354,7 +409,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
                 if edge.dest_id not in seen:
                     seen.add(edge.dest_id)
                     queue.append(edge.dest_id)
-        unreachable = sorted({*self._steps, *self._joins} - seen)
+        unreachable = sorted({*self._steps, *self._joins, *self._decisions} - seen)
         if unreachable:
             raise GraphValidationError(f"nodes are not reachable from the start node: {unreachable}")
         if END_ID not in seen:
