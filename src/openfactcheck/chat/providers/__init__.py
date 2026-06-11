@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING
 from openfactcheck.chat.errors import ProviderNotFoundError
 from openfactcheck.chat.providers.anthropic import AnthropicProvider
 from openfactcheck.chat.providers.openai import OpenAIProvider
+from openfactcheck.chat.providers.openrouter import OpenRouterProvider
 
 if TYPE_CHECKING:
     from openfactcheck.chat.providers.base import BaseProvider
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
 _PROVIDERS: dict[str, BaseProvider] = {
     "openai": OpenAIProvider(),
     "anthropic": AnthropicProvider(),
+    "openrouter": OpenRouterProvider(),
 }
 
 

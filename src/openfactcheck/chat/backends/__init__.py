@@ -4,10 +4,8 @@ Maps a provider name to its direct-SDK [`ChatBackend`][ChatBackend].
 [`ChatClient`][ChatClient] consults this mapping when a caller does not
 pass ``backend=`` explicitly.
 
-Callers who want a non-default backend, such as
-[`LangChainBackend`][LangChainBackend] for ecosystem reuse or
-[`LiteLLMBackend`][LiteLLMBackend] as a multi-provider gateway, pass the
-backend instance to [`ChatClient`][ChatClient] themselves.
+Callers who want a non-default backend pass the backend instance to
+[`ChatClient`][ChatClient] themselves.
 """
 
 from __future__ import annotations
@@ -16,6 +14,7 @@ from typing import TYPE_CHECKING
 
 from openfactcheck.chat.backends.anthropic import AnthropicBackend
 from openfactcheck.chat.backends.openai import OpenAIBackend
+from openfactcheck.chat.backends.openrouter import OpenRouterBackend
 from openfactcheck.chat.errors import ProviderNotFoundError
 
 if TYPE_CHECKING:
@@ -39,7 +38,9 @@ def _default_backend(provider: ProviderName) -> ChatBackend:  # pyright: ignore[
             ``provider``.
     """
     if provider == "openai":
-        return OpenAIBackend()  # type: ignore[return-value] - satisfies ChatBackend protocol.
+        return OpenAIBackend()
     if provider == "anthropic":
-        return AnthropicBackend()  # type: ignore[return-value] - satisfies ChatBackend protocol.
+        return AnthropicBackend()
+    if provider == "openrouter":
+        return OpenRouterBackend()
     raise ProviderNotFoundError(f"No default backend for provider {provider!r}.")

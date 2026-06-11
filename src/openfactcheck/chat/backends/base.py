@@ -83,7 +83,7 @@ class ChatBackend(Protocol):
         """
         ...
 
-    async def astream(self, request: ChatRequest) -> AsyncIterator[StreamEvent]:
+    def astream(self, request: ChatRequest) -> AsyncIterator[StreamEvent]:
         """Stream a chat completion as typed events over an async iterator.
 
         Args:

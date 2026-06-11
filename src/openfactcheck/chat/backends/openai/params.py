@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from openfactcheck.chat.config import OpenAIConfig
+from openfactcheck.chat.config import OpenAICompatibleConfig
 from openfactcheck.chat.errors import UnsupportedFeatureError
 
 if TYPE_CHECKING:
@@ -32,14 +32,15 @@ def _set_optional(params: Kwargs, key: str, value: object) -> None:
 def config_to_kwargs(config: ModelConfig) -> Kwargs:
     """Translate our typed config to kwargs for ``openai.chat.completions.create``.
 
-    The direct OpenAI SDK backend only supports ``OpenAIConfig``. Passing
-    any other provider config raises
+    The direct OpenAI SDK backend supports OpenAI-compatible configs
+    ([`OpenAIConfig`][OpenAIConfig] and [`OpenRouterConfig`][OpenRouterConfig]).
+    Passing any other provider config raises
     [`UnsupportedFeatureError`][UnsupportedFeatureError].
     """
-    if not isinstance(config, OpenAIConfig):
+    if not isinstance(config, OpenAICompatibleConfig):
         raise UnsupportedFeatureError(
-            f"OpenAI backend does not support provider '{config.provider}'. "
-            f"Use the LangChain or litellm backend for multi-provider support."
+            f"OpenAI backend does not support provider '{config.provider}'; "
+            f"it only accepts OpenAI-compatible configs (OpenAIConfig, OpenRouterConfig)."
         )
 
     params: Kwargs = {"model": config.model}

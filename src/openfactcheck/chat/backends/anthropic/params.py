@@ -38,8 +38,7 @@ def config_to_kwargs(config: ModelConfig) -> Kwargs:
     """
     if not isinstance(config, AnthropicConfig):
         raise UnsupportedFeatureError(
-            f"Anthropic backend does not support provider '{config.provider}'. "
-            f"Use the LangChain or litellm backend for multi-provider support."
+            f"Anthropic backend does not support provider '{config.provider}'; it only accepts AnthropicConfig."
         )
     if config.max_output_tokens is None:
         # Provider-level validation normally catches this at ChatClient construction.

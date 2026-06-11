@@ -8,6 +8,7 @@ from openfactcheck.chat.config import (
     BaseModelConfig,
     ModelConfig,
     OpenAIConfig,
+    OpenRouterConfig,
     RuntimeConfig,
 )
 
@@ -76,6 +77,48 @@ def test_OpenAIConfig_forbids_extra() -> None:
 
 
 # ---------------------------------------------------------------------------
+# OpenRouterConfig
+# ---------------------------------------------------------------------------
+
+
+def test_OpenRouterConfig_minimal() -> None:
+    """OpenRouterConfig with model only."""
+    config = OpenRouterConfig(model="openai/gpt-4o")
+
+    assert config.provider == "openrouter"
+    assert config.model == "openai/gpt-4o"
+
+
+def test_OpenRouterConfig_inherits_openai_style_params() -> None:
+    """OpenRouterConfig accepts the OpenAI-compatible sampling params."""
+    config = OpenRouterConfig(
+        model="anthropic/claude-sonnet-4",
+        temperature=0.5,
+        seed=42,
+        frequency_penalty=0.3,
+        reasoning_effort="high",
+    )
+
+    assert config.temperature == 0.5
+    assert config.seed == 42
+    assert config.frequency_penalty == 0.3
+    assert config.reasoning_effort == "high"
+
+
+def test_OpenRouterConfig_temperature_out_of_range() -> None:
+    """Temperature above 2.0 is rejected."""
+    with pytest.raises(ValidationError):
+        OpenRouterConfig(model="openai/gpt-4o", temperature=3.0)
+
+
+def test_OpenRouterConfig_not_an_openai_config() -> None:
+    """OpenRouterConfig is a distinct type, not an OpenAIConfig."""
+    config = OpenRouterConfig(model="openai/gpt-4o")
+
+    assert not isinstance(config, OpenAIConfig)
+
+
+# ---------------------------------------------------------------------------
 # AnthropicConfig
 # ---------------------------------------------------------------------------
 
@@ -131,6 +174,16 @@ def test_ModelConfig_parses_openai_from_dict() -> None:
 
     assert isinstance(config, OpenAIConfig)
     assert config.model == "gpt-4o"
+
+
+def test_ModelConfig_parses_openrouter_from_dict() -> None:
+    """ModelConfig union dispatches to OpenRouterConfig based on provider field."""
+    adapter = TypeAdapter(ModelConfig)
+
+    config = adapter.validate_python({"provider": "openrouter", "model": "openai/gpt-4o"})
+
+    assert isinstance(config, OpenRouterConfig)
+    assert config.model == "openai/gpt-4o"
 
 
 def test_ModelConfig_parses_anthropic_from_dict() -> None:

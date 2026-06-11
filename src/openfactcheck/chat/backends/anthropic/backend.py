@@ -30,6 +30,8 @@ from openfactcheck.chat.responses import TextDelta
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator
 
+    from anthropic import Anthropic, AsyncAnthropic
+
     from openfactcheck.chat.requests import ChatRequest
     from openfactcheck.chat.responses import ChatResponse, StreamEvent
 
@@ -44,6 +46,14 @@ class AnthropicBackend:
     rejects requests without an explicit output cap, so ``max_output_tokens``
     must be set on the config.
     """
+
+    def _client(self, request: ChatRequest) -> Anthropic:
+        """Build a sync SDK client for ``request``."""
+        return load_anthropic()(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
+
+    def _aclient(self, request: ChatRequest) -> AsyncAnthropic:
+        """Build an async SDK client for ``request``."""
+        return load_async_anthropic()(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
 
     def _prepare(self, request: ChatRequest) -> tuple[Kwargs, list[AnthropicInputMessage]]:
         """Build SDK kwargs and convert messages. System prompt is merged into kwargs."""
@@ -67,7 +77,7 @@ class AnthropicBackend:
             ChatModelError: On any SDK or transport failure.
         """
         kwargs, messages = self._prepare(request)
-        client = load_anthropic()(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
+        client = self._client(request)
         try:
             response = client.messages.create(messages=messages, **kwargs)
         except Exception as exc:
@@ -88,7 +98,7 @@ class AnthropicBackend:
             ChatModelError: On any SDK or transport failure.
         """
         kwargs, messages = self._prepare(request)
-        client = load_async_anthropic()(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
+        client = self._aclient(request)
         try:
             response = await client.messages.create(messages=messages, **kwargs)
         except Exception as exc:
@@ -111,7 +121,7 @@ class AnthropicBackend:
             ChatModelError: On any SDK or transport failure.
         """
         kwargs, messages = self._prepare(request)
-        client = load_anthropic()(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
+        client = self._client(request)
         try:
             stream_iter = client.messages.create(messages=messages, stream=True, **kwargs)
         except Exception as exc:
@@ -151,7 +161,7 @@ class AnthropicBackend:
             ChatModelError: On any SDK or transport failure.
         """
         kwargs, messages = self._prepare(request)
-        client = load_async_anthropic()(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
+        client = self._aclient(request)
         try:
             stream_iter = await client.messages.create(messages=messages, stream=True, **kwargs)
         except Exception as exc:

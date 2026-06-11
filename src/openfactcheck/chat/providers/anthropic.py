@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from openfactcheck.chat.config import AnthropicConfig
 from openfactcheck.chat.errors import ProviderError
 from openfactcheck.chat.providers.base import BaseProvider, ProviderCapabilities
 
@@ -42,8 +43,6 @@ class AnthropicProvider(BaseProvider):
                 [`AnthropicConfig`][AnthropicConfig], or if
                 ``max_output_tokens`` is not set.
         """
-        from openfactcheck.chat.config import AnthropicConfig  # noqa: PLC0415 - avoid circular import.
-
         if not isinstance(config, AnthropicConfig):
             raise ProviderError(f"Expected AnthropicConfig, got {type(config).__name__}.")
         if config.max_output_tokens is None:

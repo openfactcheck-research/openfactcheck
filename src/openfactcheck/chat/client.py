@@ -1,10 +1,10 @@
 """Stateful facade for the chat layer.
 
 [`ChatClient`][ChatClient] is the one type most callers touch. Construct it
-once with a [`ModelConfig`][ModelConfig], then use its four methods to send
-a list of [`Message`][Message] values and receive either a single
-[`ChatResponse`][ChatResponse] or a stream of
-[`StreamEvent`][StreamEvent] values.
+once with a [`ModelConfig`][ModelConfig], then use its four methods to send a
+list of [`Message`][Message] values and receive either a single
+[`ChatResponse`][ChatResponse] or a stream of [`StreamEvent`][StreamEvent]
+values.
 
 Every method comes in sync and async variants:
 
@@ -77,9 +77,7 @@ class ChatClient:
             backend: Backend implementation. Defaults to the direct-SDK
                 backend for the configured provider (for example
                 [`OpenAIBackend`][OpenAIBackend]). Pass an explicit backend
-                such as [`LangChainBackend`][LangChainBackend] or
-                [`LiteLLMBackend`][LiteLLMBackend] to route through another
-                abstraction instead.
+                only to override that default.
 
         Raises:
             ProviderNotFoundError: Provider name is not registered or its
@@ -99,8 +97,7 @@ class ChatClient:
         """Send messages and return a complete response.
 
         Args:
-            messages: Conversation history ending with the turn the model
-                should answer.
+            messages: The conversation to send.
 
         Returns:
             The model's reply along with token usage and finish reason.
@@ -111,8 +108,7 @@ class ChatClient:
         """Send messages and await a complete response.
 
         Args:
-            messages: Conversation history ending with the turn the model
-                should answer.
+            messages: The conversation to send.
 
         Returns:
             The model's reply along with token usage and finish reason.
@@ -123,13 +119,11 @@ class ChatClient:
         """Stream a response as typed events.
 
         Args:
-            messages: Conversation history ending with the turn the model
-                should answer.
+            messages: The conversation to send.
 
         Yields:
             A [`TextDelta`][TextDelta] for each content chunk, then a final
-            [`StreamEnd`][StreamEnd] carrying ``finish_reason`` and
-            ``usage``.
+            [`StreamEnd`][StreamEnd] carrying ``finish_reason`` and ``usage``.
         """
         yield from self._backend.stream(self._build_request(messages))
 
@@ -137,14 +131,11 @@ class ChatClient:
         """Stream a response as typed events over an async iterator.
 
         Args:
-            messages: Conversation history ending with the turn the model
-                should answer.
+            messages: The conversation to send.
 
         Yields:
             A [`TextDelta`][TextDelta] for each content chunk, then a final
-            [`StreamEnd`][StreamEnd] carrying ``finish_reason`` and
-            ``usage``.
+            [`StreamEnd`][StreamEnd] carrying ``finish_reason`` and ``usage``.
         """
-        result = self._backend.astream(self._build_request(messages))
-        async for event in result:  # pyright: ignore[reportGeneralTypeIssues, reportUnknownVariableType] - async generator from protocol.
+        async for event in self._backend.astream(self._build_request(messages)):
             yield event

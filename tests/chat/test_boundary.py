@@ -25,8 +25,6 @@ def _collect_imports(py_file: Path) -> list[tuple[int, str]]:
 @pytest.mark.parametrize(
     ("backend_name", "framework_prefixes"),
     [
-        ("langchain", ("langchain_core", "langchain_openai", "langchain_anthropic")),
-        ("litellm", ("litellm",)),
         ("openai", ("openai",)),
         ("anthropic", ("anthropic",)),
     ],
