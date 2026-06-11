@@ -3,7 +3,7 @@
   "info": {
     "title": "OpenFactCheck API",
     "description": "HTTP reference for the OpenFactCheck server.\n\n- **Interactive sandbox:** live Swagger UI at [`/docs`](https://api.openfactcheck.com/docs), ReDoc at [`/redoc`](https://api.openfactcheck.com/redoc).\n- **Auth:** every non-health endpoint expects an `Authorization: Bearer <token>` header.\n- **Errors:** failures return a structured JSON body with `detail`, `code`, and `status` fields.",
-    "version": "2.0.0a6"
+    "version": "2.0.0a7"
   },
   "paths": {
     "/": {
