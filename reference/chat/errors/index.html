@@ -835,6 +835,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#openfactcheck.chat.errors.StructuredOutputError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;StructuredOutputError
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2613,6 +2624,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#openfactcheck.chat.errors.StructuredOutputError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;StructuredOutputError
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2764,10 +2786,8 @@ branching on the specific cause.</p>
         <p>The requested provider name is not registered or its SDK is not installed.</p>
 <p>Raised when <a class="autorefs autorefs-internal" title="            ChatClient" href="../client/#openfactcheck.chat.client.ChatClient"><code>ChatClient</code></a> is constructed with a
 <a class="autorefs autorefs-internal" title="            ModelConfig" href="../config/#openfactcheck.chat.config.ModelConfig"><code>ModelConfig</code></a> whose provider has no registered
-<a class="autorefs autorefs-internal" title="            BaseProvider" href="../providers/base/#openfactcheck.chat.providers.base.BaseProvider"><code>BaseProvider</code></a>, or when a backend's optional SDK
-dependency is missing from the environment (install with
-<code>pip install 'openfactcheck[openai]'</code>, <code>openfactcheck[anthropic]</code>,
-and so on).</p>
+<a class="autorefs autorefs-internal" title="            BaseProvider" href="../providers/base/#openfactcheck.chat.providers.base.BaseProvider"><code>BaseProvider</code></a>, or when a backend's provider SDK cannot
+be imported.</p>
 
 
 
@@ -2912,6 +2932,79 @@ that doesn't support them.</p>
 
 
 
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="openfactcheck.chat.errors.StructuredOutputError" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">StructuredOutputError</span>
+
+
+<a href="#openfactcheck.chat.errors.StructuredOutputError" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">StructuredOutputError</span><span class="p">(</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">validation_error</span><span class="p">:</span> <span class="n">ValidationError</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            ChatModelError (openfactcheck.chat.errors.ChatModelError)" href="#openfactcheck.chat.errors.ChatModelError">ChatModelError</a></code></p>
+
+
+
+        <p>A structured-output reply could not be validated against the requested model.</p>
+<p>Raised by <a class="autorefs autorefs-internal" title="            completion_as" href="../client/#openfactcheck.chat.client.ChatClient.completion_as"><code>ChatClient.completion_as</code></a> and its
+async peer after the reply fails validation and any configured reprompts
+are exhausted. The raw reply text and the underlying validation error are
+attached for inspection.</p>
+
+        <p>Record the raw reply text and the validation error that rejected it.</p>
+
+
+
+
+
+
+
+
+                  <details class="mkdocstrings-source">
+                    <summary>Source code in <code>src/openfactcheck/chat/errors.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">validation_error</span><span class="p">:</span> <span class="n">ValidationError</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Record the raw reply text and the validation error that rejected it.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="n">raw</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">validation_error</span> <span class="o">=</span> <span class="n">validation_error</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
 
     </div>
 
