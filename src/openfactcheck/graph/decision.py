@@ -60,9 +60,9 @@ class Decision[StateT, DepsT, InputT]:
         self.id = node_id
         self.input_type = input_type
 
-    def when(
-        self,
-        predicate: Callable[[InputT], bool],
+    def when[InputValueT](
+        self: Decision[StateT, DepsT, InputValueT],
+        predicate: Callable[[InputValueT], bool],
         dest: DestNode[StateT, DepsT, Any],
         *,
         max_iterations: int | None = None,

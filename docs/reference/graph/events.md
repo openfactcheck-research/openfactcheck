@@ -1,0 +1,3 @@
+# Events
+
+::: openfactcheck.graph.events

@@ -48,9 +48,8 @@ class GraphPaused(GraphError):  # noqa: N818 - a control-flow signal, not a fail
     """A run reached a pause node and is waiting for external input.
 
     Not a failure: the run snapshotted its state and stopped at a pause node.
-    Inspect [`context`][GraphPaused.context] and [`prompt`][GraphPaused.prompt]
-    to learn what is being asked, then continue with
-    [`Graph.resume_with`][Graph.resume_with], supplying the answer.
+    Inspect ``context`` and ``prompt`` to learn what is being asked, then
+    continue with [`Graph.resume_with`][Graph.resume_with], supplying the answer.
     """
 
     def __init__(self, message: str, *, node_id: str, context: object, prompt: str | None, run_id: str | None) -> None:

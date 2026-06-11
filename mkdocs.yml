@@ -136,6 +136,19 @@ nav:
               - reference/prompts/codecs/index.md
               - reference/prompts/codecs/protocol.md
               - reference/prompts/codecs/markdown.md
+      - Graph:
+          - reference/graph/index.md
+          - Builder: reference/graph/builder.md
+          - Graph and execution: reference/graph/graph.md
+          - Steps: reference/graph/step.md
+          - Joins and reducers: reference/graph/join.md
+          - Decisions: reference/graph/decision.md
+          - Pause: reference/graph/pause.md
+          - Events: reference/graph/events.md
+          - Forks: reference/graph/forks.md
+          - Errors: reference/graph/errors.md
+          - Persistence: reference/graph/persistence.md
+          - Mermaid: reference/graph/mermaid.md
       - API:
           - reference/api/index.md
           - Auth:
