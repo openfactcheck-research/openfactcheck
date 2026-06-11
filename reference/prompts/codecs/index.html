@@ -10,31 +10,31 @@
       
       
       
-        <link rel="canonical" href="https://docs.openfactcheck.com/reference/chat/backends/base/">
+        <link rel="canonical" href="https://docs.openfactcheck.com/reference/prompts/codecs/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../errors/">
       
       
-        <link rel="next" href="../openai/">
+        <link rel="next" href="protocol/">
       
       
         
       
       
-      <link rel="icon" href="../../../../assets/logo/favicon.svg">
+      <link rel="icon" href="../../../assets/logo/favicon.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>ChatBackend protocol - OpenFactCheck</title>
+        <title>Codecs - OpenFactCheck</title>
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,13 +53,13 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
     
-      <link rel="stylesheet" href="../../../../stylesheets/mkdocsoad.css">
+      <link rel="stylesheet" href="../../../stylesheets/mkdocsoad.css">
     
-    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#chatbackend-protocol" class="md-skip">
+        <a href="#codecs" class="md-skip">
           Skip to content
         </a>
       
@@ -98,9 +98,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../.." title="OpenFactCheck" class="md-header__button md-logo" aria-label="OpenFactCheck" data-md-component="logo">
+    <a href="../../.." title="OpenFactCheck" class="md-header__button md-logo" aria-label="OpenFactCheck" data-md-component="logo">
       
-  <img src="../../../../assets/logo/logo_dark.svg" alt="logo">
+  <img src="../../../assets/logo/logo_dark.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -117,7 +117,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ChatBackend protocol
+              Codecs
             
           </span>
         </div>
@@ -230,7 +230,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -253,7 +253,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../../" class="md-tabs__link">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -289,9 +289,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../.." title="OpenFactCheck" class="md-nav__button md-logo" aria-label="OpenFactCheck" data-md-component="logo">
+    <a href="../../.." title="OpenFactCheck" class="md-nav__button md-logo" aria-label="OpenFactCheck" data-md-component="logo">
       
-  <img src="../../../../assets/logo/logo_dark.svg" alt="logo">
+  <img src="../../../assets/logo/logo_dark.svg" alt="logo">
 
     </a>
     OpenFactCheck
@@ -318,7 +318,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -381,7 +381,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../" class="md-nav__link ">
+            <a href="../../" class="md-nav__link ">
               
   
   
@@ -425,7 +425,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../rest/" class="md-nav__link">
+      <a href="../../rest/" class="md-nav__link">
         
   
   
@@ -450,8 +450,6 @@
                 
   
   
-    
-  
   
   
     
@@ -489,15 +487,17 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../" class="md-nav__link ">
+            <a href="../../chat/" class="md-nav__link ">
               
   
   
@@ -521,7 +521,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -541,7 +541,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../client/" class="md-nav__link">
+      <a href="../../chat/client/" class="md-nav__link">
         
   
   
@@ -569,7 +569,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../messages/" class="md-nav__link">
+      <a href="../../chat/messages/" class="md-nav__link">
         
   
   
@@ -597,7 +597,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../requests/" class="md-nav__link">
+      <a href="../../chat/requests/" class="md-nav__link">
         
   
   
@@ -625,7 +625,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../responses/" class="md-nav__link">
+      <a href="../../chat/responses/" class="md-nav__link">
         
   
   
@@ -653,7 +653,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../config/" class="md-nav__link">
+      <a href="../../chat/config/" class="md-nav__link">
         
   
   
@@ -681,7 +681,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../errors/" class="md-nav__link">
+      <a href="../../chat/errors/" class="md-nav__link">
         
   
   
@@ -742,7 +742,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../providers/" class="md-nav__link ">
+            <a href="../../chat/providers/" class="md-nav__link ">
               
   
   
@@ -786,7 +786,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../providers/base/" class="md-nav__link">
+      <a href="../../chat/providers/base/" class="md-nav__link">
         
   
   
@@ -814,7 +814,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../providers/openai/" class="md-nav__link">
+      <a href="../../chat/providers/openai/" class="md-nav__link">
         
   
   
@@ -842,7 +842,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../providers/openrouter/" class="md-nav__link">
+      <a href="../../chat/providers/openrouter/" class="md-nav__link">
         
   
   
@@ -870,7 +870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../providers/anthropic/" class="md-nav__link">
+      <a href="../../chat/providers/anthropic/" class="md-nav__link">
         
   
   
@@ -903,8 +903,6 @@
                 
   
   
-    
-  
   
   
     
@@ -931,15 +929,17 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_9" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3_9" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../chat/backends/" class="md-nav__link ">
               
   
   
@@ -963,7 +963,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_9_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_9_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_3_9">
             <span class="md-nav__icon md-icon"></span>
             
@@ -980,37 +980,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ChatBackend protocol
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../chat/backends/base/" class="md-nav__link">
         
   
   
@@ -1026,87 +999,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ChatBackend
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" ChatBackend">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend.completion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;completion
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend.acompletion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;acompletion
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend.stream" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend.astream" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;astream
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1119,7 +1011,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../openai/" class="md-nav__link">
+      <a href="../../chat/backends/openai/" class="md-nav__link">
         
   
   
@@ -1147,7 +1039,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../openrouter/" class="md-nav__link">
+      <a href="../../chat/backends/openrouter/" class="md-nav__link">
         
   
   
@@ -1175,7 +1067,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../anthropic/" class="md-nav__link">
+      <a href="../../chat/backends/anthropic/" class="md-nav__link">
         
   
   
@@ -1216,8 +1108,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -1247,17 +1141,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../prompts/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1281,7 +1173,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1301,7 +1193,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../prompts/template/" class="md-nav__link">
+      <a href="../template/" class="md-nav__link">
         
   
   
@@ -1329,7 +1221,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../prompts/prompt/" class="md-nav__link">
+      <a href="../prompt/" class="md-nav__link">
         
   
   
@@ -1357,7 +1249,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../prompts/variables/" class="md-nav__link">
+      <a href="../variables/" class="md-nav__link">
         
   
   
@@ -1385,7 +1277,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../prompts/errors/" class="md-nav__link">
+      <a href="../errors/" class="md-nav__link">
         
   
   
@@ -1410,6 +1302,8 @@
                 
   
   
+    
+  
   
   
     
@@ -1432,17 +1326,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../prompts/codecs/" class="md-nav__link ">
+            <a href="./" class="md-nav__link md-nav__link--active">
               
   
   
@@ -1460,13 +1352,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2_4_6" id="__nav_2_4_6_label" tabindex="0">
+              <label class="md-nav__link md-nav__link--active" for="__nav_2_4_6" id="__nav_2_4_6_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_4_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_4_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_4_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1486,7 +1378,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../prompts/codecs/protocol/" class="md-nav__link">
+      <a href="protocol/" class="md-nav__link">
         
   
   
@@ -1514,7 +1406,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../prompts/codecs/markdown/" class="md-nav__link">
+      <a href="markdown/" class="md-nav__link">
         
   
   
@@ -1594,7 +1486,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../api/" class="md-nav__link ">
+            <a href="../../api/" class="md-nav__link ">
               
   
   
@@ -1669,7 +1561,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../api/auth/" class="md-nav__link ">
+            <a href="../../api/auth/" class="md-nav__link ">
               
   
   
@@ -1713,7 +1605,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/auth/protocol/" class="md-nav__link">
+      <a href="../../api/auth/protocol/" class="md-nav__link">
         
   
   
@@ -1741,7 +1633,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/auth/cognito/" class="md-nav__link">
+      <a href="../../api/auth/cognito/" class="md-nav__link">
         
   
   
@@ -1769,7 +1661,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/auth/dev/" class="md-nav__link">
+      <a href="../../api/auth/dev/" class="md-nav__link">
         
   
   
@@ -1836,7 +1728,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../api/models/" class="md-nav__link ">
+            <a href="../../api/models/" class="md-nav__link ">
               
   
   
@@ -1880,7 +1772,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/models/project/" class="md-nav__link">
+      <a href="../../api/models/project/" class="md-nav__link">
         
   
   
@@ -1908,7 +1800,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/models/workspace/" class="md-nav__link">
+      <a href="../../api/models/workspace/" class="md-nav__link">
         
   
   
@@ -1936,7 +1828,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/models/user/" class="md-nav__link">
+      <a href="../../api/models/user/" class="md-nav__link">
         
   
   
@@ -2005,7 +1897,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../api/repositories/" class="md-nav__link ">
+            <a href="../../api/repositories/" class="md-nav__link ">
               
   
   
@@ -2049,7 +1941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/repositories/protocols/" class="md-nav__link">
+      <a href="../../api/repositories/protocols/" class="md-nav__link">
         
   
   
@@ -2077,7 +1969,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/repositories/constants/" class="md-nav__link">
+      <a href="../../api/repositories/constants/" class="md-nav__link">
         
   
   
@@ -2136,7 +2028,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../api/repositories/dynamodb/" class="md-nav__link ">
+            <a href="../../api/repositories/dynamodb/" class="md-nav__link ">
               
   
   
@@ -2180,7 +2072,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/repositories/dynamodb/base/" class="md-nav__link">
+      <a href="../../api/repositories/dynamodb/base/" class="md-nav__link">
         
   
   
@@ -2208,7 +2100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/repositories/dynamodb/projects/" class="md-nav__link">
+      <a href="../../api/repositories/dynamodb/projects/" class="md-nav__link">
         
   
   
@@ -2236,7 +2128,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/repositories/dynamodb/workspaces/" class="md-nav__link">
+      <a href="../../api/repositories/dynamodb/workspaces/" class="md-nav__link">
         
   
   
@@ -2301,7 +2193,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../api/repositories/sqlite/" class="md-nav__link ">
+            <a href="../../api/repositories/sqlite/" class="md-nav__link ">
               
   
   
@@ -2345,7 +2237,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/repositories/sqlite/projects/" class="md-nav__link">
+      <a href="../../api/repositories/sqlite/projects/" class="md-nav__link">
         
   
   
@@ -2373,7 +2265,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/repositories/sqlite/workspaces/" class="md-nav__link">
+      <a href="../../api/repositories/sqlite/workspaces/" class="md-nav__link">
         
   
   
@@ -2417,7 +2309,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/errors/" class="md-nav__link">
+      <a href="../../api/errors/" class="md-nav__link">
         
   
   
@@ -2480,55 +2372,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend" class="md-nav__link">
+  <a href="#lookup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ChatBackend
+        Lookup
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label=" ChatBackend">
+    <nav class="md-nav" aria-label="Lookup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend.completion" class="md-nav__link">
+  <a href="#openfactcheck.prompts.codecs.codec_for_path" class="md-nav__link">
     <span class="md-ellipsis">
       
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;completion
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend.acompletion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;acompletion
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend.stream" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stream
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#openfactcheck.chat.backends.base.ChatBackend.astream" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;astream
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;codec_for_path
       
     </span>
   </a>
@@ -2537,6 +2396,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pages
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2560,7 +2430,7 @@
   
 
 
-<h1 id="chatbackend-protocol"><code>ChatBackend</code> protocol<a class="headerlink" href="#chatbackend-protocol" title="Permanent link">&para;</a></h1>
+<h1 id="codecs">Codecs<a class="headerlink" href="#codecs" title="Permanent link">&para;</a></h1>
 
 
 <div class="doc doc-object doc-module">
@@ -2570,22 +2440,18 @@
 
     <div class="doc doc-contents first">
 
-        <p>Protocol for chat execution backends.</p>
-<p>A backend owns the actual SDK call for a given provider.
-<a class="autorefs autorefs-internal" title="            ChatBackend" href="#openfactcheck.chat.backends.base.ChatBackend"><code>ChatBackend</code></a> is the replaceable execution boundary that
-<a class="autorefs autorefs-internal" title="            ChatClient" href="../../client/#openfactcheck.chat.client.ChatClient"><code>ChatClient</code></a> talks to; the rest of the chat layer depends
-only on the protocol, never on a concrete backend.</p>
-<p>Four methods describe the full surface: sync and async variants of
-single-shot completion and streaming. Implementations accept a
-<a class="autorefs autorefs-internal" title="            ChatRequest" href="../../requests/#openfactcheck.chat.requests.ChatRequest"><code>ChatRequest</code></a> and produce a <a class="autorefs autorefs-internal" title="            ChatResponse" href="../../responses/#openfactcheck.chat.responses.ChatResponse"><code>ChatResponse</code></a>
-or a stream of <a class="autorefs autorefs-internal" title="            StreamEvent
+        <p>Serialization formats for prompts.</p>
+<p>The <a class="autorefs autorefs-internal" title="            PromptCodec" href="protocol/#openfactcheck.prompts.codecs.protocol.PromptCodec"><code>PromptCodec</code></a> Protocol is the extension seam.
+<a class="autorefs autorefs-internal" title="            MarkdownPromptCodec" href="markdown/#openfactcheck.prompts.codecs.markdown.MarkdownPromptCodec"><code>MarkdownPromptCodec</code></a> is the one concrete codec
+that ships in v1; future codecs (YAML, JSON) register their file
+extensions in <a class="autorefs autorefs-internal" title="            codec_for_path" href="#openfactcheck.prompts.codecs.codec_for_path"><code>codec_for_path</code></a>
+and become loadable through <a class="autorefs autorefs-internal" title="            from_file
 
 
   
-      module-attribute
-  " href="../../responses/#openfactcheck.chat.responses.StreamEvent"><code>StreamEvent</code></a> values, mapping any SDK or
-transport error to a <a class="autorefs autorefs-internal" title="            ChatModelError" href="../../errors/#openfactcheck.chat.errors.ChatModelError"><code>ChatModelError</code></a> subclass.</p>
-<p>See <a class="autorefs autorefs-internal" title="            OpenAIBackend" href="../openai/#openfactcheck.chat.backends.openai.backend.OpenAIBackend"><code>OpenAIBackend</code></a> for a reference implementation.</p>
+      classmethod
+  " href="../template/#openfactcheck.prompts.template.PromptTemplate.from_file"><code>PromptTemplate.from_file</code></a>
+with no further change.</p>
 
 
 
@@ -2606,70 +2472,30 @@ transport error to a <a class="autorefs autorefs-internal" title="            Ch
 
 
 
-<div class="doc doc-object doc-class">
 
 
 
-<h2 id="openfactcheck.chat.backends.base.ChatBackend" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ChatBackend</span>
+  </div>
 
+    </div>
 
-<a href="#openfactcheck.chat.backends.base.ChatBackend" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-            <p class="doc doc-class-bases">
-              Bases: <code><span title="typing.Protocol">Protocol</span></code></p>
-
-
-
-        <p>Execution backend for a single chat provider.</p>
-<p>Implementations take a <a class="autorefs autorefs-internal" title="            ChatRequest" href="../../requests/#openfactcheck.chat.requests.ChatRequest"><code>ChatRequest</code></a>, issue the provider
-SDK call, and return a <a class="autorefs autorefs-internal" title="            ChatResponse" href="../../responses/#openfactcheck.chat.responses.ChatResponse"><code>ChatResponse</code></a> or a stream of
-<a class="autorefs autorefs-internal" title="            StreamEvent
-
-
-  
-      module-attribute
-  " href="../../responses/#openfactcheck.chat.responses.StreamEvent"><code>StreamEvent</code></a> values. Errors are mapped to
-<a class="autorefs autorefs-internal" title="            ChatModelError" href="../../errors/#openfactcheck.chat.errors.ChatModelError"><code>ChatModelError</code></a> subclasses so callers handle a
-single error surface regardless of the underlying SDK.</p>
-
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
+</div><h2 id="lookup">Lookup<a class="headerlink" href="#lookup" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
 
 
-<h3 id="openfactcheck.chat.backends.base.ChatBackend.completion" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">completion</span>
+<h3 id="openfactcheck.prompts.codecs.codec_for_path" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">codec_for_path</span>
 
 
-<a href="#openfactcheck.chat.backends.base.ChatBackend.completion" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">completion</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">ChatRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponse</span>
+<a href="#openfactcheck.prompts.codecs.codec_for_path" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">codec_for_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PromptCodec</span>
 </code></pre></div>
 
-    <div class="doc doc-contents ">
+    <div class="doc doc-contents first">
 
-        <p>Execute a single chat completion and return the full response.</p>
+        <p>Return the codec registered for <code>path</code>'s file extension.</p>
 
 
 <table>
@@ -2682,17 +2508,16 @@ single error surface regardless of the underlying SDK.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>request</code>
+                <code>path</code>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>Messages, model configuration, and runtime settings
-bundled for the call.</p>
+                <p>File path whose suffix selects the codec.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            ChatRequest (openfactcheck.chat.requests.ChatRequest)" href="../../requests/#openfactcheck.chat.requests.ChatRequest">ChatRequest</a></code>
+                      <code><span title="pathlib.Path">Path</span></code>
                   </span>
               </p>
             </td>
@@ -2702,8 +2527,15 @@ bundled for the call.</p>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/openfactcheck/chat/backends/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-38">38</a></span>
+              <summary>Source code in <code>src/openfactcheck/prompts/codecs/__init__.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-31">31</a></span>
+<span class="normal"><a href="#__codelineno-0-32">32</a></span>
+<span class="normal"><a href="#__codelineno-0-33">33</a></span>
+<span class="normal"><a href="#__codelineno-0-34">34</a></span>
+<span class="normal"><a href="#__codelineno-0-35">35</a></span>
+<span class="normal"><a href="#__codelineno-0-36">36</a></span>
+<span class="normal"><a href="#__codelineno-0-37">37</a></span>
+<span class="normal"><a href="#__codelineno-0-38">38</a></span>
 <span class="normal"><a href="#__codelineno-0-39">39</a></span>
 <span class="normal"><a href="#__codelineno-0-40">40</a></span>
 <span class="normal"><a href="#__codelineno-0-41">41</a></span>
@@ -2717,421 +2549,39 @@ bundled for the call.</p>
 <span class="normal"><a href="#__codelineno-0-49">49</a></span>
 <span class="normal"><a href="#__codelineno-0-50">50</a></span>
 <span class="normal"><a href="#__codelineno-0-51">51</a></span>
-<span class="normal"><a href="#__codelineno-0-52">52</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="k">def</span><span class="w"> </span><span class="nf">completion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ChatRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponse</span><span class="p">:</span>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute a single chat completion and return the full response.</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">        request: Messages, model configuration, and runtime settings</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="sd">            bundled for the call.</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a><span class="sd">        The model&#39;s reply along with token usage and finish reason.</span>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        ChatModelError: On any failure (authentication, rate limit,</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">            provider error, unsupported feature, etc.).</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="o">...</span>
+<span class="normal"><a href="#__codelineno-0-52">52</a></span>
+<span class="normal"><a href="#__codelineno-0-53">53</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span class="k">def</span><span class="w"> </span><span class="nf">codec_for_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PromptCodec</span><span class="p">:</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the codec registered for ``path``&#39;s file extension.</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33"></a>
+<a id="__codelineno-0-34" name="__codelineno-0-34"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35"></a><span class="sd">        path: File path whose suffix selects the codec.</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36"></a>
+<a id="__codelineno-0-37" name="__codelineno-0-37"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="sd">        The codec registered for the suffix.</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41"></a><span class="sd">        PromptFormatError: No codec is registered for the suffix.</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43"></a>    <span class="n">codec</span> <span class="o">=</span> <span class="n">_CODEC_BY_SUFFIX</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span class="k">if</span> <span class="n">codec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45"></a>        <span class="n">supported</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_CODEC_BY_SUFFIX</span><span class="p">))</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46"></a>        <span class="k">raise</span> <span class="n">PromptFormatError</span><span class="p">(</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47"></a>            <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48"></a>            <span class="n">line</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49"></a>            <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;no codec registered for this file extension&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a>            <span class="n">expected</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;one of: </span><span class="si">{</span><span class="n">supported</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a>            <span class="n">got</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">or</span> <span class="s2">&quot;(none)&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>        <span class="p">)</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a>    <span class="k">return</span> <span class="n">codec</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
 
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="openfactcheck.chat.backends.base.ChatBackend.acompletion" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">acompletion</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-<a href="#openfactcheck.chat.backends.base.ChatBackend.acompletion" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">acompletion</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">ChatRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponse</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Execute a single chat completion asynchronously and return the full response.</p>
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">PARAMETER</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>request</code>
-            </td>
-            <td class="doc-param-details">
-              <div class="doc-md-description">
-                <p>Messages, model configuration, and runtime settings
-bundled for the call.</p>
-              </div>
-              <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            ChatRequest (openfactcheck.chat.requests.ChatRequest)" href="../../requests/#openfactcheck.chat.requests.ChatRequest">ChatRequest</a></code>
-                  </span>
-              </p>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/openfactcheck/chat/backends/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-54">54</a></span>
-<span class="normal"><a href="#__codelineno-0-55">55</a></span>
-<span class="normal"><a href="#__codelineno-0-56">56</a></span>
-<span class="normal"><a href="#__codelineno-0-57">57</a></span>
-<span class="normal"><a href="#__codelineno-0-58">58</a></span>
-<span class="normal"><a href="#__codelineno-0-59">59</a></span>
-<span class="normal"><a href="#__codelineno-0-60">60</a></span>
-<span class="normal"><a href="#__codelineno-0-61">61</a></span>
-<span class="normal"><a href="#__codelineno-0-62">62</a></span>
-<span class="normal"><a href="#__codelineno-0-63">63</a></span>
-<span class="normal"><a href="#__codelineno-0-64">64</a></span>
-<span class="normal"><a href="#__codelineno-0-65">65</a></span>
-<span class="normal"><a href="#__codelineno-0-66">66</a></span>
-<span class="normal"><a href="#__codelineno-0-67">67</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">acompletion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ChatRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ChatResponse</span><span class="p">:</span>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute a single chat completion asynchronously and return the full response.</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a><span class="sd">        request: Messages, model configuration, and runtime settings</span>
-<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">            bundled for the call.</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a>
-<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a><span class="sd">        The model&#39;s reply along with token usage and finish reason.</span>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="sd">        ChatModelError: On any failure.</span>
-<a id="__codelineno-0-66" name="__codelineno-0-66"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="o">...</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="openfactcheck.chat.backends.base.ChatBackend.stream" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">stream</span>
-
-
-<a href="#openfactcheck.chat.backends.base.ChatBackend.stream" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stream</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">ChatRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Stream a chat completion as typed events.</p>
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">PARAMETER</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>request</code>
-            </td>
-            <td class="doc-param-details">
-              <div class="doc-md-description">
-                <p>Messages, model configuration, and runtime settings
-bundled for the call.</p>
-              </div>
-              <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            ChatRequest (openfactcheck.chat.requests.ChatRequest)" href="../../requests/#openfactcheck.chat.requests.ChatRequest">ChatRequest</a></code>
-                  </span>
-              </p>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">YIELDS</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <span class="doc-yields-annotation">
-                    <code><a class="autorefs autorefs-internal" title="            StreamEvent
-
-
-  
-      module-attribute
-   (openfactcheck.chat.responses.StreamEvent)" href="../../responses/#openfactcheck.chat.responses.StreamEvent">StreamEvent</a></code>
-                </span>
-            </td>
-            <td class="doc-yields-details">
-              <div class="doc-md-description">
-                <p>A <a class="autorefs autorefs-internal" title="            TextDelta" href="../../responses/#openfactcheck.chat.responses.TextDelta"><code>TextDelta</code></a> for each content chunk, then a</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <span class="doc-yields-annotation">
-                    <code><a class="autorefs autorefs-internal" title="            StreamEvent
-
-
-  
-      module-attribute
-   (openfactcheck.chat.responses.StreamEvent)" href="../../responses/#openfactcheck.chat.responses.StreamEvent">StreamEvent</a></code>
-                </span>
-            </td>
-            <td class="doc-yields-details">
-              <div class="doc-md-description">
-                <p>final <a class="autorefs autorefs-internal" title="            StreamEnd" href="../../responses/#openfactcheck.chat.responses.StreamEnd"><code>StreamEnd</code></a> carrying <code>finish_reason</code> and</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <span class="doc-yields-annotation">
-                    <code><a class="autorefs autorefs-internal" title="            StreamEvent
-
-
-  
-      module-attribute
-   (openfactcheck.chat.responses.StreamEvent)" href="../../responses/#openfactcheck.chat.responses.StreamEvent">StreamEvent</a></code>
-                </span>
-            </td>
-            <td class="doc-yields-details">
-              <div class="doc-md-description">
-                <p><code>usage</code>.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/openfactcheck/chat/backends/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-69">69</a></span>
-<span class="normal"><a href="#__codelineno-0-70">70</a></span>
-<span class="normal"><a href="#__codelineno-0-71">71</a></span>
-<span class="normal"><a href="#__codelineno-0-72">72</a></span>
-<span class="normal"><a href="#__codelineno-0-73">73</a></span>
-<span class="normal"><a href="#__codelineno-0-74">74</a></span>
-<span class="normal"><a href="#__codelineno-0-75">75</a></span>
-<span class="normal"><a href="#__codelineno-0-76">76</a></span>
-<span class="normal"><a href="#__codelineno-0-77">77</a></span>
-<span class="normal"><a href="#__codelineno-0-78">78</a></span>
-<span class="normal"><a href="#__codelineno-0-79">79</a></span>
-<span class="normal"><a href="#__codelineno-0-80">80</a></span>
-<span class="normal"><a href="#__codelineno-0-81">81</a></span>
-<span class="normal"><a href="#__codelineno-0-82">82</a></span>
-<span class="normal"><a href="#__codelineno-0-83">83</a></span>
-<span class="normal"><a href="#__codelineno-0-84">84</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="k">def</span><span class="w"> </span><span class="nf">stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ChatRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]:</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream a chat completion as typed events.</span>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">        request: Messages, model configuration, and runtime settings</span>
-<a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">            bundled for the call.</span>
-<a id="__codelineno-0-75" name="__codelineno-0-75"></a>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">    Yields:</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="sd">        A [`TextDelta`][TextDelta] for each content chunk, then a</span>
-<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">        final [`StreamEnd`][StreamEnd] carrying ``finish_reason`` and</span>
-<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="sd">        ``usage``.</span>
-<a id="__codelineno-0-80" name="__codelineno-0-80"></a>
-<a id="__codelineno-0-81" name="__codelineno-0-81"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-82" name="__codelineno-0-82"></a><span class="sd">        ChatModelError: On any failure.</span>
-<a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-84" name="__codelineno-0-84"></a>    <span class="o">...</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="openfactcheck.chat.backends.base.ChatBackend.astream" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">astream</span>
-
-
-<a href="#openfactcheck.chat.backends.base.ChatBackend.astream" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">astream</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">ChatRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Stream a chat completion as typed events over an async iterator.</p>
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">PARAMETER</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>request</code>
-            </td>
-            <td class="doc-param-details">
-              <div class="doc-md-description">
-                <p>Messages, model configuration, and runtime settings
-bundled for the call.</p>
-              </div>
-              <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            ChatRequest (openfactcheck.chat.requests.ChatRequest)" href="../../requests/#openfactcheck.chat.requests.ChatRequest">ChatRequest</a></code>
-                  </span>
-              </p>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<table>
-      <thead>
-        <tr>
-          <th><span class="doc-section-title">YIELDS</span></th>
-          <th><span>DESCRIPTION</span></th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <span class="doc-yields-annotation">
-                    <code><span title="collections.abc.AsyncIterator">AsyncIterator</span>[<a class="autorefs autorefs-internal" title="            StreamEvent
-
-
-  
-      module-attribute
-   (openfactcheck.chat.responses.StreamEvent)" href="../../responses/#openfactcheck.chat.responses.StreamEvent">StreamEvent</a>]</code>
-                </span>
-            </td>
-            <td class="doc-yields-details">
-              <div class="doc-md-description">
-                <p>A <a class="autorefs autorefs-internal" title="            TextDelta" href="../../responses/#openfactcheck.chat.responses.TextDelta"><code>TextDelta</code></a> for each content chunk, then a</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <span class="doc-yields-annotation">
-                    <code><span title="collections.abc.AsyncIterator">AsyncIterator</span>[<a class="autorefs autorefs-internal" title="            StreamEvent
-
-
-  
-      module-attribute
-   (openfactcheck.chat.responses.StreamEvent)" href="../../responses/#openfactcheck.chat.responses.StreamEvent">StreamEvent</a>]</code>
-                </span>
-            </td>
-            <td class="doc-yields-details">
-              <div class="doc-md-description">
-                <p>final <a class="autorefs autorefs-internal" title="            StreamEnd" href="../../responses/#openfactcheck.chat.responses.StreamEnd"><code>StreamEnd</code></a> carrying <code>finish_reason</code> and</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <span class="doc-yields-annotation">
-                    <code><span title="collections.abc.AsyncIterator">AsyncIterator</span>[<a class="autorefs autorefs-internal" title="            StreamEvent
-
-
-  
-      module-attribute
-   (openfactcheck.chat.responses.StreamEvent)" href="../../responses/#openfactcheck.chat.responses.StreamEvent">StreamEvent</a>]</code>
-                </span>
-            </td>
-            <td class="doc-yields-details">
-              <div class="doc-md-description">
-                <p><code>usage</code>.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/openfactcheck/chat/backends/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
-<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
-<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
-<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
-<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
-<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
-<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
-<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
-<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
-<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
-<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
-<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
-<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
-<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
-<span class="normal"><a href="#__codelineno-0-100">100</a></span>
-<span class="normal"><a href="#__codelineno-0-101">101</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-86" name="__codelineno-0-86"></a><span class="k">def</span><span class="w"> </span><span class="nf">astream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">ChatRequest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]:</span>
-<a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream a chat completion as typed events over an async iterator.</span>
-<a id="__codelineno-0-88" name="__codelineno-0-88"></a>
-<a id="__codelineno-0-89" name="__codelineno-0-89"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-90" name="__codelineno-0-90"></a><span class="sd">        request: Messages, model configuration, and runtime settings</span>
-<a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">            bundled for the call.</span>
-<a id="__codelineno-0-92" name="__codelineno-0-92"></a>
-<a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">    Yields:</span>
-<a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="sd">        A [`TextDelta`][TextDelta] for each content chunk, then a</span>
-<a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">        final [`StreamEnd`][StreamEnd] carrying ``finish_reason`` and</span>
-<a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">        ``usage``.</span>
-<a id="__codelineno-0-97" name="__codelineno-0-97"></a>
-<a id="__codelineno-0-98" name="__codelineno-0-98"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="sd">        ChatModelError: On any failure.</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="o">...</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
+</div><h2 id="pages">Pages<a class="headerlink" href="#pages" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="protocol/"><code>PromptCodec</code> protocol</a>: the interface every codec satisfies.</li>
+<li><a href="markdown/"><code>MarkdownPromptCodec</code> class</a>: the codec for YAML-frontmatter markdown prompts.</li>
+</ul>
 
 
 
@@ -3182,12 +2632,12 @@ bundled for the call.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.tracking", "toc.follow", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.tracking", "toc.follow", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../../../../javascripts/nav-code.js"></script>
+        <script src="../../../javascripts/nav-code.js"></script>
       
     
   </body>
