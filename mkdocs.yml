@@ -118,14 +118,24 @@ nav:
               - reference/chat/providers/index.md
               - reference/chat/providers/base.md
               - reference/chat/providers/openai.md
+              - reference/chat/providers/openrouter.md
               - reference/chat/providers/anthropic.md
           - Backends:
               - reference/chat/backends/index.md
               - reference/chat/backends/base.md
               - reference/chat/backends/openai.md
+              - reference/chat/backends/openrouter.md
               - reference/chat/backends/anthropic.md
-              - reference/chat/backends/langchain.md
-              - reference/chat/backends/litellm.md
+      - Prompts:
+          - reference/prompts/index.md
+          - reference/prompts/template.md
+          - reference/prompts/prompt.md
+          - Variables: reference/prompts/variables.md
+          - Errors: reference/prompts/errors.md
+          - Codecs:
+              - reference/prompts/codecs/index.md
+              - reference/prompts/codecs/protocol.md
+              - reference/prompts/codecs/markdown.md
       - API:
           - reference/api/index.md
           - Auth:

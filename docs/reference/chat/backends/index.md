@@ -7,8 +7,7 @@
 
 ## Pages
 
-- [`ChatBackend` protocol](base.md) — the interface every backend satisfies.
-- [`OpenAIBackend` class](openai.md) — direct-SDK backend for OpenAI.
-- [`AnthropicBackend` class](anthropic.md) — direct-SDK backend for Anthropic.
-- [`LangChainBackend` class](langchain.md) — route through LangChain.
-- [`LiteLLMBackend` class](litellm.md) — route through litellm.
+- [`ChatBackend` protocol](base.md): the interface every backend satisfies.
+- [`OpenAIBackend` class](openai.md): direct-SDK backend for OpenAI.
+- [`OpenRouterBackend` class](openrouter.md): OpenRouter via the OpenAI-compatible API.
+- [`AnthropicBackend` class](anthropic.md): direct-SDK backend for Anthropic.

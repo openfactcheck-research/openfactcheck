@@ -14,6 +14,7 @@
 
 ## Pages
 
-- [`BaseProvider` class](base.md) — the abstract base every provider extends.
-- [`OpenAIProvider` class](openai.md) — concrete provider for OpenAI models.
-- [`AnthropicProvider` class](anthropic.md) — concrete provider for Anthropic models.
+- [`BaseProvider` class](base.md): the abstract base every provider extends.
+- [`OpenAIProvider` class](openai.md): concrete provider for OpenAI models.
+- [`OpenRouterProvider` class](openrouter.md): concrete provider for OpenRouter models.
+- [`AnthropicProvider` class](anthropic.md): concrete provider for Anthropic models.

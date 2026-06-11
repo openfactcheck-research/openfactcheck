@@ -12,9 +12,19 @@
       show_root_heading: true
       heading_level: 3
 
+::: openfactcheck.chat.config.OpenAICompatibleConfig
+    options:
+      show_root_heading: true
+      heading_level: 3
+
 ## Provider configs
 
 ::: openfactcheck.chat.config.OpenAIConfig
+    options:
+      show_root_heading: true
+      heading_level: 3
+
+::: openfactcheck.chat.config.OpenRouterConfig
     options:
       show_root_heading: true
       heading_level: 3
