@@ -71,6 +71,15 @@ from openfactcheck.graph.join import (
     reduce_null,
     reduce_sum,
 )
+from openfactcheck.graph.persistence import (
+    FileStateStore,
+    InMemoryStateStore,
+    JoinSnapshot,
+    RunSnapshot,
+    RunStatus,
+    StateStore,
+    TaskSnapshot,
+)
 from openfactcheck.graph.step import Edge, EdgeKind, EndNode, StartNode, Step, StepContext
 
 # Builder and graph
@@ -119,6 +128,17 @@ __all__ += [
     "reduce_list_extend",
     "reduce_null",
     "reduce_sum",
+]
+
+# Persistence
+__all__ += [
+    "FileStateStore",
+    "InMemoryStateStore",
+    "JoinSnapshot",
+    "RunSnapshot",
+    "RunStatus",
+    "StateStore",
+    "TaskSnapshot",
 ]
 
 # Errors

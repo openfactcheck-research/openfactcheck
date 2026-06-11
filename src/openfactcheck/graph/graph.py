@@ -26,6 +26,7 @@ from openfactcheck.graph.errors import GraphRuntimeError
 from openfactcheck.graph.events import NodeFailed, NodeFinished, NodeStarted, RunFinished
 from openfactcheck.graph.forks import ForkStackItem
 from openfactcheck.graph.join import ReducerContext
+from openfactcheck.graph.persistence.protocols import JoinSnapshot, RunSnapshot, RunStatus, TaskSnapshot
 from openfactcheck.graph.step import EdgeKind, StepContext
 
 if TYPE_CHECKING:
@@ -35,6 +36,7 @@ if TYPE_CHECKING:
     from openfactcheck.graph.events import GraphEvent, GraphObserver
     from openfactcheck.graph.forks import ForkStack
     from openfactcheck.graph.join import AnyJoin
+    from openfactcheck.graph.persistence.protocols import StateStore
     from openfactcheck.graph.step import AnyStep, Edge
 
 _UNSET: object = object()
@@ -72,6 +74,12 @@ class RunOptions:
     on_event: GraphObserver | None = None
     """A callback invoked with each progress event during a run, or ``None`` for none."""
 
+    store: StateStore | None = None
+    """A store to snapshot the run to after each task, or ``None`` to not persist."""
+
+    run_id: str | None = None
+    """The id snapshots are saved under; required when ``store`` is set."""
+
 
 @dataclass(frozen=True, slots=True)
 class GraphSpec:
@@ -99,6 +107,7 @@ class _TaskResult:
     fork_stack: ForkStack
     error: Exception | None
     duration: float
+    task_id: int
 
 
 @dataclass(slots=True)
@@ -145,8 +154,13 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._timeout = options.timeout
         self._on_error = options.on_error
         self._observer = options.on_event
+        self._store = options.store
+        self._run_id = options.run_id
         self._results: asyncio.Queue[_TaskResult] = asyncio.Queue()
         self._task_stacks: dict[asyncio.Task[None], ForkStack] = {}
+        self._pending: dict[int, TaskSnapshot] = {}
+        self._restored: list[TaskSnapshot] = []
+        self._task_seq = 0
         self._active = 0
         self._reducers: dict[tuple[str, str], _JoinState] = {}
         self._finalized: set[tuple[str, str]] = set()
@@ -169,25 +183,86 @@ class _GraphRun[StateT, DepsT, OutputT]:
             TimeoutError: If the whole-run timeout elapses.
         """
         self.seed(inputs)
+        return await self._drive()
+
+    async def resume(self) -> OutputT:
+        """Re-run the tasks of a loaded snapshot and finish the run.
+
+        Returns:
+            The value routed into the end node.
+
+        Raises:
+            GraphRuntimeError: If the run finishes without reaching the end node.
+            TimeoutError: If the run's timeout elapses.
+        """
+        for task in self._restored:
+            self._spawn(task.node_id, task.value, task.fork_stack)
+        return await self._drive()
+
+    async def _drive(self) -> OutputT:
+        """Drain the work queue to completion, snapshotting after each task."""
         try:
             async with asyncio.timeout(self._timeout):
                 while True:
                     result = await self.pump()
                     if result is None:
                         break
+                    self._pending.pop(result.task_id, None)
                     if result.error is not None:
                         self._emit(NodeFailed(result.node_id, result.error, result.duration, result.fork_stack))
                         if self._on_error == "fail_fast":
+                            await self._save(RunStatus.FAILED)
                             raise result.error
                         self._drop_failed(result.fork_stack)
-                        continue
-                    self._emit(NodeFinished(result.node_id, result.output, result.duration, result.fork_stack))
-                    self.route_output(result.node_id, result.output, result.fork_stack)
+                    else:
+                        self._emit(NodeFinished(result.node_id, result.output, result.duration, result.fork_stack))
+                        self.route_output(result.node_id, result.output, result.fork_stack)
+                    await self._save(RunStatus.RUNNING)
         finally:
             await self.cancel_pending()
         output = self.finish()
+        await self._save(RunStatus.SUCCEEDED, final_output=output)
         self._emit(RunFinished(output))
         return output
+
+    def load(self, snapshot: RunSnapshot) -> None:
+        """Restore run state from a snapshot so [`resume`][_GraphRun.resume] can continue it."""
+        self._reducers = {
+            key: _JoinState(state.downstream_stack, state.acc, state.count, list(state.items))
+            for key, state in snapshot.reducers.items()
+        }
+        self._expected = dict(snapshot.expected)
+        self._loops = dict(snapshot.loops)
+        self._finalized = set(snapshot.finalized)
+        self._fork_seq = snapshot.fork_seq
+        self._final = snapshot.final if snapshot.has_final else _UNSET
+        self._restored = list(snapshot.pending)
+
+    async def _save(self, status: RunStatus, *, final_output: object = _UNSET) -> None:
+        """Persist a snapshot of the current run state, if a store is configured."""
+        if self._store is None or self._run_id is None:
+            return
+        await self._store.save(self._snapshot(status, self._run_id, final_output))
+
+    def _snapshot(self, status: RunStatus, run_id: str, final_output: object) -> RunSnapshot:
+        """Capture the run's resumable state as a snapshot."""
+        final = final_output if final_output is not _UNSET else self._final
+        return RunSnapshot(
+            run_id=run_id,
+            status=status,
+            pending=tuple(self._pending.values()),
+            reducers={
+                key: JoinSnapshot(state.downstream_stack, state.acc, state.count, list(state.items))
+                for key, state in self._reducers.items()
+            },
+            expected=dict(self._expected),
+            loops=dict(self._loops),
+            finalized=frozenset(self._finalized),
+            fork_seq=self._fork_seq,
+            has_final=final is not _UNSET,
+            final=final if final is not _UNSET else None,
+            state=self._state,
+        )
 
     def _emit(self, event: GraphEvent) -> None:
         """Hand an event to the run's observer, if one is set."""
@@ -378,10 +453,13 @@ class _GraphRun[StateT, DepsT, OutputT]:
             self._dispatch(edge, value, stack)
 
     def _spawn(self, node_id: str, value: object, stack: ForkStack) -> None:
-        """Schedule a step to run, tracking it as in-flight."""
+        """Schedule a step to run, tracking it as in-flight and pending a snapshot."""
         self._emit(NodeStarted(node_id, stack))
+        self._task_seq += 1
+        task_id = self._task_seq
+        self._pending[task_id] = TaskSnapshot(node_id, value, stack)
         self._active += 1
-        task = asyncio.create_task(self._worker(node_id, value, stack))
+        task = asyncio.create_task(self._worker(node_id, value, stack, task_id))
         self._task_stacks[task] = stack
         task.add_done_callback(self._forget_task)
 
@@ -389,7 +467,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
         """Drop a finished task from the in-flight set."""
         self._task_stacks.pop(task, None)
 
-    async def _worker(self, node_id: str, value: object, stack: ForkStack) -> None:
+    async def _worker(self, node_id: str, value: object, stack: ForkStack, task_id: int) -> None:
         """Run one step, with retries and timeout, and report its result."""
         step = self._spec.steps[node_id]
         ctx: StepContext[StateT, DepsT, object] = StepContext(inputs=value, state=self._state, deps=self._deps)
@@ -397,9 +475,9 @@ class _GraphRun[StateT, DepsT, OutputT]:
         try:
             output = await self._run_step(step, ctx)
         except Exception as error:  # noqa: BLE001 - surfaced to the run loop for ordered handling.
-            await self._results.put(_TaskResult(node_id, None, stack, error, perf_counter() - started))
+            await self._results.put(_TaskResult(node_id, None, stack, error, perf_counter() - started, task_id))
             return
-        await self._results.put(_TaskResult(node_id, output, stack, None, perf_counter() - started))
+        await self._results.put(_TaskResult(node_id, output, stack, None, perf_counter() - started, task_id))
 
     async def _run_step(self, step: AnyStep, ctx: StepContext[StateT, DepsT, object]) -> object:
         """Invoke a step under the concurrency limit, retrying on failure with backoff.
@@ -526,6 +604,21 @@ class Graph[StateT, DepsT, InputT, OutputT]:
         self._spec = spec
         self.name = name
 
+    @staticmethod
+    def _validated(options: RunOptions | None) -> RunOptions:
+        """Resolve run options and check them, defaulting when none are given.
+
+        Raises:
+            ValueError: If concurrency is less than one, or a store is set
+                without a run id.
+        """
+        resolved = options if options is not None else RunOptions()
+        if resolved.concurrency < 1:
+            raise ValueError(f"concurrency must be at least 1, got {resolved.concurrency}")
+        if resolved.store is not None and resolved.run_id is None:
+            raise ValueError("run_id is required when a store is set")
+        return resolved
+
     async def arun(self, inputs: InputT, *, state: StateT, deps: DepsT, options: RunOptions | None = None) -> OutputT:
         """Run the graph to completion and return its terminal output.
 
@@ -544,9 +637,7 @@ class Graph[StateT, DepsT, InputT, OutputT]:
             TimeoutError: If the run's timeout elapses.
             ValueError: If the configured concurrency is less than one.
         """
-        resolved = options if options is not None else RunOptions()
-        if resolved.concurrency < 1:
-            raise ValueError(f"concurrency must be at least 1, got {resolved.concurrency}")
+        resolved = self._validated(options)
         run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(self._spec, state=state, deps=deps, options=resolved)
         return await run.execute(inputs)
 
@@ -603,9 +694,7 @@ class Graph[StateT, DepsT, InputT, OutputT]:
             TimeoutError: If the run's timeout elapses.
             ValueError: If the configured concurrency is less than one.
         """
-        resolved = options if options is not None else RunOptions()
-        if resolved.concurrency < 1:
-            raise ValueError(f"concurrency must be at least 1, got {resolved.concurrency}")
+        resolved = self._validated(options)
         events: asyncio.Queue[GraphEvent | object] = asyncio.Queue()
         streaming = replace(resolved, on_event=events.put_nowait)
         run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(self._spec, state=state, deps=deps, options=streaming)
@@ -662,8 +751,65 @@ class Graph[StateT, DepsT, InputT, OutputT]:
         Raises:
             ValueError: If the configured concurrency is less than one.
         """
-        resolved = options if options is not None else RunOptions()
-        if resolved.concurrency < 1:
-            raise ValueError(f"concurrency must be at least 1, got {resolved.concurrency}")
+        resolved = self._validated(options)
         run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(self._spec, state=state, deps=deps, options=resolved)
         return GraphStepper(run, inputs)
+
+    async def aresume(
+        self, run_id: str, *, store: StateStore, deps: DepsT, options: RunOptions | None = None
+    ) -> OutputT:
+        """Resume a snapshotted run from its latest snapshot and finish it.
+
+        Loads the snapshot, restores the run's state, and re-runs the tasks that
+        were still pending. Pending tasks run again, so steps should be safe to
+        re-run. Dependencies are not persisted and are supplied here; the run
+        continues to snapshot under the same id and store.
+
+        Args:
+            run_id: The id the run was snapshotted under.
+            store: The store holding the run's snapshots.
+            deps: Run-scoped dependencies injected into nodes.
+            options: Concurrency, timeout, and error-handling knobs for the
+                resumed run.
+
+        Returns:
+            The value routed into the end node.
+
+        Raises:
+            GraphRuntimeError: If no snapshot exists for ``run_id`` or the run
+                finishes without reaching the end node.
+            ValueError: If the configured concurrency is less than one.
+        """
+        snapshot = await store.load(run_id)
+        if snapshot is None:
+            raise GraphRuntimeError(f"no snapshot found for run {run_id!r}")
+        resolved = replace(self._validated(options), store=store, run_id=run_id)
+        run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(
+            self._spec,
+            state=cast("StateT", snapshot.state),
+            deps=deps,
+            options=resolved,
+        )
+        run.load(snapshot)
+        return await run.resume()
+
+    def resume(self, run_id: str, *, store: StateStore, deps: DepsT, options: RunOptions | None = None) -> OutputT:
+        """Resume a snapshotted run synchronously.
+
+        A blocking wrapper over [`aresume`][Graph.aresume] for scripts and notebooks.
+
+        Args:
+            run_id: The id the run was snapshotted under.
+            store: The store holding the run's snapshots.
+            deps: Run-scoped dependencies injected into nodes.
+            options: Concurrency, timeout, and error-handling knobs.
+
+        Returns:
+            The value routed into the end node.
+
+        Raises:
+            GraphRuntimeError: If no snapshot exists for ``run_id`` or the run
+                finishes without reaching the end node.
+            ValueError: If the configured concurrency is less than one.
+        """
+        return asyncio.run(self.aresume(run_id, store=store, deps=deps, options=options))
