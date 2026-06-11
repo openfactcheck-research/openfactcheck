@@ -42,11 +42,12 @@ from openfactcheck.graph.errors import (
     GraphRuntimeError,
     GraphValidationError,
 )
-from openfactcheck.graph.graph import Graph
-from openfactcheck.graph.step import Edge, EndNode, StartNode, Step, StepContext
+from openfactcheck.graph.graph import DEFAULT_CONCURRENCY, Graph
+from openfactcheck.graph.step import Edge, EdgeKind, EndNode, Join, StartNode, Step, StepContext
 
 # Builder and graph
 __all__ = [
+    "DEFAULT_CONCURRENCY",
     "EdgePathBuilder",
     "Graph",
     "GraphBuilder",
@@ -55,7 +56,9 @@ __all__ = [
 # Nodes and edges
 __all__ += [
     "Edge",
+    "EdgeKind",
     "EndNode",
+    "Join",
     "StartNode",
     "Step",
     "StepContext",

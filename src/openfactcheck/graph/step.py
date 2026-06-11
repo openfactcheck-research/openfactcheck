@@ -14,7 +14,8 @@ the executor treats node inputs and outputs opaquely; see
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any
+from enum import StrEnum
+from typing import TYPE_CHECKING, Any
 
 START_ID = "__start__"
 """Fixed identifier of every graph's start node."""
@@ -94,6 +95,22 @@ class EndNode[InputT]:
     id: str = END_ID
     """Fixed end-node identifier."""
 
+    if TYPE_CHECKING:
+        # Pin InputT to a contravariant position so role-projection through
+        # DestNode infers the variance edge type-checking relies on. Exists for
+        # the type checker only; there is no such method at run time.
+        def _accepts(self, value: InputT) -> None: ...
+
+
+class EdgeKind(StrEnum):
+    """How an edge delivers its source node's output to its destination."""
+
+    PLAIN = "plain"
+    """Deliver the whole output as one value to the destination."""
+
+    MAP = "map"
+    """Fan an iterable output out to one parallel branch per item."""
+
 
 @dataclass(frozen=True, slots=True)
 class Edge:
@@ -105,18 +122,45 @@ class Edge:
     dest_id: str
     """Identifier of the node the edge enters."""
 
+    kind: EdgeKind = EdgeKind.PLAIN
+    """Whether the edge delivers the whole output or fans an iterable per item."""
+
+
+@dataclass(frozen=True, slots=True)
+class Join[ItemT, AccT]:
+    """A fan-in node that combines the branch outputs of a fork into one value.
+
+    Collects the outputs of a fanned-out subpath, gathering each branch's value
+    into a list. The result flows to its single successor once every branch of
+    the fork has arrived.
+    """
+
+    id: str
+    """Stable identifier of this join node."""
+
+    item_type: object | None
+    """The per-branch input type, recorded for build-time edge validation."""
+
+    if TYPE_CHECKING:
+        # Pin ItemT to a contravariant position so a join reads as a valid edge
+        # destination for its item type. Type-checker only; no runtime method.
+        def _accepts(self, value: ItemT) -> None: ...
+
 
 type AnyStep = Step[Any, Any, Any, Any]
 """A step with its type parameters erased, for the executor's wiring layer."""
 
-type SourceNode[StateT, DepsT, OutputT] = Step[StateT, DepsT, Any, OutputT] | StartNode[OutputT]
+type AnyJoin = Join[Any, Any]
+"""A join with its type parameters erased, for the executor's wiring layer."""
+
+type SourceNode[StateT, DepsT, OutputT] = Step[StateT, DepsT, Any, OutputT] | StartNode[OutputT] | Join[Any, OutputT]
 """A node an edge may leave, projected to the output type it emits.
 
 Lets [`GraphBuilder.edge_from`][GraphBuilder.edge_from] capture a source node's
 output type regardless of what input the node accepts.
 """
 
-type DestNode[StateT, DepsT, InputT] = Step[StateT, DepsT, InputT, Any] | EndNode[InputT]
+type DestNode[StateT, DepsT, InputT] = Step[StateT, DepsT, InputT, Any] | EndNode[InputT] | Join[InputT, Any]
 """A node an edge may enter, projected to the input type it accepts.
 
 Lets [`EdgePathBuilder.to`][EdgePathBuilder.to] require a destination whose

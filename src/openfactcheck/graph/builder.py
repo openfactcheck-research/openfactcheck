@@ -29,25 +29,32 @@ Example:
     ```
 """
 
+from __future__ import annotations
+
 from collections import deque
-from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import get_args, get_type_hints
+from typing import TYPE_CHECKING, get_args, get_type_hints
 
 from openfactcheck.graph.errors import GraphBuildError, GraphValidationError
 from openfactcheck.graph.graph import Graph
 from openfactcheck.graph.step import (
     END_ID,
     START_ID,
+    AnyJoin,
     AnyStep,
     DestNode,
     Edge,
+    EdgeKind,
     EndNode,
+    Join,
     SourceNode,
     StartNode,
     Step,
     StepContext,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable, Iterable
 
 _STEP_CONTEXT_ARITY = 3
 """Number of type arguments on ``StepContext[State, Deps, Input]``."""
@@ -66,6 +73,25 @@ class EdgePathBuilder[StateT, DepsT, OutputT]:
     source_id: str
     """Identifier of the node the edge will leave."""
 
+    kind: EdgeKind = EdgeKind.PLAIN
+    """Whether the edge delivers the whole output or fans an iterable per item."""
+
+    def map[ItemT](
+        self: EdgePathBuilder[StateT, DepsT, Iterable[ItemT]],
+    ) -> EdgePathBuilder[StateT, DepsT, ItemT]:
+        """Fan the source's iterable output out to one parallel branch per item.
+
+        Available only when the source node's output is iterable. The chosen
+        destination then receives a single item, and a downstream
+        [`Join`][Join] collects the per-item results. Run concurrency is bounded
+        by [`Graph.arun`][Graph.arun]'s ``concurrency`` limit.
+
+        Returns:
+            A builder over the collection's item type whose
+            [`to`][EdgePathBuilder.to] names the per-item destination.
+        """
+        return EdgePathBuilder(self.source_id, kind=EdgeKind.MAP)
+
     def to(self, dest: DestNode[StateT, DepsT, OutputT]) -> Edge:
         """Complete the edge by naming its destination node.
 
@@ -76,7 +102,7 @@ class EdgePathBuilder[StateT, DepsT, OutputT]:
         Returns:
             The finished edge from the recorded source to ``dest``.
         """
-        return Edge(source_id=self.source_id, dest_id=dest.id)
+        return Edge(source_id=self.source_id, dest_id=dest.id, kind=self.kind)
 
 
 class GraphBuilder[StateT, DepsT, InputT, OutputT]:
@@ -97,6 +123,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         """
         self._name = name
         self._steps: dict[str, AnyStep] = {}
+        self._joins: dict[str, AnyJoin] = {}
         self._edges: list[Edge] = []
         self.start_node: StartNode[InputT] = StartNode()
         self.end_node: EndNode[OutputT] = EndNode()
@@ -124,10 +151,36 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         """
         input_type, output_type = self._io_types(call)
         node = Step(id=call.__name__, call=call, input_type=input_type, output_type=output_type)
-        if node.id in self._steps:
-            raise GraphBuildError(f"duplicate step id {node.id!r}")
+        if node.id in self._steps or node.id in self._joins:
+            raise GraphBuildError(f"duplicate node id {node.id!r}")
         self._steps[node.id] = node
         return node
+
+    def join[ItemT](self, item_type: type[ItemT], *, node_id: str | None = None) -> Join[ItemT, list[ItemT]]:
+        """Create a fan-in node that collects each branch's output into a list.
+
+        Wire it as the destination of a fanned-out subpath (the
+        [`map`][EdgePathBuilder.map] target's successor) and as the source of
+        the edge carrying the collected list. The list preserves the source
+        collection's order.
+
+        Args:
+            item_type: The type of each branch's value, recorded for build-time
+                edge validation.
+            node_id: Identifier for the join node; defaults to a generated name.
+
+        Returns:
+            The registered [`Join`][Join] node.
+
+        Raises:
+            GraphBuildError: If the chosen node id is already in use.
+        """
+        join_id = node_id or f"__join_{len(self._joins)}__"
+        if join_id in self._joins or join_id in self._steps:
+            raise GraphBuildError(f"duplicate node id {join_id!r}")
+        join: Join[ItemT, list[ItemT]] = Join(id=join_id, item_type=item_type)
+        self._joins[join_id] = join
+        return join
 
     def edge_from[EdgeOutputT](
         self,
@@ -169,17 +222,18 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self._validate_endpoints(edges_by_source)
         self._validate_reachability(edges_by_source)
         self._validate_edge_types()
+        fork_join = self._resolve_fork_joins(edges_by_source)
         return Graph(
             steps=self._steps,
+            joins=self._joins,
             edges_by_source=edges_by_source,
-            start_id=START_ID,
-            end_id=END_ID,
+            fork_join=fork_join,
             name=self._name,
         )
 
     def _index_edges(self) -> dict[str, list[Edge]]:
         """Group edges by source after checking that every endpoint is known."""
-        node_ids = {START_ID, END_ID, *self._steps}
+        node_ids = {START_ID, END_ID, *self._steps, *self._joins}
         edges_by_source: dict[str, list[Edge]] = {}
         for edge in self._edges:
             if edge.source_id not in node_ids:
@@ -190,17 +244,17 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         return edges_by_source
 
     def _validate_endpoints(self, edges_by_source: dict[str, list[Edge]]) -> None:
-        """Check that the start, end, and every step are wired in."""
+        """Check that the start, end, and every work-bearing node are wired in."""
         if START_ID not in edges_by_source:
             raise GraphValidationError("graph has no entry edge from the start node")
         if all(edge.dest_id != END_ID for edge in self._edges):
             raise GraphValidationError("graph has no edge into the end node")
-        for step_id in self._steps:
-            if step_id not in edges_by_source:
-                raise GraphValidationError(f"node {step_id!r} has no outgoing edge")
+        for node_id in (*self._steps, *self._joins):
+            if node_id not in edges_by_source:
+                raise GraphValidationError(f"node {node_id!r} has no outgoing edge")
 
     def _validate_reachability(self, edges_by_source: dict[str, list[Edge]]) -> None:
-        """Check that every step and the end node are reachable from the start."""
+        """Check that every work-bearing node and the end node are reachable from the start."""
         seen: set[str] = set()
         queue = deque([START_ID])
         while queue:
@@ -209,23 +263,27 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
                 if edge.dest_id not in seen:
                     seen.add(edge.dest_id)
                     queue.append(edge.dest_id)
-        unreachable = sorted(set(self._steps) - seen)
+        unreachable = sorted({*self._steps, *self._joins} - seen)
         if unreachable:
             raise GraphValidationError(f"nodes are not reachable from the start node: {unreachable}")
         if END_ID not in seen:
             raise GraphValidationError("the end node is not reachable from the start node")
 
     def _validate_edge_types(self) -> None:
-        """Raise if any step-to-step edge connects an incompatible output and input.
+        """Raise if any plain step-to-step edge connects an incompatible output and input.
 
-        Edges touching the start or end node are skipped, as those carry no
-        captured type.
+        Edges touching the start node, end node, or a join are skipped, as those
+        carry no captured step type. Map edges are skipped too: their source
+        emits a collection whose item type feeds the destination, a relationship
+        the static [`map`][EdgePathBuilder.map] check already enforces.
 
         Raises:
             GraphValidationError: If a known output type does not match the
                 known input type of the node it feeds.
         """
         for edge in self._edges:
+            if edge.kind is EdgeKind.MAP:
+                continue
             src = self._steps.get(edge.source_id)
             dst = self._steps.get(edge.dest_id)
             if src is None or dst is None:
@@ -237,6 +295,45 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
                     f"edge {edge.source_id!r} -> {edge.dest_id!r}: output type {src.output_type!r} "
                     f"does not match input type {dst.input_type!r}",
                 )
+
+    def _resolve_fork_joins(self, edges_by_source: dict[str, list[Edge]]) -> dict[str, str]:
+        """Map each map edge's fork to the join node that collects its branches.
+
+        Args:
+            edges_by_source: Outgoing edges grouped by source node id.
+
+        Returns:
+            A mapping from each map fork's id to its downstream join id, used at
+            run time to fire a join whose collection fanned out to no items.
+
+        Raises:
+            GraphValidationError: If a map edge has no downstream join.
+        """
+        fork_join: dict[str, str] = {}
+        for edge in self._edges:
+            if edge.kind is not EdgeKind.MAP:
+                continue
+            join_id = self._downstream_join(edge.dest_id, edges_by_source)
+            if join_id is None:
+                raise GraphValidationError(
+                    f"map edge {edge.source_id!r} -> {edge.dest_id!r} has no downstream join to collect its branches",
+                )
+            fork_join[f"{edge.source_id}->{edge.dest_id}"] = join_id
+        return fork_join
+
+    def _downstream_join(self, start_id: str, edges_by_source: dict[str, list[Edge]]) -> str | None:
+        """Return the nearest join reachable from ``start_id``, or ``None`` if there is none."""
+        seen: set[str] = set()
+        queue = deque([start_id])
+        while queue:
+            node_id = queue.popleft()
+            if node_id in self._joins:
+                return node_id
+            for edge in edges_by_source.get(node_id, []):
+                if edge.dest_id not in seen:
+                    seen.add(edge.dest_id)
+                    queue.append(edge.dest_id)
+        return None
 
     @staticmethod
     def _io_types(call: Callable[..., object]) -> tuple[object | None, object | None]:

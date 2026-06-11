@@ -1,10 +1,13 @@
-"""The built graph and its executor.
+"""The built graph and its concurrent executor.
 
 A [`Graph`][Graph] is the runnable artifact produced by
-[`GraphBuilder.build`][GraphBuilder]. It runs nodes by draining a work queue:
-the start edge seeds the queue with the graph input, each node runs and its
-outgoing edges enqueue the node's output for its successors, and the value
-routed into the end node is the run's result.
+[`GraphBuilder.build`][GraphBuilder]. A run drains a work queue of tasks, each
+carrying a node, its input value, and a fork stack identifying the branch it
+belongs to. A node runs and its outgoing edges enqueue successors: a plain edge
+hands the whole output to one successor; a map edge fans an iterable out to one
+branch per item, each running concurrently up to a bounded limit; a join
+collects a fork's branch outputs into a list and forwards it once every branch
+has arrived. The value routed into the end node is the run's result.
 
 The async [`arun`][Graph.arun] is the native entry point; the sync
 [`run`][Graph.run] wraps it for scripts and notebooks.
@@ -13,17 +16,188 @@ The async [`arun`][Graph.arun] is the native entry point; the sync
 from __future__ import annotations
 
 import asyncio
-from collections import deque
+from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 from openfactcheck.graph.errors import GraphRuntimeError
-from openfactcheck.graph.step import StepContext
+from openfactcheck.graph.forks import ForkStackItem
+from openfactcheck.graph.step import END_ID, START_ID, EdgeKind, StepContext
 
 if TYPE_CHECKING:
-    from openfactcheck.graph.step import AnyStep, Edge
+    from openfactcheck.graph.forks import ForkStack
+    from openfactcheck.graph.step import AnyJoin, AnyStep, Edge
 
 _UNSET: object = object()
 """Sentinel for "the end node was never reached"."""
+
+DEFAULT_CONCURRENCY = 8
+"""Default cap on the number of step invocations running at once in a single run."""
+
+
+@dataclass(frozen=True, slots=True)
+class _GraphSpec:
+    """The immutable, validated definition a run executes against."""
+
+    steps: dict[str, AnyStep]
+    joins: dict[str, AnyJoin]
+    edges_by_source: dict[str, list[Edge]]
+    fork_join: dict[str, str]
+    start_id: str
+    end_id: str
+
+
+@dataclass(frozen=True, slots=True)
+class _TaskResult:
+    """A finished step's output, or the error it raised, routed back to the run loop."""
+
+    node_id: str
+    output: object
+    fork_stack: ForkStack
+    error: Exception | None
+
+
+@dataclass(slots=True)
+class _JoinState:
+    """Branch outputs accumulated for one firing of one join."""
+
+    downstream_stack: ForkStack
+    items: list[tuple[int, object]]
+
+
+class _GraphRun[StateT, DepsT, OutputT]:
+    """Drives one execution of a graph: a concurrent worklist over a task queue.
+
+    The run loop is the single mutator of run state. Workers only execute user
+    step functions and report their results back through a queue, so the join
+    table and the final value are updated without races.
+    """
+
+    def __init__(self, spec: _GraphSpec, *, state: StateT, deps: DepsT, concurrency: int) -> None:
+        """Set up an empty run against a graph definition."""
+        self._spec = spec
+        self._state = state
+        self._deps = deps
+        self._semaphore = asyncio.Semaphore(concurrency)
+        self._results: asyncio.Queue[_TaskResult] = asyncio.Queue()
+        self._tasks: set[asyncio.Task[None]] = set()
+        self._active = 0
+        self._reducers: dict[tuple[str, str], _JoinState] = {}
+        self._expected: dict[str, int] = {}
+        self._fork_seq = 0
+        self._final: object = _UNSET
+
+    async def execute(self, inputs: object) -> OutputT:
+        """Run to completion and return the value routed into the end node.
+
+        Args:
+            inputs: The value handed to the graph's entry edges.
+
+        Returns:
+            The value routed into the end node.
+
+        Raises:
+            GraphRuntimeError: If the run finishes without reaching the end node.
+        """
+        for edge in self._spec.edges_by_source.get(self._spec.start_id, []):
+            self._dispatch(edge, inputs, ())
+        try:
+            while self._active > 0:
+                result = await self._results.get()
+                self._active -= 1
+                if result.error is not None:
+                    raise result.error
+                self._advance(result.node_id, result.output, result.fork_stack)
+        finally:
+            await self._cancel_pending()
+        if self._final is _UNSET:
+            raise GraphRuntimeError("run finished without reaching the end node")
+        return cast("OutputT", self._final)
+
+    def _advance(self, node_id: str, output: object, stack: ForkStack) -> None:
+        """Enqueue successors for every edge leaving a finished node."""
+        for edge in self._spec.edges_by_source.get(node_id, []):
+            self._dispatch(edge, output, stack)
+
+    def _dispatch(self, edge: Edge, value: object, stack: ForkStack) -> None:
+        """Route one outgoing edge: fan out, finish, accumulate at a join, or spawn a step."""
+        if edge.kind is EdgeKind.MAP:
+            self._fan_out(edge, value, stack)
+        elif edge.dest_id == self._spec.end_id:
+            self._final = value
+        elif edge.dest_id in self._spec.joins:
+            self._accumulate(edge.dest_id, value, stack)
+        else:
+            self._spawn(edge.dest_id, value, stack)
+
+    def _fan_out(self, edge: Edge, value: object, stack: ForkStack) -> None:
+        """Fan an iterable output out to one branch per item, recording the branch count."""
+        if not isinstance(value, Iterable):
+            raise GraphRuntimeError(
+                f"map edge {edge.source_id!r} -> {edge.dest_id!r} expected an iterable output, "
+                f"got {type(value).__name__}",
+            )
+        fork_id = f"{edge.source_id}->{edge.dest_id}"
+        fork_run_id = self._next_fork_run_id()
+        items: list[object] = list(cast("Iterable[object]", value))
+        self._expected[fork_run_id] = len(items)
+        if not items:
+            self._fire(self._spec.fork_join[fork_id], [], stack)
+            return
+        for index, item in enumerate(items):
+            self._spawn(edge.dest_id, item, (*stack, ForkStackItem(fork_id, fork_run_id, index)))
+
+    def _accumulate(self, join_id: str, value: object, stack: ForkStack) -> None:
+        """Collect one branch's value at a join; fire the join once every branch has arrived."""
+        if not stack:
+            raise GraphRuntimeError(f"join {join_id!r} received a value that is not inside any fork")
+        top = stack[-1]
+        key = (join_id, top.fork_run_id)
+        state = self._reducers.get(key)
+        if state is None:
+            state = self._reducers[key] = _JoinState(downstream_stack=stack[:-1], items=[])
+        state.items.append((top.branch_index, value))
+        if len(state.items) == self._expected.get(top.fork_run_id):
+            del self._reducers[key]
+            ordered = [item for _, item in sorted(state.items)]
+            self._fire(join_id, ordered, state.downstream_stack)
+
+    def _fire(self, join_id: str, items: list[object], stack: ForkStack) -> None:
+        """Forward a completed join's collected list to its successors."""
+        for edge in self._spec.edges_by_source.get(join_id, []):
+            self._dispatch(edge, items, stack)
+
+    def _spawn(self, node_id: str, value: object, stack: ForkStack) -> None:
+        """Schedule a step to run, tracking it as in-flight."""
+        self._active += 1
+        task = asyncio.create_task(self._worker(node_id, value, stack))
+        self._tasks.add(task)
+        task.add_done_callback(self._tasks.discard)
+
+    async def _worker(self, node_id: str, value: object, stack: ForkStack) -> None:
+        """Run one step under the concurrency limit and report its result."""
+        step = self._spec.steps[node_id]
+        ctx: StepContext[StateT, DepsT, object] = StepContext(inputs=value, state=self._state, deps=self._deps)
+        try:
+            async with self._semaphore:
+                output = await step.call(ctx)
+        except Exception as error:  # noqa: BLE001 - surfaced to the run loop for ordered raising and cancellation.
+            await self._results.put(_TaskResult(node_id, None, stack, error))
+            return
+        await self._results.put(_TaskResult(node_id, output, stack, None))
+
+    def _next_fork_run_id(self) -> str:
+        """Mint a fresh identifier for one firing of a fork."""
+        self._fork_seq += 1
+        return f"r{self._fork_seq}"
+
+    async def _cancel_pending(self) -> None:
+        """Cancel and drain any still-running step tasks."""
+        pending = list(self._tasks)
+        for task in pending:
+            task.cancel()
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)
 
 
 class Graph[StateT, DepsT, InputT, OutputT]:
@@ -38,58 +212,71 @@ class Graph[StateT, DepsT, InputT, OutputT]:
         self,
         *,
         steps: dict[str, AnyStep],
+        joins: dict[str, AnyJoin],
         edges_by_source: dict[str, list[Edge]],
-        start_id: str,
-        end_id: str,
+        fork_join: dict[str, str],
         name: str,
     ) -> None:
         """Record the validated nodes and edges of a built graph.
 
         Args:
             steps: Work-bearing nodes keyed by id.
+            joins: Fan-in nodes keyed by id.
             edges_by_source: Outgoing edges grouped by their source node id.
-            start_id: Identifier of the start node.
-            end_id: Identifier of the end node.
+            fork_join: Each map fork's id mapped to its downstream join id.
             name: Human-readable name for diagrams and logs.
         """
-        self._steps = steps
-        self._edges_by_source = edges_by_source
-        self._start_id = start_id
-        self._end_id = end_id
+        self._spec = _GraphSpec(
+            steps=steps,
+            joins=joins,
+            edges_by_source=edges_by_source,
+            fork_join=fork_join,
+            start_id=START_ID,
+            end_id=END_ID,
+        )
         self.name = name
 
-    async def arun(self, inputs: InputT, *, state: StateT, deps: DepsT) -> OutputT:
+    async def arun(
+        self,
+        inputs: InputT,
+        *,
+        state: StateT,
+        deps: DepsT,
+        concurrency: int = DEFAULT_CONCURRENCY,
+    ) -> OutputT:
         """Run the graph to completion and return its terminal output.
 
         Args:
             inputs: The value handed to the first node.
             state: Run-scoped state shared across nodes.
             deps: Run-scoped dependencies injected into nodes.
+            concurrency: Maximum number of step invocations running at once.
 
         Returns:
             The value routed into the end node.
 
         Raises:
             GraphRuntimeError: If the run finishes without reaching the end node.
+            ValueError: If ``concurrency`` is less than one.
         """
-        queue: deque[tuple[str, object]] = deque(
-            (edge.dest_id, inputs) for edge in self._edges_by_source.get(self._start_id, [])
+        if concurrency < 1:
+            raise ValueError(f"concurrency must be at least 1, got {concurrency}")
+        run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(
+            self._spec,
+            state=state,
+            deps=deps,
+            concurrency=concurrency,
         )
-        final: object = _UNSET
-        while queue:
-            node_id, value = queue.popleft()
-            if node_id == self._end_id:
-                final = value
-                continue
-            step = self._steps[node_id]
-            output = await step.call(StepContext(inputs=value, state=state, deps=deps))
-            for edge in self._edges_by_source[node_id]:
-                queue.append((edge.dest_id, output))
-        if final is _UNSET:
-            raise GraphRuntimeError("run finished without reaching the end node")
-        return cast("OutputT", final)
+        return await run.execute(inputs)
 
-    def run(self, inputs: InputT, *, state: StateT, deps: DepsT) -> OutputT:
+    def run(
+        self,
+        inputs: InputT,
+        *,
+        state: StateT,
+        deps: DepsT,
+        concurrency: int = DEFAULT_CONCURRENCY,
+    ) -> OutputT:
         """Run the graph to completion synchronously.
 
         A blocking wrapper over [`arun`][Graph.arun] for scripts and notebooks.
@@ -99,11 +286,13 @@ class Graph[StateT, DepsT, InputT, OutputT]:
             inputs: The value handed to the first node.
             state: Run-scoped state shared across nodes.
             deps: Run-scoped dependencies injected into nodes.
+            concurrency: Maximum number of step invocations running at once.
 
         Returns:
             The value routed into the end node.
 
         Raises:
             GraphRuntimeError: If the run finishes without reaching the end node.
+            ValueError: If ``concurrency`` is less than one.
         """
-        return asyncio.run(self.arun(inputs, state=state, deps=deps))
+        return asyncio.run(self.arun(inputs, state=state, deps=deps, concurrency=concurrency))
