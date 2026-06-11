@@ -76,6 +76,24 @@ class Step[StateT, DepsT, InputT, OutputT]:
     output_type: object | None
     """The declared output type, or ``None`` when it could not be read."""
 
+    retries: int = 0
+    """How many extra attempts to make after the first if the call fails.
+
+    Must be non-negative.
+    """
+
+    retry_backoff: float = 0.0
+    """Base seconds to wait before a retry; the wait doubles each further attempt.
+
+    Must be non-negative.
+    """
+
+    timeout: float | None = None
+    """Seconds a single attempt may run before it is cancelled, or ``None`` for no limit.
+
+    Must be positive when set.
+    """
+
 
 @dataclass(frozen=True, slots=True)
 class StartNode[OutputT]:

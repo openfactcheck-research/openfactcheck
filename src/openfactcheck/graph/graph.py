@@ -18,7 +18,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from openfactcheck.graph.errors import GraphRuntimeError
 from openfactcheck.graph.forks import ForkStackItem
@@ -36,6 +36,29 @@ _UNSET: object = object()
 
 DEFAULT_CONCURRENCY = 8
 """Default cap on the number of step invocations running at once in a single run."""
+
+type ErrorPolicy = Literal["fail_fast", "isolate"]
+"""How a run reacts to a step error: abort the whole run, or drop the failed branch and continue."""
+
+
+@dataclass(frozen=True, slots=True)
+class RunOptions:
+    """Tuning knobs for a single graph run, separate from its input and state."""
+
+    concurrency: int = DEFAULT_CONCURRENCY
+    """Maximum number of step invocations running at once.
+
+    Must be at least one.
+    """
+
+    timeout: float | None = None
+    """Seconds the whole run may take before it is cancelled, or ``None`` for no limit.
+
+    Must be positive when set.
+    """
+
+    on_error: ErrorPolicy = "fail_fast"
+    """How a step error is handled: abort the run, or drop the failed branch and continue."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,14 +106,16 @@ class _GraphRun[StateT, DepsT, OutputT]:
     table and the final value are updated without races.
     """
 
-    def __init__(self, spec: GraphSpec, *, state: StateT, deps: DepsT, concurrency: int) -> None:
+    def __init__(self, spec: GraphSpec, *, state: StateT, deps: DepsT, options: RunOptions) -> None:
         """Set up an empty run against a graph definition."""
         self._spec = spec
         self._state = state
         self._deps = deps
-        self._semaphore = asyncio.Semaphore(concurrency)
+        self._semaphore = asyncio.Semaphore(options.concurrency)
+        self._timeout = options.timeout
+        self._on_error = options.on_error
         self._results: asyncio.Queue[_TaskResult] = asyncio.Queue()
-        self._tasks: set[asyncio.Task[None]] = set()
+        self._task_stacks: dict[asyncio.Task[None], ForkStack] = {}
         self._active = 0
         self._reducers: dict[tuple[str, str], _JoinState] = {}
         self._finalized: set[tuple[str, str]] = set()
@@ -110,16 +135,21 @@ class _GraphRun[StateT, DepsT, OutputT]:
 
         Raises:
             GraphRuntimeError: If the run finishes without reaching the end node.
+            TimeoutError: If the whole-run timeout elapses.
         """
         for edge in self._spec.edges_by_source.get(self._spec.start_id, []):
             self._dispatch(edge, inputs, ())
         try:
-            while self._active > 0:
-                result = await self._results.get()
-                self._active -= 1
-                if result.error is not None:
-                    raise result.error
-                self._advance(result.node_id, result.output, result.fork_stack)
+            async with asyncio.timeout(self._timeout):
+                while self._active > 0:
+                    result = await self._results.get()
+                    self._active -= 1
+                    if result.error is not None:
+                        if self._on_error == "fail_fast":
+                            raise result.error
+                        self._drop_failed(result.fork_stack)
+                        continue
+                    self._advance(result.node_id, result.output, result.fork_stack)
         finally:
             await self._cancel_pending()
         if self._final is _UNSET:
@@ -213,17 +243,59 @@ class _GraphRun[StateT, DepsT, OutputT]:
                 count=0,
                 items=[],
             )
-        expected = self._expected.get(top.fork_run_id)
+        stopped = False
         if join.ordered:
             state.items.append((top.branch_index, value))
-            if len(state.items) == expected:
-                self._finalize_and_fire(join_id, key, self._fold_ordered(join, state), state.downstream_stack)
+        else:
+            ctx: ReducerContext[StateT, DepsT] = ReducerContext(state=self._state, deps=self._deps)
+            state.acc = join.reducer(ctx, state.acc, value)
+            state.count += 1
+            stopped = ctx.stopped
+        self._maybe_complete(join_id, top.fork_run_id, force=stopped)
+        if stopped:
+            self._cancel_fork_run(top.fork_run_id)
+
+    def _maybe_complete(self, join_id: str, fork_run_id: str, *, force: bool = False) -> None:
+        """Fire a join once it has every expected branch, or when stopped early."""
+        key = (join_id, fork_run_id)
+        if key in self._finalized:
             return
-        ctx: ReducerContext[StateT, DepsT] = ReducerContext(state=self._state, deps=self._deps)
-        state.acc = join.reducer(ctx, state.acc, value)
-        state.count += 1
-        if ctx.stopped or state.count == expected:
-            self._finalize_and_fire(join_id, key, state.acc, state.downstream_stack)
+        state = self._reducers.get(key)
+        if state is None:
+            return
+        join = self._spec.joins[join_id]
+        count = len(state.items) if join.ordered else state.count
+        if force or count >= self._expected.get(fork_run_id, count):
+            acc = self._fold_ordered(join, state) if join.ordered else state.acc
+            self._finalize_and_fire(join_id, key, acc, state.downstream_stack)
+
+    def _drop_failed(self, stack: ForkStack) -> None:
+        """Isolate a failed branch: drop it and let its downstream join fire with the survivors."""
+        if not stack:
+            return
+        top = stack[-1]
+        join_id = self._spec.fork_join.get(top.fork_id)
+        if join_id is None:
+            return
+        key = (join_id, top.fork_run_id)
+        if key in self._finalized:
+            return
+        self._expected[top.fork_run_id] = self._expected.get(top.fork_run_id, 0) - 1
+        if self._reducers.get(key) is None:
+            if self._expected[top.fork_run_id] <= 0:
+                self._finalized.add(key)
+                self._fire(join_id, self._spec.joins[join_id].initial_factory(), stack[:-1])
+            return
+        self._maybe_complete(join_id, top.fork_run_id)
+
+    def _cancel_fork_run(self, fork_run_id: str) -> None:
+        """Cancel any still-running tasks belonging to a fork run that has finished early."""
+        for task in list(self._task_stacks):
+            stack = self._task_stacks[task]
+            if not task.done() and any(frame.fork_run_id == fork_run_id for frame in stack):
+                task.cancel()
+                self._active -= 1
+                self._task_stacks.pop(task, None)
 
     def _fold_ordered(self, join: AnyJoin, state: _JoinState) -> object:
         """Fold a join's branch values in source order, starting from its seeded accumulator."""
@@ -248,20 +320,41 @@ class _GraphRun[StateT, DepsT, OutputT]:
         """Schedule a step to run, tracking it as in-flight."""
         self._active += 1
         task = asyncio.create_task(self._worker(node_id, value, stack))
-        self._tasks.add(task)
-        task.add_done_callback(self._tasks.discard)
+        self._task_stacks[task] = stack
+        task.add_done_callback(self._forget_task)
+
+    def _forget_task(self, task: asyncio.Task[None]) -> None:
+        """Drop a finished task from the in-flight set."""
+        self._task_stacks.pop(task, None)
 
     async def _worker(self, node_id: str, value: object, stack: ForkStack) -> None:
-        """Run one step under the concurrency limit and report its result."""
+        """Run one step, with retries and timeout, and report its result."""
         step = self._spec.steps[node_id]
         ctx: StepContext[StateT, DepsT, object] = StepContext(inputs=value, state=self._state, deps=self._deps)
         try:
-            async with self._semaphore:
-                output = await step.call(ctx)
-        except Exception as error:  # noqa: BLE001 - surfaced to the run loop for ordered raising and cancellation.
+            output = await self._run_step(step, ctx)
+        except Exception as error:  # noqa: BLE001 - surfaced to the run loop for ordered handling.
             await self._results.put(_TaskResult(node_id, None, stack, error))
             return
         await self._results.put(_TaskResult(node_id, output, stack, None))
+
+    async def _run_step(self, step: AnyStep, ctx: StepContext[StateT, DepsT, object]) -> object:
+        """Invoke a step under the concurrency limit, retrying on failure with backoff.
+
+        Raises:
+            Exception: The step's error, re-raised once its retries are exhausted.
+            TimeoutError: If an attempt exceeds the step's timeout and no retries remain.
+        """
+        attempt = 0
+        while True:
+            try:
+                async with self._semaphore, asyncio.timeout(step.timeout):
+                    return await step.call(ctx)
+            except Exception:
+                if attempt >= step.retries:
+                    raise
+                attempt += 1
+            await asyncio.sleep(step.retry_backoff * 2 ** (attempt - 1))
 
     def _next_fork_run_id(self) -> str:
         """Mint a fresh identifier for one firing of a fork."""
@@ -270,7 +363,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
 
     async def _cancel_pending(self) -> None:
         """Cancel and drain any still-running step tasks."""
-        pending = list(self._tasks)
+        pending = list(self._task_stacks)
         for task in pending:
             task.cancel()
         if pending:
@@ -295,47 +388,31 @@ class Graph[StateT, DepsT, InputT, OutputT]:
         self._spec = spec
         self.name = name
 
-    async def arun(
-        self,
-        inputs: InputT,
-        *,
-        state: StateT,
-        deps: DepsT,
-        concurrency: int = DEFAULT_CONCURRENCY,
-    ) -> OutputT:
+    async def arun(self, inputs: InputT, *, state: StateT, deps: DepsT, options: RunOptions | None = None) -> OutputT:
         """Run the graph to completion and return its terminal output.
 
         Args:
             inputs: The value handed to the first node.
             state: Run-scoped state shared across nodes.
             deps: Run-scoped dependencies injected into nodes.
-            concurrency: Maximum number of step invocations running at once.
+            options: Concurrency, timeout, and error-handling knobs for the run;
+                defaults to [`RunOptions`][RunOptions]'s own defaults.
 
         Returns:
             The value routed into the end node.
 
         Raises:
             GraphRuntimeError: If the run finishes without reaching the end node.
-            ValueError: If ``concurrency`` is less than one.
+            TimeoutError: If the run's timeout elapses.
+            ValueError: If the configured concurrency is less than one.
         """
-        if concurrency < 1:
-            raise ValueError(f"concurrency must be at least 1, got {concurrency}")
-        run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(
-            self._spec,
-            state=state,
-            deps=deps,
-            concurrency=concurrency,
-        )
+        resolved = options if options is not None else RunOptions()
+        if resolved.concurrency < 1:
+            raise ValueError(f"concurrency must be at least 1, got {resolved.concurrency}")
+        run: _GraphRun[StateT, DepsT, OutputT] = _GraphRun(self._spec, state=state, deps=deps, options=resolved)
         return await run.execute(inputs)
 
-    def run(
-        self,
-        inputs: InputT,
-        *,
-        state: StateT,
-        deps: DepsT,
-        concurrency: int = DEFAULT_CONCURRENCY,
-    ) -> OutputT:
+    def run(self, inputs: InputT, *, state: StateT, deps: DepsT, options: RunOptions | None = None) -> OutputT:
         """Run the graph to completion synchronously.
 
         A blocking wrapper over [`arun`][Graph.arun] for scripts and notebooks.
@@ -345,13 +422,15 @@ class Graph[StateT, DepsT, InputT, OutputT]:
             inputs: The value handed to the first node.
             state: Run-scoped state shared across nodes.
             deps: Run-scoped dependencies injected into nodes.
-            concurrency: Maximum number of step invocations running at once.
+            options: Concurrency, timeout, and error-handling knobs for the run;
+                defaults to [`RunOptions`][RunOptions]'s own defaults.
 
         Returns:
             The value routed into the end node.
 
         Raises:
             GraphRuntimeError: If the run finishes without reaching the end node.
-            ValueError: If ``concurrency`` is less than one.
+            TimeoutError: If the run's timeout elapses.
+            ValueError: If the configured concurrency is less than one.
         """
-        return asyncio.run(self.arun(inputs, state=state, deps=deps, concurrency=concurrency))
+        return asyncio.run(self.arun(inputs, state=state, deps=deps, options=options))

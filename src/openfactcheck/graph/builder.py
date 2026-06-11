@@ -143,26 +143,47 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
     def step[StepInputT, StepOutputT](
         self,
         call: Callable[[StepContext[StateT, DepsT, StepInputT]], Awaitable[StepOutputT]],
+        *,
+        retries: int = 0,
+        retry_backoff: float = 0.0,
+        timeout: float | None = None,
     ) -> Step[StateT, DepsT, StepInputT, StepOutputT]:
         """Register an async function as a node and return it for wiring.
 
-        Usually applied as the ``@g.step`` decorator. The node's id is the
-        function's name; its input and output types are read from the function's
-        annotations for build-time edge validation.
+        Usually applied as the bare ``@g.step`` decorator. Pass options through
+        the call form, ``g.step(fn, retries=3, timeout=5.0)``. The node's id is
+        the function's name; its input and output types are read from the
+        function's annotations for build-time edge validation.
 
         Args:
             call: An async function taking a [`StepContext`][StepContext] and
                 returning this node's output.
+            retries: Extra attempts after the first if the call fails.
+            retry_backoff: Base seconds before a retry; doubles each attempt.
+            timeout: Seconds a single attempt may run, or ``None`` for no limit.
 
         Returns:
             The registered [`Step`][Step], used as a source or destination when
             wiring edges.
 
         Raises:
-            GraphBuildError: If a step with the same id is already registered.
+            GraphBuildError: If a step with the same id is already registered,
+                or an option is out of range.
         """
+        if retries < 0 or retry_backoff < 0:
+            raise GraphBuildError("retries and retry_backoff must be non-negative")
+        if timeout is not None and timeout <= 0:
+            raise GraphBuildError("timeout must be positive when set")
         input_type, output_type = self._io_types(call)
-        node = Step(id=call.__name__, call=call, input_type=input_type, output_type=output_type)
+        node = Step(
+            id=call.__name__,
+            call=call,
+            input_type=input_type,
+            output_type=output_type,
+            retries=retries,
+            retry_backoff=retry_backoff,
+            timeout=timeout,
+        )
         if self._id_taken(node.id):
             raise GraphBuildError(f"duplicate node id {node.id!r}")
         self._steps[node.id] = node

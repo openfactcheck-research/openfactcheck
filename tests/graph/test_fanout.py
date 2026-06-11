@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from openfactcheck.graph import GraphBuilder, GraphBuildError, StepContext
+from openfactcheck.graph import GraphBuilder, GraphBuildError, RunOptions, StepContext
 
 
 def test_Graph_run_fanout_collects_in_source_order() -> None:
@@ -90,7 +90,9 @@ def test_Graph_arun_bounds_concurrency() -> None:
     )
 
     probe = _Probe()
-    result = asyncio.run(g.build().arun([1, 2, 3, 4, 5], state=probe, deps=None, concurrency=2))
+    result = asyncio.run(
+        g.build().arun([1, 2, 3, 4, 5], state=probe, deps=None, options=RunOptions(concurrency=2)),
+    )
 
     assert sorted(result) == [1, 2, 3, 4, 5]
     assert probe.peak <= 2
