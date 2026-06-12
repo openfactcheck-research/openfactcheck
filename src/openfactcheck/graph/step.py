@@ -37,8 +37,22 @@ class StepContext[StateT, DepsT, InputT]:
     Carries the node's typed ``inputs`` alongside the run-scoped ``state`` and
     the injected ``deps``, both shared across every node in a single run.
 
+    The three type parameters, in order, are the first three a
+    [`GraphBuilder`][GraphBuilder] is parameterized by:
+
+    1. ``StateT``: the type of ``state``, the run-scoped state shared across
+       nodes. Use ``None`` when the graph keeps no shared state.
+    2. ``DepsT``: the type of ``deps``, the read-only dependencies injected into
+       nodes (clients, configuration). Use ``None`` when nodes need none.
+    3. ``InputT``: the type of ``inputs``, the value flowing into this node.
+
+    A step annotates its single parameter with this context, in this order; the
+    function's return type is the node's output. The output type is not a
+    parameter here because it lives on the step's return annotation.
+
     Example:
         ```python
+        # state is None, deps is a Deps bag, this node receives a str.
         async def extract(ctx: StepContext[None, Deps, str]) -> list[Claim]:
             client = ctx.deps.chat_client
             ...
@@ -59,14 +73,14 @@ class StepContext[StateT, DepsT, InputT]:
 class Step[StateT, DepsT, InputT, OutputT]:
     """A typed async node: one input value in, one output value out.
 
-    Created by [`GraphBuilder.step`][GraphBuilder] (usually as the ``@g.step``
-    decorator), then referenced when wiring edges. The recorded ``input_type``
-    and ``output_type`` are read from the wrapped function's annotations and
-    used to validate edge compatibility at build time.
+    Created by [`GraphBuilder.step_node`][GraphBuilder] (usually as the
+    ``@g.step_node`` decorator), then referenced when wiring edges. The recorded
+    ``input_type`` and ``output_type`` are read from the wrapped function's
+    annotations and used to validate edge compatibility at build time.
     """
 
     id: str
-    """Stable identifier, taken from the wrapped function's name."""
+    """Stable identifier, supplied to ``step_node`` or taken from the function's name."""
 
     call: Callable[[StepContext[StateT, DepsT, InputT]], Awaitable[OutputT]]
     """The async function this node runs."""

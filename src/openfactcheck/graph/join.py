@@ -7,9 +7,9 @@ common shapes (collect into a list, merge dicts, sum, keep the first). A reducer
 may instead take a [`ReducerContext`][ReducerContext] first, giving it the run's
 state and dependencies and the ability to stop early once it has enough.
 
-Joins are created through [`GraphBuilder.collect`][GraphBuilder.collect] (ordered
-list collection) and [`GraphBuilder.reduce`][GraphBuilder.reduce] (any reducer);
-this module holds the node type and the reducer library they draw on.
+Joins are created through [`GraphBuilder.collect_node`][GraphBuilder.collect_node]
+(ordered list collection) and [`GraphBuilder.reduce_node`][GraphBuilder.reduce_node]
+(any reducer); this module holds the node type and the reducer library they draw on.
 """
 
 from collections.abc import Callable, Iterable, Mapping
@@ -58,8 +58,8 @@ class ReducerContext[StateT, DepsT]:
 class Join[ItemT, AccT]:
     """A fan-in node that folds a fork's branch outputs into one value.
 
-    Created by [`GraphBuilder.collect`][GraphBuilder.collect] or
-    [`GraphBuilder.reduce`][GraphBuilder.reduce]. Wire it as the destination of a
+    Created by [`GraphBuilder.collect_node`][GraphBuilder.collect_node] or
+    [`GraphBuilder.reduce_node`][GraphBuilder.reduce_node]. Wire it as the destination of a
     fanned-out subpath and as the source of the edge carrying the folded result,
     which flows on once every branch of the fork has arrived (or a reducer stops
     early).

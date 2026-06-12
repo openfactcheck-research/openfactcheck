@@ -51,21 +51,21 @@ def build_pipeline() -> Graph[None, Components, Input, FactCheckResult]:
     """
     g = GraphBuilder[None, Components, Input, FactCheckResult]()
 
-    @g.step
+    @g.step_node
     async def extract(ctx: StepContext[None, Components, Input]) -> list[Claim]:
         return await ctx.deps.extractor(ctx.inputs)
 
-    @g.step
+    @g.step_node
     async def retrieve(ctx: StepContext[None, Components, Claim]) -> Evidence:
         return await ctx.deps.retriever(ctx.inputs)
 
-    @g.step
+    @g.step_node
     async def verify(ctx: StepContext[None, Components, Evidence]) -> Verdict:
         return await ctx.deps.verifier(ctx.inputs.claim, ctx.inputs)
 
-    verdicts = g.collect(Verdict)
+    verdicts = g.collect_node(Verdict, node_id="verdicts")
 
-    @g.step
+    @g.step_node
     async def aggregate(ctx: StepContext[None, Components, list[Verdict]]) -> FactCheckResult:
         return await ctx.deps.aggregator(ctx.inputs)
 

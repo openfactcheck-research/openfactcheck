@@ -8,11 +8,11 @@ from openfactcheck.graph import GraphBuilder, StepContext
 def test_GraphStepper_advance_reports_each_step() -> None:
     g = GraphBuilder[None, None, str, str]()
 
-    @g.step
+    @g.step_node
     async def upper(ctx: StepContext[None, None, str]) -> str:
         return ctx.inputs.upper()
 
-    @g.step
+    @g.step_node
     async def exclaim(ctx: StepContext[None, None, str]) -> str:
         return f"{ctx.inputs}!"
 
@@ -39,11 +39,11 @@ def test_GraphStepper_advance_reports_each_step() -> None:
 def test_GraphStepper_recover_overrides_failed_step() -> None:
     g = GraphBuilder[None, None, str, str]()
 
-    @g.step
+    @g.step_node
     async def boom(ctx: StepContext[None, None, str]) -> str:
         raise RuntimeError("nope")
 
-    @g.step
+    @g.step_node
     async def finish(ctx: StepContext[None, None, str]) -> str:
         return f"recovered:{ctx.inputs}"
 

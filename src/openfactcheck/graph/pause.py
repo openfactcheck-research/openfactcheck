@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any
 class Pause[ContextT, AnswerT]:
     """A node that suspends a run until an answer is supplied on resume.
 
-    Created by [`GraphBuilder.pause`][GraphBuilder.pause]. Its first type
+    Created by [`GraphBuilder.pause_node`][GraphBuilder.pause_node]. Its first type
     parameter is the context type that flows in (what the pauser sees); its
     second is the answer type supplied on resume, which becomes the node's output.
     """

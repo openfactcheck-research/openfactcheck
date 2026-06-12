@@ -3,8 +3,9 @@
 Every graph layer error derives from [`GraphError`][GraphError]. Failures
 split by stage: assembling a graph ([`GraphBuildError`][GraphBuildError]),
 validating its structure before a run
-([`GraphValidationError`][GraphValidationError]), and executing it
-([`GraphRuntimeError`][GraphRuntimeError]).
+([`GraphValidationError`][GraphValidationError]), executing it
+([`GraphRuntimeError`][GraphRuntimeError]), and rendering its diagram to an
+image ([`GraphRenderError`][GraphRenderError]).
 
 Catch the specific subclass for the stage you can recover from, or catch
 [`GraphError`][GraphError] to handle every graph-layer failure in one place.
@@ -41,6 +42,15 @@ class GraphRuntimeError(GraphError):
 
     Raised when a node raises, a loop exceeds its iteration bound, or a
     decision reaches no matching branch.
+    """
+
+
+class GraphRenderError(GraphError):
+    """A graph diagram could not be rendered to an image.
+
+    Raised when the rendering service cannot be reached or returns an error, or
+    the diagram is too large for the request. The Mermaid source is always
+    available from [`Graph.to_mermaid`][Graph.to_mermaid] regardless.
     """
 
 

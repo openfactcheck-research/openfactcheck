@@ -8,19 +8,19 @@ from openfactcheck.graph import GraphBuilder, GraphRuntimeError, StepContext
 def test_Graph_decision_routes_by_predicate() -> None:
     g = GraphBuilder[None, None, int, str]()
 
-    @g.step
+    @g.step_node
     async def classify(ctx: StepContext[None, None, int]) -> int:
         return ctx.inputs
 
-    @g.step
+    @g.step_node
     async def big(ctx: StepContext[None, None, int]) -> str:
         return f"big:{ctx.inputs}"
 
-    @g.step
+    @g.step_node
     async def small(ctx: StepContext[None, None, int]) -> str:
         return f"small:{ctx.inputs}"
 
-    dec = g.decision(int)
+    dec = g.decision_node(int, node_id="dec")
     g.add(
         g.edge_from(g.start_node).to(classify),
         g.edge_from(classify).to(dec),
@@ -38,19 +38,19 @@ def test_Graph_decision_routes_by_predicate() -> None:
 def test_Graph_decision_routes_by_type() -> None:
     g = GraphBuilder[None, None, object, str]()
 
-    @g.step
+    @g.step_node
     async def identity(ctx: StepContext[None, None, object]) -> object:
         return ctx.inputs
 
-    @g.step
+    @g.step_node
     async def handle_int(ctx: StepContext[None, None, object]) -> str:
         return f"int:{ctx.inputs}"
 
-    @g.step
+    @g.step_node
     async def handle_str(ctx: StepContext[None, None, object]) -> str:
         return f"str:{ctx.inputs}"
 
-    dec = g.decision(object)
+    dec = g.decision_node(object, node_id="dec")
     g.add(
         g.edge_from(g.start_node).to(identity),
         g.edge_from(identity).to(dec),
@@ -68,19 +68,19 @@ def test_Graph_decision_routes_by_type() -> None:
 def test_Graph_decision_when_equals() -> None:
     g = GraphBuilder[None, None, str, str]()
 
-    @g.step
+    @g.step_node
     async def echo(ctx: StepContext[None, None, str]) -> str:
         return ctx.inputs
 
-    @g.step
+    @g.step_node
     async def matched(ctx: StepContext[None, None, str]) -> str:
         return "matched"
 
-    @g.step
+    @g.step_node
     async def other(ctx: StepContext[None, None, str]) -> str:
         return "other"
 
-    dec = g.decision(str)
+    dec = g.decision_node(str, node_id="dec")
     g.add(
         g.edge_from(g.start_node).to(echo),
         g.edge_from(echo).to(dec),
@@ -98,15 +98,15 @@ def test_Graph_decision_when_equals() -> None:
 def test_Graph_decision_no_match_raises() -> None:
     g = GraphBuilder[None, None, int, str]()
 
-    @g.step
+    @g.step_node
     async def classify(ctx: StepContext[None, None, int]) -> int:
         return ctx.inputs
 
-    @g.step
+    @g.step_node
     async def only_big(ctx: StepContext[None, None, int]) -> str:
         return "big"
 
-    dec = g.decision(int)
+    dec = g.decision_node(int, node_id="dec")
     g.add(
         g.edge_from(g.start_node).to(classify),
         g.edge_from(classify).to(dec),

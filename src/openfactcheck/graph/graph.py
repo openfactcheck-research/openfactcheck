@@ -26,7 +26,11 @@ from openfactcheck.graph.errors import GraphPaused, GraphRuntimeError
 from openfactcheck.graph.events import NodeFailed, NodeFinished, NodeStarted, RunFinished
 from openfactcheck.graph.forks import ForkStackItem
 from openfactcheck.graph.join import ReducerContext
-from openfactcheck.graph.mermaid import to_mermaid
+from openfactcheck.graph.mermaid import (
+    _MermaidView,  # pyright: ignore[reportPrivateUsage]
+    to_mermaid,
+    to_mermaid_image,
+)
 from openfactcheck.graph.persistence.protocols import JoinSnapshot, PausePoint, RunSnapshot, RunStatus, TaskSnapshot
 from openfactcheck.graph.step import EdgeKind, StepContext
 
@@ -37,7 +41,7 @@ if TYPE_CHECKING:
     from openfactcheck.graph.events import GraphEvent, GraphObserver
     from openfactcheck.graph.forks import ForkStack
     from openfactcheck.graph.join import AnyJoin
-    from openfactcheck.graph.mermaid import Direction
+    from openfactcheck.graph.mermaid import Direction, ImageType
     from openfactcheck.graph.pause import AnyPause
     from openfactcheck.graph.persistence.protocols import StateStore
     from openfactcheck.graph.step import AnyStep, Edge
@@ -645,7 +649,7 @@ class Graph[StateT, DepsT, InputT, OutputT]:
         self._spec = spec
         self.name = name
 
-    def mermaid(
+    def to_mermaid(
         self, *, direction: Direction = "TD", title: str | None = None, highlight: Iterable[str] | None = None
     ) -> str:
         """Render this graph as Mermaid flowchart source.
@@ -659,6 +663,44 @@ class Graph[StateT, DepsT, InputT, OutputT]:
             Mermaid flowchart source as a string.
         """
         return to_mermaid(self._spec, direction=direction, title=title, highlight=highlight)
+
+    def to_mermaid_image(
+        self, *, base_url: str = "https://mermaid.ink", image_type: ImageType = "png", timeout: float = 30.0
+    ) -> bytes:
+        """Render this graph as an image through a Mermaid server.
+
+        Args:
+            base_url: Base URL of the Mermaid rendering server; point it at a
+                self-hosted server to render offline or to handle a large diagram.
+            image_type: Image format to request.
+            timeout: Seconds to wait for the server before giving up.
+
+        Returns:
+            The rendered image's raw bytes.
+
+        Raises:
+            GraphRenderError: If the server cannot be reached or returns an error.
+        """
+        return to_mermaid_image(self.to_mermaid(), base_url=base_url, image_type=image_type, timeout=timeout)
+
+    def to_mermaid_view(self, *, base_url: str = "https://mermaid.ink", timeout: float = 30.0) -> _MermaidView:
+        """Render this graph as a PNG that displays inline in a notebook.
+
+        Returns an object a notebook renders as the diagram image; elsewhere,
+        reach for [`to_mermaid_image`][Graph.to_mermaid_image] to get the bytes directly.
+
+        Args:
+            base_url: Base URL of the Mermaid rendering server; point it at a
+                self-hosted server to render offline or to handle a large diagram.
+            timeout: Seconds to wait for the server before giving up.
+
+        Returns:
+            A display wrapper a notebook shows as the rendered diagram.
+
+        Raises:
+            GraphRenderError: If the server cannot be reached or returns an error.
+        """
+        return _MermaidView(self.to_mermaid_image(base_url=base_url, timeout=timeout))
 
     def __str__(self) -> str:
         """Return this graph as Mermaid flowchart source."""

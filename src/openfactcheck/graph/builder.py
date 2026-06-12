@@ -9,12 +9,12 @@ Example:
     g = GraphBuilder[None, None, str, dict]()
 
 
-    @g.step
+    @g.step_node
     async def extract(ctx: StepContext[None, None, str]) -> list[str]:
         return ctx.inputs.split()
 
 
-    @g.step
+    @g.step_node
     async def count(ctx: StepContext[None, None, list[str]]) -> dict:
         return {"n": len(ctx.inputs)}
 
@@ -120,10 +120,24 @@ class EdgePathBuilder[StateT, DepsT, OutputT]:
 class GraphBuilder[StateT, DepsT, InputT, OutputT]:
     """Collect steps and edges, then build a validated [`Graph`][Graph].
 
-    Parameterized by the run-scoped state and dependency types and the graph's
-    overall input and output types. The state and dependency types flow into
-    every [`StepContext`][StepContext]; the input and output types describe the
-    values the built graph accepts and returns.
+    The four type parameters, in order, are:
+
+    1. ``StateT``: run-scoped mutable state shared across every node. Use
+       ``None`` when the graph keeps no shared state.
+    2. ``DepsT``: read-only dependencies injected into every node (clients,
+       configuration). Use ``None`` when nodes need none.
+    3. ``InputT``: the value the built graph accepts.
+    4. ``OutputT``: the value the built graph returns.
+
+    ``StateT`` and ``DepsT`` flow unchanged into every
+    [`StepContext`][StepContext], so a step's context parameter repeats them as
+    its first two type arguments, in the same order.
+
+    Example:
+        ```python
+        # No shared state, a Deps bag of clients, str in, a dict out.
+        g = GraphBuilder[None, Deps, str, dict[str, int]]()
+        ```
     """
 
     def __init__(self, *, name: str = "graph") -> None:
@@ -143,24 +157,26 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self.start_node: StartNode[InputT] = StartNode()
         self.end_node: EndNode[OutputT] = EndNode()
 
-    def step[StepInputT, StepOutputT](
+    def step_node[StepInputT, StepOutputT](
         self,
         call: Callable[[StepContext[StateT, DepsT, StepInputT]], Awaitable[StepOutputT]],
         *,
+        node_id: str | None = None,
         retries: int = 0,
         retry_backoff: float = 0.0,
         timeout: float | None = None,
     ) -> Step[StateT, DepsT, StepInputT, StepOutputT]:
         """Register an async function as a node and return it for wiring.
 
-        Usually applied as the bare ``@g.step`` decorator. Pass options through
-        the call form, ``g.step(fn, retries=3, timeout=5.0)``. The node's id is
-        the function's name; its input and output types are read from the
-        function's annotations for build-time edge validation.
+        Usually applied as the bare ``@g.step_node`` decorator. Pass options
+        through the call form, ``g.step_node(fn, retries=3, timeout=5.0)``. The
+        node's id defaults to the function's name; its input and output types
+        are read from the function's annotations for build-time edge validation.
 
         Args:
             call: An async function taking a [`StepContext`][StepContext] and
                 returning this node's output.
+            node_id: Identifier for the node; defaults to the function's name.
             retries: Extra attempts after the first if the call fails.
             retry_backoff: Base seconds before a retry; doubles each attempt.
             timeout: Seconds a single attempt may run, or ``None`` for no limit.
@@ -179,7 +195,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             raise GraphBuildError("timeout must be positive when set")
         input_type, output_type = self._io_types(call)
         node = Step(
-            id=call.__name__,
+            id=node_id or call.__name__,
             call=call,
             input_type=input_type,
             output_type=output_type,
@@ -196,11 +212,11 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         """Whether a node id is already registered as a step, join, decision, or pause."""
         return node_id in self._steps or node_id in self._joins or node_id in self._decisions or node_id in self._pauses
 
-    def subgraph[SubInputT, SubOutputT](
+    def subgraph_node[SubInputT, SubOutputT](
         self,
         graph: Graph[StateT, DepsT, SubInputT, SubOutputT],
         *,
-        node_id: str | None = None,
+        node_id: str,
     ) -> Step[StateT, DepsT, SubInputT, SubOutputT]:
         """Wrap a built graph as a node that runs it and forwards its output.
 
@@ -210,7 +226,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
 
         Args:
             graph: A built [`Graph`][Graph] to embed as a node.
-            node_id: Identifier for the node; defaults to the inner graph's name.
+            node_id: Identifier for the node; must be unique within the graph.
 
         Returns:
             A [`Step`][Step] that runs the inner graph.
@@ -224,7 +240,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             return await graph.arun(ctx.inputs, state=ctx.state, deps=ctx.deps)
 
         node: Step[StateT, DepsT, SubInputT, SubOutputT] = Step(
-            id=node_id or graph.name,
+            id=node_id,
             call=run_subgraph,
             input_type=None,
             output_type=None,
@@ -234,7 +250,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self._steps[node.id] = node
         return node
 
-    def collect[ItemT](self, item_type: type[ItemT], *, node_id: str | None = None) -> Join[ItemT, list[ItemT]]:
+    def collect_node[ItemT](self, item_type: type[ItemT], *, node_id: str) -> Join[ItemT, list[ItemT]]:
         """Create a fan-in node that gathers each branch's output into an ordered list.
 
         Wire it as the destination of a fanned-out subpath (the
@@ -245,7 +261,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         Args:
             item_type: The type of each branch's value, recorded for build-time
                 edge validation.
-            node_id: Identifier for the join node; defaults to a generated name.
+            node_id: Identifier for the join node; must be unique within the graph.
 
         Returns:
             The registered [`Join`][Join] node, collecting into a list.
@@ -261,13 +277,13 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             node_id=node_id,
         )
 
-    def reduce[ItemT, AccT](
+    def reduce_node[ItemT, AccT](
         self,
         reducer: Reducer[AccT, ItemT] | ContextReducer[StateT, DepsT, AccT, ItemT],
         initial_factory: Callable[[], AccT],
         *,
         item_type: type[ItemT],
-        node_id: str | None = None,
+        node_id: str,
     ) -> Join[ItemT, AccT]:
         """Create a fan-in node that folds each branch's output with a reducer.
 
@@ -275,15 +291,15 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         returns the next accumulator, or takes a
         [`ReducerContext`][ReducerContext] first to read run state and stop
         early. Branches are folded in the order they finish, so a reducer should
-        not depend on order; use [`collect`][GraphBuilder.collect] when order
-        matters.
+        not depend on order; use [`collect_node`][GraphBuilder.collect_node] when
+        order matters.
 
         Args:
             reducer: The fold applied to each branch's value.
             initial_factory: Builds the accumulator each time the join fires.
             item_type: The type of each branch's value, recorded for build-time
                 edge validation.
-            node_id: Identifier for the join node; defaults to a generated name.
+            node_id: Identifier for the join node; must be unique within the graph.
 
         Returns:
             The registered [`Join`][Join] node.
@@ -307,20 +323,19 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         reducer: NormalizedReducer,
         initial_factory: Callable[[], object],
         ordered: bool,
-        node_id: str | None,
+        node_id: str,
     ) -> AnyJoin:
-        """Register a join node, generating an id when one is not given."""
-        join_id = node_id or f"__join_{len(self._joins)}__"
-        if self._id_taken(join_id):
-            raise GraphBuildError(f"duplicate node id {join_id!r}")
+        """Register a join node under the given id."""
+        if self._id_taken(node_id):
+            raise GraphBuildError(f"duplicate node id {node_id!r}")
         join: AnyJoin = Join(
-            id=join_id,
+            id=node_id,
             item_type=item_type,
             reducer=reducer,
             initial_factory=initial_factory,
             ordered=ordered,
         )
-        self._joins[join_id] = join
+        self._joins[node_id] = join
         return join
 
     @staticmethod
@@ -343,11 +358,11 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             f"reducer must take (accumulator, value) or (context, accumulator, value), got {arity} parameters",
         )
 
-    def decision[DecisionInputT](
+    def decision_node[DecisionInputT](
         self,
         input_type: type[DecisionInputT],
         *,
-        node_id: str | None = None,
+        node_id: str,
     ) -> Decision[StateT, DepsT, DecisionInputT]:
         """Create a routing node that forwards its input to the first matching branch.
 
@@ -359,7 +374,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         Args:
             input_type: The type of value the decision routes, matched against
                 the output of the edge feeding it.
-            node_id: Identifier for the decision node; defaults to a generated name.
+            node_id: Identifier for the decision node; must be unique within the graph.
 
         Returns:
             The registered [`Decision`][Decision] node.
@@ -367,20 +382,19 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         Raises:
             GraphBuildError: If the chosen node id is already in use.
         """
-        decision_id = node_id or f"__decision_{len(self._decisions)}__"
-        if self._id_taken(decision_id):
-            raise GraphBuildError(f"duplicate node id {decision_id!r}")
-        decision: Decision[StateT, DepsT, DecisionInputT] = Decision(node_id=decision_id, input_type=input_type)
-        self._decisions[decision_id] = decision
+        if self._id_taken(node_id):
+            raise GraphBuildError(f"duplicate node id {node_id!r}")
+        decision: Decision[StateT, DepsT, DecisionInputT] = Decision(node_id=node_id, input_type=input_type)
+        self._decisions[node_id] = decision
         return decision
 
-    def pause[ContextT, AnswerT](
+    def pause_node[ContextT, AnswerT](
         self,
         context_type: type[ContextT],
         answer_type: type[AnswerT],
         *,
+        node_id: str,
         prompt: str | None = None,
-        node_id: str | None = None,
     ) -> Pause[ContextT, AnswerT]:
         """Create a node that suspends the run to await an answer.
 
@@ -396,8 +410,8 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
                 build-time edge validation.
             answer_type: The type supplied on resume, recorded for build-time
                 edge validation.
+            node_id: Identifier for the pause node; must be unique within the graph.
             prompt: A description of what is being asked, surfaced on pause.
-            node_id: Identifier for the pause node; defaults to a generated name.
 
         Returns:
             The registered [`Pause`][Pause] node.
@@ -405,16 +419,15 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         Raises:
             GraphBuildError: If the chosen node id is already in use.
         """
-        pause_id = node_id or f"__pause_{len(self._pauses)}__"
-        if self._id_taken(pause_id):
-            raise GraphBuildError(f"duplicate node id {pause_id!r}")
+        if self._id_taken(node_id):
+            raise GraphBuildError(f"duplicate node id {node_id!r}")
         pause: Pause[ContextT, AnswerT] = Pause(
-            id=pause_id,
+            id=node_id,
             context_type=context_type,
             answer_type=answer_type,
             prompt=prompt,
         )
-        self._pauses[pause_id] = pause
+        self._pauses[node_id] = pause
         return pause
 
     def edge_from[EdgeOutputT](

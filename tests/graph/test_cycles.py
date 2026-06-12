@@ -17,16 +17,16 @@ class _Ticks:
 def test_Graph_loop_converges() -> None:
     g = GraphBuilder[_Ticks, None, int, int]()
 
-    @g.step
+    @g.step_node
     async def tick(ctx: StepContext[_Ticks, None, int]) -> int:
         ctx.state.count += 1
         return ctx.inputs + 1
 
-    @g.step
+    @g.step_node
     async def finish(ctx: StepContext[_Ticks, None, int]) -> int:
         return ctx.inputs
 
-    dec = g.decision(int)
+    dec = g.decision_node(int, node_id="dec")
     g.add(
         g.edge_from(g.start_node).to(tick),
         g.edge_from(tick).to(dec),
@@ -45,15 +45,15 @@ def test_Graph_loop_converges() -> None:
 def test_Graph_loop_exceeds_bound() -> None:
     g = GraphBuilder[None, None, int, int]()
 
-    @g.step
+    @g.step_node
     async def tick(ctx: StepContext[None, None, int]) -> int:
         return ctx.inputs + 1
 
-    @g.step
+    @g.step_node
     async def finish(ctx: StepContext[None, None, int]) -> int:
         return ctx.inputs
 
-    dec = g.decision(int)
+    dec = g.decision_node(int, node_id="dec")
     g.add(
         g.edge_from(g.start_node).to(tick),
         g.edge_from(tick).to(dec),
@@ -69,16 +69,16 @@ def test_Graph_loop_exceeds_bound() -> None:
 def test_Graph_per_claim_loop_collects() -> None:
     g = GraphBuilder[None, None, list[int], list[int]]()
 
-    @g.step
+    @g.step_node
     async def fan(ctx: StepContext[None, None, list[int]]) -> list[int]:
         return ctx.inputs
 
-    @g.step
+    @g.step_node
     async def bump(ctx: StepContext[None, None, int]) -> int:
         return ctx.inputs + 1
 
-    dec = g.decision(int)
-    collected = g.collect(int)
+    dec = g.decision_node(int, node_id="dec")
+    collected = g.collect_node(int, node_id="collected")
     g.add(
         g.edge_from(g.start_node).to(fan),
         g.edge_from(fan).map().to(bump),

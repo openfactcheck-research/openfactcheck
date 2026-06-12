@@ -16,12 +16,12 @@ Example:
     g = GraphBuilder[None, None, str, dict]()
 
 
-    @g.step
+    @g.step_node
     async def extract(ctx: StepContext[None, None, str]) -> list[str]:
         return ctx.inputs.split()
 
 
-    @g.step
+    @g.step_node
     async def count(ctx: StepContext[None, None, list[str]]) -> dict:
         return {"n": len(ctx.inputs)}
 
@@ -41,6 +41,7 @@ from openfactcheck.graph.errors import (
     GraphBuildError,
     GraphError,
     GraphPaused,
+    GraphRenderError,
     GraphRuntimeError,
     GraphValidationError,
 )
@@ -72,7 +73,7 @@ from openfactcheck.graph.join import (
     reduce_null,
     reduce_sum,
 )
-from openfactcheck.graph.mermaid import to_mermaid
+from openfactcheck.graph.mermaid import to_mermaid, to_mermaid_image
 from openfactcheck.graph.pause import Pause
 from openfactcheck.graph.persistence import (
     FileStateStore,
@@ -138,6 +139,7 @@ __all__ += [
 # Visualization
 __all__ += [
     "to_mermaid",
+    "to_mermaid_image",
 ]
 
 # Persistence
@@ -157,6 +159,7 @@ __all__ += [
     "GraphBuildError",
     "GraphError",
     "GraphPaused",
+    "GraphRenderError",
     "GraphRuntimeError",
     "GraphValidationError",
 ]

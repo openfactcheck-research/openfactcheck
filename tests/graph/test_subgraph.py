@@ -6,7 +6,7 @@ from openfactcheck.graph import GraphBuilder, StepContext
 def test_Graph_subgraph_runs_nested() -> None:
     inner_builder = GraphBuilder[None, None, str, str](name="inner")
 
-    @inner_builder.step
+    @inner_builder.step_node
     async def shout(ctx: StepContext[None, None, str]) -> str:
         return ctx.inputs.upper()
 
@@ -18,13 +18,13 @@ def test_Graph_subgraph_runs_nested() -> None:
 
     outer = GraphBuilder[None, None, str, str]()
 
-    @outer.step
+    @outer.step_node
     async def pre(ctx: StepContext[None, None, str]) -> str:
         return f"[{ctx.inputs}]"
 
-    sub = outer.subgraph(inner)
+    sub = outer.subgraph_node(inner, node_id="sub")
 
-    @outer.step
+    @outer.step_node
     async def post(ctx: StepContext[None, None, str]) -> str:
         return f"{ctx.inputs}!"
 
@@ -43,7 +43,7 @@ def test_Graph_subgraph_runs_nested() -> None:
 def test_Graph_subgraph_shares_deps() -> None:
     inner_builder = GraphBuilder[None, str, str, str](name="inner")
 
-    @inner_builder.step
+    @inner_builder.step_node
     async def tag(ctx: StepContext[None, str, str]) -> str:
         return f"{ctx.inputs}/{ctx.deps}"
 
@@ -54,7 +54,7 @@ def test_Graph_subgraph_shares_deps() -> None:
     inner = inner_builder.build()
 
     outer = GraphBuilder[None, str, str, str]()
-    sub = outer.subgraph(inner)
+    sub = outer.subgraph_node(inner, node_id="sub")
     outer.add(
         outer.edge_from(outer.start_node).to(sub),
         outer.edge_from(sub).to(outer.end_node),

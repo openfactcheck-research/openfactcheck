@@ -17,15 +17,15 @@ from openfactcheck.graph import (
 def _three_step() -> GraphBuilder[None, None, str, str]:
     g = GraphBuilder[None, None, str, str]()
 
-    @g.step
+    @g.step_node
     async def a(ctx: StepContext[None, None, str]) -> str:
         return ctx.inputs + "a"
 
-    @g.step
+    @g.step_node
     async def b(ctx: StepContext[None, None, str]) -> str:
         return ctx.inputs + "b"
 
-    @g.step
+    @g.step_node
     async def c(ctx: StepContext[None, None, str]) -> str:
         return ctx.inputs + "c"
 

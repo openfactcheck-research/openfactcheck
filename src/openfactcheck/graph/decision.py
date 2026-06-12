@@ -50,7 +50,7 @@ class Branch:
 class Decision[StateT, DepsT, InputT]:
     """A routing node that forwards its input to the first matching branch.
 
-    Created by [`GraphBuilder.decision`][GraphBuilder.decision]. Its type
+    Created by [`GraphBuilder.decision_node`][GraphBuilder.decision_node]. Its type
     parameter is the type of the value it routes, matched against the output of
     the edge feeding it.
     """

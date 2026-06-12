@@ -14,15 +14,15 @@ from openfactcheck.graph import (
 def test_Graph_reduce_sum() -> None:
     g = GraphBuilder[None, None, list[int], float]()
 
-    @g.step
+    @g.step_node
     async def fan(ctx: StepContext[None, None, list[int]]) -> list[int]:
         return ctx.inputs
 
-    @g.step
+    @g.step_node
     async def square(ctx: StepContext[None, None, int]) -> int:
         return ctx.inputs * ctx.inputs
 
-    total = g.reduce(reduce_sum, lambda: 0.0, item_type=int)
+    total = g.reduce_node(reduce_sum, lambda: 0.0, item_type=int, node_id="total")
     g.add(
         g.edge_from(g.start_node).to(fan),
         g.edge_from(fan).map().to(square),
@@ -38,15 +38,15 @@ def test_Graph_reduce_sum() -> None:
 def test_Graph_reduce_dict_update() -> None:
     g = GraphBuilder[None, None, list[str], dict[str, int]]()
 
-    @g.step
+    @g.step_node
     async def fan(ctx: StepContext[None, None, list[str]]) -> list[str]:
         return ctx.inputs
 
-    @g.step
+    @g.step_node
     async def measure(ctx: StepContext[None, None, str]) -> dict[str, int]:
         return {ctx.inputs: len(ctx.inputs)}
 
-    merged = g.reduce(reduce_dict_update, dict, item_type=dict)
+    merged = g.reduce_node(reduce_dict_update, dict, item_type=dict, node_id="merged")
     g.add(
         g.edge_from(g.start_node).to(fan),
         g.edge_from(fan).map().to(measure),
@@ -62,17 +62,17 @@ def test_Graph_reduce_dict_update() -> None:
 def test_Graph_reduce_first_wins() -> None:
     g = GraphBuilder[None, None, list[int], int]()
 
-    @g.step
+    @g.step_node
     async def fan(ctx: StepContext[None, None, list[int]]) -> list[int]:
         return ctx.inputs
 
-    @g.step
+    @g.step_node
     async def slow_unless_ten(ctx: StepContext[None, None, int]) -> int:
         # Ten returns immediately; the others are delayed, so ten arrives first.
         await asyncio.sleep(0.0 if ctx.inputs == 10 else 0.05)
         return ctx.inputs
 
-    first = g.reduce(reduce_first, lambda: None, item_type=int)
+    first = g.reduce_node(reduce_first, lambda: None, item_type=int, node_id="first")
     g.add(
         g.edge_from(g.start_node).to(fan),
         g.edge_from(fan).map().to(slow_unless_ten),

@@ -14,13 +14,13 @@ from openfactcheck.graph import (
 def _review_graph() -> GraphBuilder[None, None, str, str]:
     g = GraphBuilder[None, None, str, str]()
 
-    @g.step
+    @g.step_node
     async def draft(ctx: StepContext[None, None, str]) -> str:
         return f"draft of {ctx.inputs}"
 
-    approval = g.pause(str, str, prompt="Approve this draft?")
+    approval = g.pause_node(str, str, node_id="approval", prompt="Approve this draft?")
 
-    @g.step
+    @g.step_node
     async def finalize(ctx: StepContext[None, None, str]) -> str:
         return f"published: {ctx.inputs}"
 
