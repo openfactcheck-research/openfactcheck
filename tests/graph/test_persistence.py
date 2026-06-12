@@ -14,19 +14,19 @@ from openfactcheck.graph import (
 )
 
 
-def _three_step() -> GraphBuilder[None, None, str, str]:
-    g = GraphBuilder[None, None, str, str]()
+def _three_step() -> GraphBuilder[str, str]:
+    g = GraphBuilder[str, str]()
 
     @g.step_node
-    async def a(ctx: StepContext[None, None, str]) -> str:
+    async def a(ctx: StepContext[str]) -> str:
         return ctx.inputs + "a"
 
     @g.step_node
-    async def b(ctx: StepContext[None, None, str]) -> str:
+    async def b(ctx: StepContext[str]) -> str:
         return ctx.inputs + "b"
 
     @g.step_node
-    async def c(ctx: StepContext[None, None, str]) -> str:
+    async def c(ctx: StepContext[str]) -> str:
         return ctx.inputs + "c"
 
     g.add(

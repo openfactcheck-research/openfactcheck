@@ -13,16 +13,16 @@ Example:
     ```python
     from openfactcheck.graph import GraphBuilder, StepContext
 
-    g = GraphBuilder[None, None, str, dict]()
+    g = GraphBuilder(input_type=str, output_type=dict)
 
 
     @g.step_node
-    async def extract(ctx: StepContext[None, None, str]) -> list[str]:
+    async def extract(ctx: StepContext[str]) -> list[str]:
         return ctx.inputs.split()
 
 
     @g.step_node
-    async def count(ctx: StepContext[None, None, list[str]]) -> dict:
+    async def count(ctx: StepContext[list[str]]) -> dict:
         return {"n": len(ctx.inputs)}
 
 

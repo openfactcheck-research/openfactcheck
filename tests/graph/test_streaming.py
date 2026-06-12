@@ -13,15 +13,15 @@ from openfactcheck.graph import (
 )
 
 
-def _two_step_graph() -> GraphBuilder[None, None, str, str]:
-    g = GraphBuilder[None, None, str, str]()
+def _two_step_graph() -> GraphBuilder[str, str]:
+    g = GraphBuilder[str, str]()
 
     @g.step_node
-    async def upper(ctx: StepContext[None, None, str]) -> str:
+    async def upper(ctx: StepContext[str]) -> str:
         return ctx.inputs.upper()
 
     @g.step_node
-    async def exclaim(ctx: StepContext[None, None, str]) -> str:
+    async def exclaim(ctx: StepContext[str]) -> str:
         return f"{ctx.inputs}!"
 
     g.add(

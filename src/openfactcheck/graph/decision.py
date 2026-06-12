@@ -47,7 +47,7 @@ class Branch:
     """For a branch that loops back to an earlier node, the most times it may be taken before the run fails."""
 
 
-class Decision[StateT, DepsT, InputT]:
+class Decision[InputT, StateT, DepsT]:
     """A routing node that forwards its input to the first matching branch.
 
     Created by [`GraphBuilder.decision_node`][GraphBuilder.decision_node]. Its type
@@ -61,9 +61,9 @@ class Decision[StateT, DepsT, InputT]:
         self.input_type = input_type
 
     def when[InputValueT](
-        self: Decision[StateT, DepsT, InputValueT],
+        self: Decision[InputValueT, StateT, DepsT],
         predicate: Callable[[InputValueT], bool],
-        dest: DestNode[StateT, DepsT, Any],
+        dest: DestNode[Any, StateT, DepsT],
         *,
         max_iterations: int | None = None,
     ) -> Branch:
@@ -83,7 +83,7 @@ class Decision[StateT, DepsT, InputT]:
     def when_type(
         self,
         cls: type,
-        dest: DestNode[StateT, DepsT, Any],
+        dest: DestNode[Any, StateT, DepsT],
         *,
         max_iterations: int | None = None,
     ) -> Branch:
@@ -103,7 +103,7 @@ class Decision[StateT, DepsT, InputT]:
     def when_equals(
         self,
         expected: object,
-        dest: DestNode[StateT, DepsT, Any],
+        dest: DestNode[Any, StateT, DepsT],
         *,
         max_iterations: int | None = None,
     ) -> Branch:

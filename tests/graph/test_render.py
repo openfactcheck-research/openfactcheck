@@ -9,11 +9,11 @@ from pytest_mock import MockerFixture
 from openfactcheck.graph import Graph, GraphBuilder, GraphRenderError, StepContext, to_mermaid_image
 
 
-def _echo_graph() -> Graph[None, None, str, str]:
-    g = GraphBuilder[None, None, str, str]()
+def _echo_graph() -> Graph[str, str]:
+    g = GraphBuilder[str, str]()
 
     @g.step_node
-    async def echo(ctx: StepContext[None, None, str]) -> str:
+    async def echo(ctx: StepContext[str]) -> str:
         return ctx.inputs
 
     g.add(

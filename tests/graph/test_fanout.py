@@ -9,14 +9,14 @@ from openfactcheck.graph import GraphBuilder, GraphBuildError, RunOptions, StepC
 
 
 def test_Graph_run_fanout_collects_in_source_order() -> None:
-    g = GraphBuilder[None, None, str, list[str]]()
+    g = GraphBuilder[str, list[str]]()
 
     @g.step_node
-    async def split(ctx: StepContext[None, None, str]) -> list[str]:
+    async def split(ctx: StepContext[str]) -> list[str]:
         return ctx.inputs.split()
 
     @g.step_node
-    async def shout(ctx: StepContext[None, None, str]) -> str:
+    async def shout(ctx: StepContext[str]) -> str:
         # First item sleeps longest, so completion order is the reverse of input order.
         await asyncio.sleep(0.01 if ctx.inputs == "a" else 0.0)
         return ctx.inputs.upper()
@@ -35,14 +35,14 @@ def test_Graph_run_fanout_collects_in_source_order() -> None:
 
 
 def test_Graph_run_fanout_empty_collection() -> None:
-    g = GraphBuilder[None, None, list[str], list[str]]()
+    g = GraphBuilder[list[str], list[str]]()
 
     @g.step_node
-    async def passthrough(ctx: StepContext[None, None, list[str]]) -> list[str]:
+    async def passthrough(ctx: StepContext[list[str]]) -> list[str]:
         return ctx.inputs
 
     @g.step_node
-    async def shout(ctx: StepContext[None, None, str]) -> str:
+    async def shout(ctx: StepContext[str]) -> str:
         return ctx.inputs.upper()
 
     collect = g.collect_node(str, node_id="collect")
@@ -67,14 +67,14 @@ class _Probe:
 
 
 def test_Graph_arun_bounds_concurrency() -> None:
-    g = GraphBuilder[_Probe, None, list[int], list[int]]()
+    g = GraphBuilder[list[int], list[int], _Probe]()
 
     @g.step_node
-    async def fan(ctx: StepContext[_Probe, None, list[int]]) -> list[int]:
+    async def fan(ctx: StepContext[list[int], _Probe]) -> list[int]:
         return ctx.inputs
 
     @g.step_node
-    async def work(ctx: StepContext[_Probe, None, int]) -> int:
+    async def work(ctx: StepContext[int, _Probe]) -> int:
         ctx.state.current += 1
         ctx.state.peak = max(ctx.state.peak, ctx.state.current)
         await asyncio.sleep(0.01)
@@ -99,7 +99,7 @@ def test_Graph_arun_bounds_concurrency() -> None:
 
 
 def test_Graph_collect_duplicate_id() -> None:
-    g = GraphBuilder[None, None, str, list[str]]()
+    g = GraphBuilder[str, list[str]]()
     g.collect_node(str, node_id="dup")
 
     with pytest.raises(GraphBuildError):

@@ -20,8 +20,9 @@ from collections.abc import Iterable
 from contextlib import suppress
 from dataclasses import dataclass, replace
 from time import perf_counter
-from typing import TYPE_CHECKING, Literal, Self, cast
+from typing import TYPE_CHECKING, Generic, Literal, Self, cast
 
+from openfactcheck.graph._typevars import DepsT, InputT, OutputT, StateT
 from openfactcheck.graph.errors import GraphPaused, GraphRuntimeError
 from openfactcheck.graph.events import NodeFailed, NodeFinished, NodeStarted, RunFinished
 from openfactcheck.graph.forks import ForkStackItem
@@ -515,7 +516,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
     async def _worker(self, node_id: str, value: object, stack: ForkStack, task_id: int) -> None:
         """Run one step, with retries and timeout, and report its result."""
         step = self._spec.steps[node_id]
-        ctx: StepContext[StateT, DepsT, object] = StepContext(inputs=value, state=self._state, deps=self._deps)
+        ctx: StepContext[object, StateT, DepsT] = StepContext(inputs=value, state=self._state, deps=self._deps)
         started = perf_counter()
         try:
             output = await self._run_step(step, ctx)
@@ -524,7 +525,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
             return
         await self._results.put(_TaskResult(node_id, output, stack, None, perf_counter() - started, task_id))
 
-    async def _run_step(self, step: AnyStep, ctx: StepContext[StateT, DepsT, object]) -> object:
+    async def _run_step(self, step: AnyStep, ctx: StepContext[object, StateT, DepsT]) -> object:
         """Invoke a step under the concurrency limit, retrying on failure with backoff.
 
         Raises:
@@ -556,7 +557,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
             await asyncio.gather(*pending, return_exceptions=True)
 
 
-class GraphStepper[StateT, DepsT, OutputT]:
+class GraphStepper[OutputT, StateT, DepsT]:
     """A handle that advances a run one task at a time.
 
     Obtained from [`Graph.stepper`][Graph.stepper] and used as an async context
@@ -630,7 +631,7 @@ class GraphStepper[StateT, DepsT, OutputT]:
         return self._run.finish()
 
 
-class Graph[StateT, DepsT, InputT, OutputT]:
+class Graph(Generic[InputT, OutputT, StateT, DepsT]):
     """An executable graph of typed nodes.
 
     Assembled by [`GraphBuilder.build`][GraphBuilder]; construct it through the
@@ -833,7 +834,7 @@ class Graph[StateT, DepsT, InputT, OutputT]:
         state: StateT,
         deps: DepsT,
         options: RunOptions | None = None,
-    ) -> GraphStepper[StateT, DepsT, OutputT]:
+    ) -> GraphStepper[OutputT, StateT, DepsT]:
         """Drive the graph one task at a time for inspection or recovery.
 
         Returns an async-context-manager handle; see

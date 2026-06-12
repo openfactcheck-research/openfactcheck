@@ -15,8 +15,9 @@ the executor treats node inputs and outputs opaquely; see
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Generic
 
+from openfactcheck.graph._typevars import DepsT, InputT, StateT
 from openfactcheck.graph.join import Join
 
 if TYPE_CHECKING:
@@ -31,29 +32,29 @@ END_ID = "__end__"
 
 
 @dataclass(frozen=True, slots=True)
-class StepContext[StateT, DepsT, InputT]:
+class StepContext(Generic[InputT, StateT, DepsT]):
     """Context passed to a step function on each invocation.
 
     Carries the node's typed ``inputs`` alongside the run-scoped ``state`` and
     the injected ``deps``, both shared across every node in a single run.
 
-    The three type parameters, in order, are the first three a
-    [`GraphBuilder`][GraphBuilder] is parameterized by:
+    The type parameters, in order, are:
 
-    1. ``StateT``: the type of ``state``, the run-scoped state shared across
-       nodes. Use ``None`` when the graph keeps no shared state.
-    2. ``DepsT``: the type of ``deps``, the read-only dependencies injected into
-       nodes (clients, configuration). Use ``None`` when nodes need none.
-    3. ``InputT``: the type of ``inputs``, the value flowing into this node.
+    1. ``InputT``: the type of ``inputs``, the value flowing into this node.
+    2. ``StateT``: the type of ``state``, the run-scoped state shared across
+       nodes. Optional; defaults to ``None`` when the graph keeps no state.
+    3. ``DepsT``: the type of ``deps``, the read-only dependencies injected into
+       nodes (clients, configuration). Optional; defaults to ``None``.
 
-    A step annotates its single parameter with this context, in this order; the
-    function's return type is the node's output. The output type is not a
-    parameter here because it lives on the step's return annotation.
+    A step annotates its single parameter with this context; the function's
+    return type is the node's output. The output type is not a parameter here
+    because it lives on the step's return annotation. State and deps may be
+    omitted, so a step with neither annotates ``StepContext[str]``.
 
     Example:
         ```python
-        # state is None, deps is a Deps bag, this node receives a str.
-        async def extract(ctx: StepContext[None, Deps, str]) -> list[Claim]:
+        # this node receives a str, with a Deps bag and no shared state.
+        async def extract(ctx: StepContext[str, None, Deps]) -> list[Claim]:
             client = ctx.deps.chat_client
             ...
         ```
@@ -70,7 +71,7 @@ class StepContext[StateT, DepsT, InputT]:
 
 
 @dataclass(frozen=True, slots=True)
-class Step[StateT, DepsT, InputT, OutputT]:
+class Step[InputT, OutputT, StateT, DepsT]:
     """A typed async node: one input value in, one output value out.
 
     Created by [`GraphBuilder.step_node`][GraphBuilder] (usually as the
@@ -82,7 +83,7 @@ class Step[StateT, DepsT, InputT, OutputT]:
     id: str
     """Stable identifier, supplied to ``step_node`` or taken from the function's name."""
 
-    call: Callable[[StepContext[StateT, DepsT, InputT]], Awaitable[OutputT]]
+    call: Callable[[StepContext[InputT, StateT, DepsT]], Awaitable[OutputT]]
     """The async function this node runs."""
 
     input_type: object | None
@@ -167,8 +168,8 @@ class Edge:
 type AnyStep = Step[Any, Any, Any, Any]
 """A step with its type parameters erased, for the executor's wiring layer."""
 
-type SourceNode[StateT, DepsT, OutputT] = (
-    Step[StateT, DepsT, Any, OutputT] | StartNode[OutputT] | Join[Any, OutputT] | Pause[Any, OutputT]
+type SourceNode[OutputT, StateT, DepsT] = (
+    Step[Any, OutputT, StateT, DepsT] | StartNode[OutputT] | Join[Any, OutputT] | Pause[Any, OutputT]
 )
 """A node an edge may leave, projected to the output type it emits.
 
@@ -176,11 +177,11 @@ Lets [`GraphBuilder.edge_from`][GraphBuilder.edge_from] capture a source node's
 output type regardless of what input the node accepts.
 """
 
-type DestNode[StateT, DepsT, InputT] = (
-    Step[StateT, DepsT, InputT, Any]
+type DestNode[InputT, StateT, DepsT] = (
+    Step[InputT, Any, StateT, DepsT]
     | EndNode[InputT]
     | Join[InputT, Any]
-    | Decision[StateT, DepsT, InputT]
+    | Decision[InputT, StateT, DepsT]
     | Pause[InputT, Any]
 )
 """A node an edge may enter, projected to the input type it accepts.

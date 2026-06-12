@@ -5,15 +5,15 @@ import asyncio
 from openfactcheck.graph import GraphBuilder, StepContext
 
 
-def _linear_builder() -> GraphBuilder[None, None, str, dict[str, int]]:
-    g = GraphBuilder[None, None, str, dict[str, int]]()
+def _linear_builder() -> GraphBuilder[str, dict[str, int]]:
+    g = GraphBuilder[str, dict[str, int]]()
 
     @g.step_node
-    async def split(ctx: StepContext[None, None, str]) -> list[str]:
+    async def split(ctx: StepContext[str]) -> list[str]:
         return ctx.inputs.split()
 
     @g.step_node
-    async def count(ctx: StepContext[None, None, list[str]]) -> dict[str, int]:
+    async def count(ctx: StepContext[list[str]]) -> dict[str, int]:
         return {"n": len(ctx.inputs)}
 
     g.add(
@@ -41,10 +41,10 @@ def test_Graph_arun() -> None:
 
 
 def test_StepContext_deps_injected() -> None:
-    g = GraphBuilder[None, str, str, str]()
+    g = GraphBuilder[str, str, None, str]()
 
     @g.step_node
-    async def use_deps(ctx: StepContext[None, str, str]) -> str:
+    async def use_deps(ctx: StepContext[str, None, str]) -> str:
         return f"{ctx.inputs}-{ctx.deps}"
 
     g.add(

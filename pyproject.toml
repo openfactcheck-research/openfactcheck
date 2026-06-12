@@ -20,6 +20,7 @@ dependencies = [
     "openai>=2.41",
     "pydantic>=2.13",
     "pydantic-settings[yaml]>=2.14",
+    "typing-extensions>=4.15.0",
 ]
 
 [project.optional-dependencies]
@@ -216,6 +217,9 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 ]
 "src/openfactcheck/chat/backends/*" = [
     "PLC0415",  ## lazy framework imports are the design of backends.
+]
+"src/openfactcheck/graph/**" = [
+    "UP046",  ## PEP-696 type-param defaults need typing_extensions + Generic[] on 3.12; native syntax is 3.13+.
 ]
 "tests/**" = [
     "D",    ## test names already describe intent; no need for docstrings.

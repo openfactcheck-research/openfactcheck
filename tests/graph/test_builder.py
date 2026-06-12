@@ -11,16 +11,16 @@ from openfactcheck.graph import (
 )
 
 
-async def _echo(ctx: StepContext[None, None, str]) -> str:
+async def _echo(ctx: StepContext[str]) -> str:
     return ctx.inputs
 
 
-async def _echo_other(ctx: StepContext[None, None, str]) -> str:
+async def _echo_other(ctx: StepContext[str]) -> str:
     return ctx.inputs
 
 
 def test_GraphBuilder_step_duplicate() -> None:
-    g = GraphBuilder[None, None, str, str]()
+    g = GraphBuilder[str, str]()
     g.step_node(_echo)
 
     with pytest.raises(GraphBuildError):
@@ -28,7 +28,7 @@ def test_GraphBuilder_step_duplicate() -> None:
 
 
 def test_GraphBuilder_build_unknown_node() -> None:
-    g = GraphBuilder[None, None, str, str]()
+    g = GraphBuilder[str, str]()
     echo = g.step_node(_echo)
     g.add(
         g.edge_from(g.start_node).to(echo),
@@ -40,7 +40,7 @@ def test_GraphBuilder_build_unknown_node() -> None:
 
 
 def test_GraphBuilder_build_no_entry() -> None:
-    g = GraphBuilder[None, None, str, str]()
+    g = GraphBuilder[str, str]()
     echo = g.step_node(_echo)
     g.add(g.edge_from(echo).to(g.end_node))
 
@@ -49,7 +49,7 @@ def test_GraphBuilder_build_no_entry() -> None:
 
 
 def test_GraphBuilder_build_unreachable() -> None:
-    g = GraphBuilder[None, None, str, str]()
+    g = GraphBuilder[str, str]()
     reached = g.step_node(_echo)
     stranded = g.step_node(_echo_other)
     g.add(
@@ -63,14 +63,14 @@ def test_GraphBuilder_build_unreachable() -> None:
 
 
 def test_GraphBuilder_build_type_mismatch() -> None:
-    g = GraphBuilder[None, None, str, int]()
+    g = GraphBuilder[str, int]()
 
     @g.step_node
-    async def produce(ctx: StepContext[None, None, str]) -> int:
+    async def produce(ctx: StepContext[str]) -> int:
         return len(ctx.inputs)
 
     @g.step_node
-    async def consume(ctx: StepContext[None, None, str]) -> int:
+    async def consume(ctx: StepContext[str]) -> int:
         return len(ctx.inputs)
 
     g.add(

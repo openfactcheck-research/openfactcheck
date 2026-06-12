@@ -12,14 +12,14 @@ from openfactcheck.graph import (
 
 
 def test_Graph_reduce_sum() -> None:
-    g = GraphBuilder[None, None, list[int], float]()
+    g = GraphBuilder[list[int], float]()
 
     @g.step_node
-    async def fan(ctx: StepContext[None, None, list[int]]) -> list[int]:
+    async def fan(ctx: StepContext[list[int]]) -> list[int]:
         return ctx.inputs
 
     @g.step_node
-    async def square(ctx: StepContext[None, None, int]) -> int:
+    async def square(ctx: StepContext[int]) -> int:
         return ctx.inputs * ctx.inputs
 
     total = g.reduce_node(reduce_sum, lambda: 0.0, item_type=int, node_id="total")
@@ -36,14 +36,14 @@ def test_Graph_reduce_sum() -> None:
 
 
 def test_Graph_reduce_dict_update() -> None:
-    g = GraphBuilder[None, None, list[str], dict[str, int]]()
+    g = GraphBuilder[list[str], dict[str, int]]()
 
     @g.step_node
-    async def fan(ctx: StepContext[None, None, list[str]]) -> list[str]:
+    async def fan(ctx: StepContext[list[str]]) -> list[str]:
         return ctx.inputs
 
     @g.step_node
-    async def measure(ctx: StepContext[None, None, str]) -> dict[str, int]:
+    async def measure(ctx: StepContext[str]) -> dict[str, int]:
         return {ctx.inputs: len(ctx.inputs)}
 
     merged = g.reduce_node(reduce_dict_update, dict, item_type=dict, node_id="merged")
@@ -60,14 +60,14 @@ def test_Graph_reduce_dict_update() -> None:
 
 
 def test_Graph_reduce_first_wins() -> None:
-    g = GraphBuilder[None, None, list[int], int]()
+    g = GraphBuilder[list[int], int]()
 
     @g.step_node
-    async def fan(ctx: StepContext[None, None, list[int]]) -> list[int]:
+    async def fan(ctx: StepContext[list[int]]) -> list[int]:
         return ctx.inputs
 
     @g.step_node
-    async def slow_unless_ten(ctx: StepContext[None, None, int]) -> int:
+    async def slow_unless_ten(ctx: StepContext[int]) -> int:
         # Ten returns immediately; the others are delayed, so ten arrives first.
         await asyncio.sleep(0.0 if ctx.inputs == 10 else 0.05)
         return ctx.inputs

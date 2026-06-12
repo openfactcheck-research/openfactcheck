@@ -16,9 +16,9 @@ class _Attempts:
 
 
 def test_Graph_step_retries_until_success() -> None:
-    g = GraphBuilder[_Attempts, None, str, str]()
+    g = GraphBuilder[str, str, _Attempts]()
 
-    async def flaky(ctx: StepContext[_Attempts, None, str]) -> str:
+    async def flaky(ctx: StepContext[str, _Attempts]) -> str:
         ctx.state.count += 1
         if ctx.state.count < 3:
             raise RuntimeError("transient")
@@ -38,9 +38,9 @@ def test_Graph_step_retries_until_success() -> None:
 
 
 def test_Graph_step_retries_exhausted_fails() -> None:
-    g = GraphBuilder[None, None, str, str]()
+    g = GraphBuilder[str, str]()
 
-    async def always_fails(ctx: StepContext[None, None, str]) -> str:
+    async def always_fails(ctx: StepContext[str]) -> str:
         raise RuntimeError("nope")
 
     step = g.step_node(always_fails, retries=2)
@@ -54,9 +54,9 @@ def test_Graph_step_retries_exhausted_fails() -> None:
 
 
 def test_Graph_step_timeout_aborts() -> None:
-    g = GraphBuilder[None, None, str, str]()
+    g = GraphBuilder[str, str]()
 
-    async def slow(ctx: StepContext[None, None, str]) -> str:
+    async def slow(ctx: StepContext[str]) -> str:
         await asyncio.sleep(1.0)
         return ctx.inputs
 
@@ -78,14 +78,14 @@ class _Seen:
 
 
 def test_Graph_isolate_drops_failed_branch() -> None:
-    g = GraphBuilder[_Seen, None, list[int], list[int]]()
+    g = GraphBuilder[list[int], list[int], _Seen]()
 
     @g.step_node
-    async def fan(ctx: StepContext[_Seen, None, list[int]]) -> list[int]:
+    async def fan(ctx: StepContext[list[int], _Seen]) -> list[int]:
         return ctx.inputs
 
     @g.step_node
-    async def doubled(ctx: StepContext[_Seen, None, int]) -> int:
+    async def doubled(ctx: StepContext[int, _Seen]) -> int:
         if ctx.inputs == 2:  # noqa: PLR2004 - the failing item under test.
             raise RuntimeError("bad item")
         return ctx.inputs * 2
@@ -104,14 +104,14 @@ def test_Graph_isolate_drops_failed_branch() -> None:
 
 
 def test_Graph_isolate_all_branches_fail_collects_empty() -> None:
-    g = GraphBuilder[None, None, list[int], list[int]]()
+    g = GraphBuilder[list[int], list[int]]()
 
     @g.step_node
-    async def fan(ctx: StepContext[None, None, list[int]]) -> list[int]:
+    async def fan(ctx: StepContext[list[int]]) -> list[int]:
         return ctx.inputs
 
     @g.step_node
-    async def boom(ctx: StepContext[None, None, int]) -> int:
+    async def boom(ctx: StepContext[int]) -> int:
         raise RuntimeError("always")
 
     collected = g.collect_node(int, node_id="collected")

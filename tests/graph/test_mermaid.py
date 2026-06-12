@@ -4,14 +4,14 @@ from openfactcheck.graph import GraphBuilder, StepContext
 
 
 def test_Graph_mermaid_renders_shapes_and_map_label() -> None:
-    g = GraphBuilder[None, None, str, list[str]]()
+    g = GraphBuilder[str, list[str]]()
 
     @g.step_node
-    async def split(ctx: StepContext[None, None, str]) -> list[str]:
+    async def split(ctx: StepContext[str]) -> list[str]:
         return ctx.inputs.split()
 
     @g.step_node
-    async def shout(ctx: StepContext[None, None, str]) -> str:
+    async def shout(ctx: StepContext[str]) -> str:
         return ctx.inputs.upper()
 
     gather = g.collect_node(str, node_id="gather")
@@ -36,14 +36,14 @@ def test_Graph_mermaid_renders_shapes_and_map_label() -> None:
 
 
 def test_Graph_mermaid_renders_decision_and_pause() -> None:
-    g = GraphBuilder[None, None, str, str]()
+    g = GraphBuilder[str, str]()
 
     @g.step_node
-    async def classify(ctx: StepContext[None, None, str]) -> str:
+    async def classify(ctx: StepContext[str]) -> str:
         return ctx.inputs
 
     @g.step_node
-    async def handle(ctx: StepContext[None, None, str]) -> str:
+    async def handle(ctx: StepContext[str]) -> str:
         return ctx.inputs
 
     dec = g.decision_node(str, node_id="route")

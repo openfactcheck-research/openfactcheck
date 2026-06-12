@@ -15,15 +15,15 @@ class _Ticks:
 
 
 def test_Graph_loop_converges() -> None:
-    g = GraphBuilder[_Ticks, None, int, int]()
+    g = GraphBuilder[int, int, _Ticks]()
 
     @g.step_node
-    async def tick(ctx: StepContext[_Ticks, None, int]) -> int:
+    async def tick(ctx: StepContext[int, _Ticks]) -> int:
         ctx.state.count += 1
         return ctx.inputs + 1
 
     @g.step_node
-    async def finish(ctx: StepContext[_Ticks, None, int]) -> int:
+    async def finish(ctx: StepContext[int, _Ticks]) -> int:
         return ctx.inputs
 
     dec = g.decision_node(int, node_id="dec")
@@ -43,14 +43,14 @@ def test_Graph_loop_converges() -> None:
 
 
 def test_Graph_loop_exceeds_bound() -> None:
-    g = GraphBuilder[None, None, int, int]()
+    g = GraphBuilder[int, int]()
 
     @g.step_node
-    async def tick(ctx: StepContext[None, None, int]) -> int:
+    async def tick(ctx: StepContext[int]) -> int:
         return ctx.inputs + 1
 
     @g.step_node
-    async def finish(ctx: StepContext[None, None, int]) -> int:
+    async def finish(ctx: StepContext[int]) -> int:
         return ctx.inputs
 
     dec = g.decision_node(int, node_id="dec")
@@ -67,14 +67,14 @@ def test_Graph_loop_exceeds_bound() -> None:
 
 
 def test_Graph_per_claim_loop_collects() -> None:
-    g = GraphBuilder[None, None, list[int], list[int]]()
+    g = GraphBuilder[list[int], list[int]]()
 
     @g.step_node
-    async def fan(ctx: StepContext[None, None, list[int]]) -> list[int]:
+    async def fan(ctx: StepContext[list[int]]) -> list[int]:
         return ctx.inputs
 
     @g.step_node
-    async def bump(ctx: StepContext[None, None, int]) -> int:
+    async def bump(ctx: StepContext[int]) -> int:
         return ctx.inputs + 1
 
     dec = g.decision_node(int, node_id="dec")

@@ -6,16 +6,16 @@ structure and returns a runnable [`Graph`][Graph].
 
 Example:
     ```python
-    g = GraphBuilder[None, None, str, dict]()
+    g = GraphBuilder(input_type=str, output_type=dict)
 
 
     @g.step_node
-    async def extract(ctx: StepContext[None, None, str]) -> list[str]:
+    async def extract(ctx: StepContext[str]) -> list[str]:
         return ctx.inputs.split()
 
 
     @g.step_node
-    async def count(ctx: StepContext[None, None, list[str]]) -> dict:
+    async def count(ctx: StepContext[list[str]]) -> dict:
         return {"n": len(ctx.inputs)}
 
 
@@ -34,8 +34,9 @@ from __future__ import annotations
 import inspect
 from collections import deque
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, get_args, get_type_hints
+from typing import TYPE_CHECKING, Generic, get_args, get_type_hints, overload
 
+from openfactcheck.graph._typevars import DepsT, InputT, OutputT, StateT
 from openfactcheck.graph.decision import Branch, Decision
 from openfactcheck.graph.errors import GraphBuildError, GraphValidationError
 from openfactcheck.graph.graph import Graph, GraphSpec
@@ -63,7 +64,7 @@ if TYPE_CHECKING:
     from openfactcheck.graph.pause import AnyPause
 
 _STEP_CONTEXT_ARITY = 3
-"""Number of type arguments on ``StepContext[State, Deps, Input]``."""
+"""Number of type arguments on ``StepContext[Input, State, Deps]``."""
 
 _PLAIN_REDUCER_ARITY = 2
 """Parameter count of a plain ``(accumulator, value)`` reducer."""
@@ -73,7 +74,7 @@ _CONTEXT_REDUCER_ARITY = 3
 
 
 @dataclass(frozen=True, slots=True)
-class EdgePathBuilder[StateT, DepsT, OutputT]:
+class EdgePathBuilder[OutputT, StateT, DepsT]:
     """A partially-built edge, awaiting its destination.
 
     Returned by [`GraphBuilder.edge_from`][GraphBuilder.edge_from], carrying the
@@ -89,8 +90,8 @@ class EdgePathBuilder[StateT, DepsT, OutputT]:
     """Whether the edge delivers the whole output or fans an iterable per item."""
 
     def map[ItemT](
-        self: EdgePathBuilder[StateT, DepsT, Iterable[ItemT]],
-    ) -> EdgePathBuilder[StateT, DepsT, ItemT]:
+        self: EdgePathBuilder[Iterable[ItemT], StateT, DepsT],
+    ) -> EdgePathBuilder[ItemT, StateT, DepsT]:
         """Fan the source's iterable output out to one parallel branch per item.
 
         Available only when the source node's output is iterable. The chosen
@@ -104,7 +105,7 @@ class EdgePathBuilder[StateT, DepsT, OutputT]:
         """
         return EdgePathBuilder(self.source_id, kind=EdgeKind.MAP)
 
-    def to(self, dest: DestNode[StateT, DepsT, OutputT]) -> Edge:
+    def to(self, dest: DestNode[OutputT, StateT, DepsT]) -> Edge:
         """Complete the edge by naming its destination node.
 
         Args:
@@ -117,37 +118,59 @@ class EdgePathBuilder[StateT, DepsT, OutputT]:
         return Edge(source_id=self.source_id, dest_id=dest.id, kind=self.kind)
 
 
-class GraphBuilder[StateT, DepsT, InputT, OutputT]:
+class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
     """Collect steps and edges, then build a validated [`Graph`][Graph].
 
-    The four type parameters, in order, are:
+    Construct it the named way, ``GraphBuilder(input_type=..., output_type=...)``,
+    or with positional type parameters, ``GraphBuilder[Input, Output]``. The type
+    parameters, in order, are:
 
-    1. ``StateT``: run-scoped mutable state shared across every node. Use
-       ``None`` when the graph keeps no shared state.
-    2. ``DepsT``: read-only dependencies injected into every node (clients,
-       configuration). Use ``None`` when nodes need none.
-    3. ``InputT``: the value the built graph accepts.
-    4. ``OutputT``: the value the built graph returns.
+    1. ``InputT``: the value the built graph accepts.
+    2. ``OutputT``: the value the built graph returns.
+    3. ``StateT``: run-scoped mutable state shared across every node. Optional;
+       defaults to ``None`` (no shared state).
+    4. ``DepsT``: read-only dependencies injected into every node (clients,
+       configuration). Optional; defaults to ``None`` (no deps).
 
     ``StateT`` and ``DepsT`` flow unchanged into every
-    [`StepContext`][StepContext], so a step's context parameter repeats them as
-    its first two type arguments, in the same order.
+    [`StepContext`][StepContext].
 
     Example:
         ```python
-        # No shared state, a Deps bag of clients, str in, a dict out.
-        g = GraphBuilder[None, Deps, str, dict[str, int]]()
+        # str in, a dict out, no shared state, a Deps bag of clients.
+        g = GraphBuilder(input_type=str, output_type=dict[str, int], deps_type=Deps)
+        # the positional form is equivalent: GraphBuilder[str, dict[str, int], None, Deps]
         ```
     """
 
-    def __init__(self, *, name: str = "graph") -> None:
+    def __init__(
+        self,
+        *,
+        input_type: type[InputT] | None = None,
+        output_type: type[OutputT] | None = None,
+        state_type: type[StateT] | None = None,
+        deps_type: type[DepsT] | None = None,
+        name: str = "graph",
+    ) -> None:
         """Start an empty builder.
 
+        The four ``*_type`` arguments are optional and bind the builder's type
+        parameters by name; ``state_type`` and ``deps_type`` default to ``None``.
+        They are recorded for introspection and are not required at run time.
+
         Args:
+            input_type: The type the built graph accepts.
+            output_type: The type the built graph returns.
+            state_type: The run-scoped state type, or ``None`` for no state.
+            deps_type: The injected dependencies type, or ``None`` for no deps.
             name: Human-readable name carried onto the built graph for
                 diagrams and logs.
         """
         self._name = name
+        self._input_type = input_type
+        self._output_type = output_type
+        self._state_type = state_type
+        self._deps_type = deps_type
         self._steps: dict[str, AnyStep] = {}
         self._joins: dict[str, AnyJoin] = {}
         self._decisions: dict[str, AnyDecision] = {}
@@ -157,33 +180,65 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         self.start_node: StartNode[InputT] = StartNode()
         self.end_node: EndNode[OutputT] = EndNode()
 
+    @overload
     def step_node[StepInputT, StepOutputT](
         self,
-        call: Callable[[StepContext[StateT, DepsT, StepInputT]], Awaitable[StepOutputT]],
+        call: Callable[[StepContext[StepInputT, StateT, DepsT]], Awaitable[StepOutputT]],
         *,
         node_id: str | None = None,
         retries: int = 0,
         retry_backoff: float = 0.0,
         timeout: float | None = None,
-    ) -> Step[StateT, DepsT, StepInputT, StepOutputT]:
+    ) -> Step[StepInputT, StepOutputT, StateT, DepsT]: ...
+
+    @overload
+    def step_node[StepInputT, StepOutputT](
+        self,
+        call: None = None,
+        *,
+        node_id: str | None = None,
+        retries: int = 0,
+        retry_backoff: float = 0.0,
+        timeout: float | None = None,
+    ) -> Callable[
+        [Callable[[StepContext[StepInputT, StateT, DepsT]], Awaitable[StepOutputT]]],
+        Step[StepInputT, StepOutputT, StateT, DepsT],
+    ]: ...
+
+    def step_node[StepInputT, StepOutputT](
+        self,
+        call: Callable[[StepContext[StepInputT, StateT, DepsT]], Awaitable[StepOutputT]] | None = None,
+        *,
+        node_id: str | None = None,
+        retries: int = 0,
+        retry_backoff: float = 0.0,
+        timeout: float | None = None,
+    ) -> (
+        Step[StepInputT, StepOutputT, StateT, DepsT]
+        | Callable[
+            [Callable[[StepContext[StepInputT, StateT, DepsT]], Awaitable[StepOutputT]]],
+            Step[StepInputT, StepOutputT, StateT, DepsT],
+        ]
+    ):
         """Register an async function as a node and return it for wiring.
 
-        Usually applied as the bare ``@g.step_node`` decorator. Pass options
-        through the call form, ``g.step_node(fn, retries=3, timeout=5.0)``. The
-        node's id defaults to the function's name; its input and output types
-        are read from the function's annotations for build-time edge validation.
+        Apply it as a bare decorator, ``@g.step_node`` (the node's id is the
+        function's name); as a decorator with options,
+        ``@g.step_node(node_id="verify", retries=3)``; or call it directly,
+        ``g.step_node(fn, node_id="verify")``. The input and output types are
+        read from the function's annotations for build-time edge validation.
 
         Args:
-            call: An async function taking a [`StepContext`][StepContext] and
-                returning this node's output.
+            call: The async function to register, or ``None`` to return a
+                decorator that registers the function it is applied to.
             node_id: Identifier for the node; defaults to the function's name.
             retries: Extra attempts after the first if the call fails.
             retry_backoff: Base seconds before a retry; doubles each attempt.
             timeout: Seconds a single attempt may run, or ``None`` for no limit.
 
         Returns:
-            The registered [`Step`][Step], used as a source or destination when
-            wiring edges.
+            The registered [`Step`][Step] when ``call`` is given, otherwise a
+            decorator that registers its function and returns the step.
 
         Raises:
             GraphBuildError: If a step with the same id is already registered,
@@ -193,20 +248,28 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             raise GraphBuildError("retries and retry_backoff must be non-negative")
         if timeout is not None and timeout <= 0:
             raise GraphBuildError("timeout must be positive when set")
-        input_type, output_type = self._io_types(call)
-        node = Step(
-            id=node_id or call.__name__,
-            call=call,
-            input_type=input_type,
-            output_type=output_type,
-            retries=retries,
-            retry_backoff=retry_backoff,
-            timeout=timeout,
-        )
-        if self._id_taken(node.id):
-            raise GraphBuildError(f"duplicate node id {node.id!r}")
-        self._steps[node.id] = node
-        return node
+
+        def register(
+            fn: Callable[[StepContext[StepInputT, StateT, DepsT]], Awaitable[StepOutputT]],
+        ) -> Step[StepInputT, StepOutputT, StateT, DepsT]:
+            input_type, output_type = self._io_types(fn)
+            node = Step(
+                id=node_id or fn.__name__,
+                call=fn,
+                input_type=input_type,
+                output_type=output_type,
+                retries=retries,
+                retry_backoff=retry_backoff,
+                timeout=timeout,
+            )
+            if self._id_taken(node.id):
+                raise GraphBuildError(f"duplicate node id {node.id!r}")
+            self._steps[node.id] = node
+            return node
+
+        if call is None:
+            return register
+        return register(call)
 
     def _id_taken(self, node_id: str) -> bool:
         """Whether a node id is already registered as a step, join, decision, or pause."""
@@ -214,10 +277,10 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
 
     def subgraph_node[SubInputT, SubOutputT](
         self,
-        graph: Graph[StateT, DepsT, SubInputT, SubOutputT],
+        graph: Graph[SubInputT, SubOutputT, StateT, DepsT],
         *,
         node_id: str,
-    ) -> Step[StateT, DepsT, SubInputT, SubOutputT]:
+    ) -> Step[SubInputT, SubOutputT, StateT, DepsT]:
         """Wrap a built graph as a node that runs it and forwards its output.
 
         The inner graph runs with the outer run's state and dependencies, so its
@@ -235,11 +298,11 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             GraphBuildError: If the chosen node id is already in use.
         """
 
-        async def run_subgraph(ctx: StepContext[StateT, DepsT, SubInputT]) -> SubOutputT:
+        async def run_subgraph(ctx: StepContext[SubInputT, StateT, DepsT]) -> SubOutputT:
             """Run the embedded graph with the outer run's state and dependencies."""
             return await graph.arun(ctx.inputs, state=ctx.state, deps=ctx.deps)
 
-        node: Step[StateT, DepsT, SubInputT, SubOutputT] = Step(
+        node: Step[SubInputT, SubOutputT, StateT, DepsT] = Step(
             id=node_id,
             call=run_subgraph,
             input_type=None,
@@ -363,7 +426,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         input_type: type[DecisionInputT],
         *,
         node_id: str,
-    ) -> Decision[StateT, DepsT, DecisionInputT]:
+    ) -> Decision[DecisionInputT, StateT, DepsT]:
         """Create a routing node that forwards its input to the first matching branch.
 
         Wire it as the destination of the edge carrying the value to route, then
@@ -384,7 +447,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
         """
         if self._id_taken(node_id):
             raise GraphBuildError(f"duplicate node id {node_id!r}")
-        decision: Decision[StateT, DepsT, DecisionInputT] = Decision(node_id=node_id, input_type=input_type)
+        decision: Decision[DecisionInputT, StateT, DepsT] = Decision(node_id=node_id, input_type=input_type)
         self._decisions[node_id] = decision
         return decision
 
@@ -432,8 +495,8 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
 
     def edge_from[EdgeOutputT](
         self,
-        source: SourceNode[StateT, DepsT, EdgeOutputT],
-    ) -> EdgePathBuilder[StateT, DepsT, EdgeOutputT]:
+        source: SourceNode[EdgeOutputT, StateT, DepsT],
+    ) -> EdgePathBuilder[EdgeOutputT, StateT, DepsT]:
         """Begin an edge leaving ``source``.
 
         Args:
@@ -460,7 +523,7 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
             else:
                 self._edges.append(item)
 
-    def build(self) -> Graph[StateT, DepsT, InputT, OutputT]:
+    def build(self) -> Graph[InputT, OutputT, StateT, DepsT]:
         """Validate the assembled graph and return a runnable [`Graph`][Graph].
 
         Returns:
@@ -620,6 +683,6 @@ class GraphBuilder[StateT, DepsT, InputT, OutputT]:
                 continue
             args = get_args(hint)
             if len(args) == _STEP_CONTEXT_ARITY:
-                input_type = args[2]
+                input_type = args[0]
             break
         return input_type, output_type

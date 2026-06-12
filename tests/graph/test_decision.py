@@ -6,18 +6,18 @@ from openfactcheck.graph import GraphBuilder, GraphRuntimeError, StepContext
 
 
 def test_Graph_decision_routes_by_predicate() -> None:
-    g = GraphBuilder[None, None, int, str]()
+    g = GraphBuilder[int, str]()
 
     @g.step_node
-    async def classify(ctx: StepContext[None, None, int]) -> int:
+    async def classify(ctx: StepContext[int]) -> int:
         return ctx.inputs
 
     @g.step_node
-    async def big(ctx: StepContext[None, None, int]) -> str:
+    async def big(ctx: StepContext[int]) -> str:
         return f"big:{ctx.inputs}"
 
     @g.step_node
-    async def small(ctx: StepContext[None, None, int]) -> str:
+    async def small(ctx: StepContext[int]) -> str:
         return f"small:{ctx.inputs}"
 
     dec = g.decision_node(int, node_id="dec")
@@ -36,18 +36,18 @@ def test_Graph_decision_routes_by_predicate() -> None:
 
 
 def test_Graph_decision_routes_by_type() -> None:
-    g = GraphBuilder[None, None, object, str]()
+    g = GraphBuilder[object, str]()
 
     @g.step_node
-    async def identity(ctx: StepContext[None, None, object]) -> object:
+    async def identity(ctx: StepContext[object]) -> object:
         return ctx.inputs
 
     @g.step_node
-    async def handle_int(ctx: StepContext[None, None, object]) -> str:
+    async def handle_int(ctx: StepContext[object]) -> str:
         return f"int:{ctx.inputs}"
 
     @g.step_node
-    async def handle_str(ctx: StepContext[None, None, object]) -> str:
+    async def handle_str(ctx: StepContext[object]) -> str:
         return f"str:{ctx.inputs}"
 
     dec = g.decision_node(object, node_id="dec")
@@ -66,18 +66,18 @@ def test_Graph_decision_routes_by_type() -> None:
 
 
 def test_Graph_decision_when_equals() -> None:
-    g = GraphBuilder[None, None, str, str]()
+    g = GraphBuilder[str, str]()
 
     @g.step_node
-    async def echo(ctx: StepContext[None, None, str]) -> str:
+    async def echo(ctx: StepContext[str]) -> str:
         return ctx.inputs
 
     @g.step_node
-    async def matched(ctx: StepContext[None, None, str]) -> str:
+    async def matched(ctx: StepContext[str]) -> str:
         return "matched"
 
     @g.step_node
-    async def other(ctx: StepContext[None, None, str]) -> str:
+    async def other(ctx: StepContext[str]) -> str:
         return "other"
 
     dec = g.decision_node(str, node_id="dec")
@@ -96,14 +96,14 @@ def test_Graph_decision_when_equals() -> None:
 
 
 def test_Graph_decision_no_match_raises() -> None:
-    g = GraphBuilder[None, None, int, str]()
+    g = GraphBuilder[int, str]()
 
     @g.step_node
-    async def classify(ctx: StepContext[None, None, int]) -> int:
+    async def classify(ctx: StepContext[int]) -> int:
         return ctx.inputs
 
     @g.step_node
-    async def only_big(ctx: StepContext[None, None, int]) -> str:
+    async def only_big(ctx: StepContext[int]) -> str:
         return "big"
 
     dec = g.decision_node(int, node_id="dec")
