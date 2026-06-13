@@ -19,7 +19,7 @@ dependencies = [
     "anthropic>=0.109",
     "openai>=2.41",
     "pydantic>=2.13",
-    "pydantic-settings[yaml]>=2.14",
+    "pydantic-settings[yaml]>=2.14.1",
 ]
 
 [project.optional-dependencies]
@@ -27,12 +27,12 @@ api = [
     "fastapi>=0.136",
     "uvicorn[standard]>=0.49",
     "pyjwt[crypto]>=2.13",
-    "sqlalchemy[asyncio]>=2.0",
+    "sqlalchemy[asyncio]>=2.0.50",
     "aiosqlite>=0.22",
     "mangum>=0.21",
 ]
 cloud = [
-    "boto3>=1.43",
+    "boto3>=1.43.29",
 ]
 
 ###############################################################################
@@ -244,18 +244,18 @@ dev = [
     "openfactcheck[api,cloud]",
     "pyright>=1.1",
     "pre-commit>=4.6",
-    "pytest>=9.0",
+    "pytest>=9.1.0",
     "pytest-cov>=7.1",
     "pytest-asyncio>=1.4",
     "pytest-mock>=3.15",
     "httpx>=0.28",
-    "boto3-stubs[dynamodb]>=1.43",
-    "moto[dynamodb]>=5.2",
-    "ruff>=0.15",
+    "boto3-stubs[dynamodb]>=1.43.29",
+    "moto[dynamodb]>=5.2.2",
+    "ruff>=0.15.17",
 ]
 docs = [
     "mkdocs>=1.6",
     "mkdocs-material>=9.7",
-    "mkdocstrings[python]>=1.0",
+    "mkdocstrings[python]>=1.0.4",
     "neoteroi-mkdocs>=1.2",
 ]
