@@ -17,6 +17,7 @@ classifiers = [
 ]
 dependencies = [
     "anthropic>=0.109",
+    "httpx>=0.28.1",
     "openai>=2.41",
     "pydantic>=2.13",
     "pydantic-settings[yaml]>=2.14",

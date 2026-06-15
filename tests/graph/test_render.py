@@ -1,8 +1,8 @@
 """Tests for rendering a graph diagram to an image through a Mermaid server."""
 
 import base64
-import urllib.error
 
+import httpx
 import pytest
 from pytest_mock import MockerFixture
 
@@ -23,48 +23,53 @@ def _echo_graph() -> Graph[str, str]:
     return g.build()
 
 
-def _mock_urlopen(mocker: MockerFixture, data: bytes) -> MockerFixture:
-    """Patch urlopen to act as a context manager whose response reads ``data``."""
-    cm = mocker.MagicMock()
-    cm.__enter__.return_value.read.return_value = data
-    return mocker.patch("urllib.request.urlopen", return_value=cm)
+def _mock_httpx_get(mocker: MockerFixture, data: bytes) -> MockerFixture:
+    """Patch httpx.get to return a response whose content is ``data``."""
+    response = mocker.MagicMock()
+    response.content = data
+    return mocker.patch("httpx.get", return_value=response)
 
 
 def test_to_mermaid_image(mocker: MockerFixture) -> None:
-    urlopen = _mock_urlopen(mocker, b"PNGDATA")
+    get = _mock_httpx_get(mocker, b"PNGDATA")
 
     result = to_mermaid_image("flowchart TD\n    A --> B")
 
     assert result == b"PNGDATA"
     encoded = base64.b64encode(b"flowchart TD\n    A --> B").decode("ascii")
-    assert urlopen.call_args.args[0] == f"https://mermaid.ink/img/{encoded}"
+    assert get.call_args.args[0] == f"https://mermaid.ink/img/{encoded}"
 
 
 def test_to_mermaid_image_svg_and_custom_base_url(mocker: MockerFixture) -> None:
-    urlopen = _mock_urlopen(mocker, b"<svg/>")
+    get = _mock_httpx_get(mocker, b"<svg/>")
 
     result = to_mermaid_image("flowchart TD", image_type="svg", base_url="http://localhost:3000")
 
     assert result == b"<svg/>"
     encoded = base64.b64encode(b"flowchart TD").decode("ascii")
-    assert urlopen.call_args.args[0] == f"http://localhost:3000/svg/{encoded}"
+    assert get.call_args.args[0] == f"http://localhost:3000/svg/{encoded}"
 
 
 def test_to_mermaid_image_raises_on_unreachable_server(mocker: MockerFixture) -> None:
-    mocker.patch("urllib.request.urlopen", side_effect=urllib.error.URLError("unreachable"))
+    mocker.patch("httpx.get", side_effect=httpx.ConnectError("unreachable"))
 
     with pytest.raises(GraphRenderError):
         to_mermaid_image("flowchart TD")
 
 
+def test_to_mermaid_image_raises_on_non_http_base_url() -> None:
+    with pytest.raises(GraphRenderError):
+        to_mermaid_image("flowchart TD", base_url="file:///etc/passwd")
+
+
 def test_Graph_to_mermaid_image(mocker: MockerFixture) -> None:
-    _mock_urlopen(mocker, b"PNGDATA")
+    _mock_httpx_get(mocker, b"PNGDATA")
 
     assert _echo_graph().to_mermaid_image() == b"PNGDATA"
 
 
 def test_Graph_to_mermaid_view(mocker: MockerFixture) -> None:
-    _mock_urlopen(mocker, b"PNGDATA")
+    _mock_httpx_get(mocker, b"PNGDATA")
 
     view = _echo_graph().to_mermaid_view()
 

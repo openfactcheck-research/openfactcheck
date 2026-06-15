@@ -16,12 +16,12 @@ self-hosted server supplied as ``base_url``.
 from __future__ import annotations
 
 import base64
-import urllib.error
 import urllib.parse
-import urllib.request
 from collections import deque
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
+
+import httpx
 
 from openfactcheck.graph.errors import GraphRenderError
 from openfactcheck.graph.step import EdgeKind
@@ -158,10 +158,11 @@ def to_mermaid_image(
     encoded = base64.b64encode(source.encode()).decode("ascii")
     url = f"{base_url}/{_IMAGE_PATHS[image_type]}/{encoded}"
     try:
-        with urllib.request.urlopen(url, timeout=timeout) as response:  # noqa: S310 - base_url scheme validated to http(s) above.
-            return response.read()
-    except urllib.error.URLError as exc:
+        response = httpx.get(url, timeout=timeout)
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
         raise GraphRenderError(f"could not render diagram via {base_url}: {exc}") from exc
+    return response.content
 
 
 @dataclass(frozen=True, slots=True)

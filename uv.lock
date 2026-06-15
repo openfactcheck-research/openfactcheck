@@ -1133,6 +1133,7 @@ name = "openfactcheck"
 source = { editable = "." }
 dependencies = [
     { name = "anthropic" },
+    { name = "httpx" },
     { name = "openai" },
     { name = "pydantic" },
     { name = "pydantic-settings", extra = ["yaml"] },
@@ -1179,6 +1180,7 @@ requires-dist = [
     { name = "anthropic", specifier = ">=0.109" },
     { name = "boto3", marker = "extra == 'cloud'", specifier = ">=1.43" },
     { name = "fastapi", marker = "extra == 'api'", specifier = ">=0.136" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "mangum", marker = "extra == 'api'", specifier = ">=0.21" },
     { name = "openai", specifier = ">=2.41" },
     { name = "pydantic", specifier = ">=2.13" },
