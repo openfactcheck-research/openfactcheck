@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from openfactcheck.chat.config import ProviderName
 
 
-def _default_backend(provider: ProviderName) -> ChatBackend:  # pyright: ignore[reportUnusedFunction] - used by client.py.
+def default_backend(provider: ProviderName) -> ChatBackend:
     """Return the default direct-SDK backend for ``provider``.
 
     Args:
