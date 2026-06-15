@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, status
@@ -230,8 +231,6 @@ async def _run_local(
     pipeline: dict[str, object],
 ) -> None:
     """Local mode: run pipeline in-process and update workspace run state."""
-    from datetime import UTC, datetime  # noqa: PLC0415 - lazy import to avoid engine dependency at module level.
-
     from openfactcheck.engine import (  # noqa: PLC0415 - lazy import to avoid engine dependency at module level.
         execute_pipeline,
     )
