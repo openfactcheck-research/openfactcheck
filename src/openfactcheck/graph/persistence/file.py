@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import asyncio
-import pickle
+import re
 from typing import TYPE_CHECKING
+
+from openfactcheck.graph.errors import GraphPersistenceError
+from openfactcheck.graph.persistence._serde import PersistedSnapshot
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -12,17 +15,19 @@ if TYPE_CHECKING:
     from openfactcheck.graph.persistence.protocols import RunSnapshot
 
 
+_SAFE_RUN_ID = re.compile(r"\A[A-Za-z0-9._-]+\Z")
+"""A run id usable as one path component: letters, digits, dot, dash, underscore."""
+
+
 class FileStateStore:
     """Persists run snapshots to disk so a run survives across processes.
 
-    Each run's history is a single file in the store directory. A save writes to
-    a temporary file and atomically replaces the target, so a crash mid-write
-    cannot corrupt the history.
+    Each run's history is a single JSON file in the store directory. A save
+    writes to a temporary file and atomically replaces the target, so a crash
+    mid-write cannot corrupt the history.
 
-    Snapshots are stored with ``pickle`` so any node value can be persisted, not
-    only JSON-friendly ones. Because unpickling can execute arbitrary code, only
-    load from a directory you trust. A single run should have one writer at a
-    time.
+    A run's values are stored as JSON, so any value it carries in its state must
+    be JSON-serializable. A single run should have one writer at a time.
     """
 
     def __init__(self, directory: Path) -> None:
@@ -45,16 +50,32 @@ class FileStateStore:
         """Return every snapshot saved for ``run_id``, oldest first."""
         return await asyncio.to_thread(self._read, run_id)
 
+    def _path(self, run_id: str) -> Path:
+        """Map ``run_id`` to its snapshot file, refusing any id that could escape the store.
+
+        Raises:
+            GraphPersistenceError: If ``run_id`` is not a single safe path component.
+        """
+        if run_id in {".", ".."} or not _SAFE_RUN_ID.match(run_id):
+            raise GraphPersistenceError(
+                f"invalid run id {run_id!r}: a run id must match [A-Za-z0-9._-] and cannot be '.' or '..'"
+            )
+        directory = self._directory.resolve()
+        path = (directory / f"{run_id}.json").resolve()
+        if path.parent != directory:
+            raise GraphPersistenceError(f"invalid run id {run_id!r}: resolves outside the store directory")
+        return path
+
     def _read(self, run_id: str) -> list[RunSnapshot]:
         """Read a run's snapshot history from disk."""
-        path = self._directory / f"{run_id}.pickle"
+        path = self._path(run_id)
         if not path.exists():
             return []
-        return pickle.loads(path.read_bytes())  # noqa: S301 - snapshots come from a trusted directory; see class docs.
+        return PersistedSnapshot.load_history(path.read_bytes())
 
     def _write(self, run_id: str, history: list[RunSnapshot]) -> None:
         """Write a run's snapshot history to disk atomically."""
-        path = self._directory / f"{run_id}.pickle"
+        path = self._path(run_id)
         temp = path.with_name(f"{path.name}.tmp")
-        temp.write_bytes(pickle.dumps(history))
+        temp.write_bytes(PersistedSnapshot.dump_history(history))
         temp.replace(path)

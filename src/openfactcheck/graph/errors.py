@@ -4,8 +4,9 @@ Every graph layer error derives from [`GraphError`][GraphError]. Failures
 split by stage: assembling a graph ([`GraphBuildError`][GraphBuildError]),
 validating its structure before a run
 ([`GraphValidationError`][GraphValidationError]), executing it
-([`GraphRuntimeError`][GraphRuntimeError]), and rendering its diagram to an
-image ([`GraphRenderError`][GraphRenderError]).
+([`GraphRuntimeError`][GraphRuntimeError]), saving or loading a run snapshot
+([`GraphPersistenceError`][GraphPersistenceError]), and rendering its diagram to
+an image ([`GraphRenderError`][GraphRenderError]).
 
 Catch the specific subclass for the stage you can recover from, or catch
 [`GraphError`][GraphError] to handle every graph-layer failure in one place.
@@ -42,6 +43,14 @@ class GraphRuntimeError(GraphError):
 
     Raised when a node raises, a loop exceeds its iteration bound, or a
     decision reaches no matching branch.
+    """
+
+
+class GraphPersistenceError(GraphError):
+    """A run's snapshot could not be saved or loaded.
+
+    Raised when a store is given a run id it cannot map to a safe location, or
+    when a stored snapshot cannot be read back into a run.
     """
 
 

@@ -22,8 +22,10 @@ from dataclasses import dataclass, replace
 from time import perf_counter
 from typing import TYPE_CHECKING, Generic, Literal, Self, cast
 
+from pydantic import TypeAdapter, ValidationError
+
 from openfactcheck.graph._typevars import DepsT, InputT, OutputT, StateT
-from openfactcheck.graph.errors import GraphPaused, GraphRuntimeError
+from openfactcheck.graph.errors import GraphPaused, GraphPersistenceError, GraphRuntimeError
 from openfactcheck.graph.events import NodeFailed, NodeFinished, NodeStarted, RunFinished
 from openfactcheck.graph.forks import ForkStackItem
 from openfactcheck.graph.join import ReducerContext
@@ -105,6 +107,8 @@ class GraphSpec:
     fork_join: dict[str, str]
     start_id: str
     end_id: str
+    state_type: object | None
+    output_type: object | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -262,7 +266,14 @@ class _GraphRun[StateT, DepsT, OutputT]:
         return await self._drive()
 
     def load(self, snapshot: RunSnapshot) -> None:
-        """Restore run state from a snapshot so [`resume`][_GraphRun.resume] can continue it."""
+        """Restore run state from a snapshot so [`resume`][_GraphRun.resume] can continue it.
+
+        A snapshot loaded from a store carries its values as plain data; this
+        restores the run's state, its final output, and each pending node's input
+        to the types the graph declares, so resumed steps receive the same typed
+        values a fresh run would.
+        """
+        self._state = cast("StateT", self._coerce(self._spec.state_type, self._state, what="run state"))
         self._reducers = {
             key: _JoinState(state.downstream_stack, state.acc, state.count, list(state.items))
             for key, state in snapshot.reducers.items()
@@ -271,8 +282,31 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._loops = dict(snapshot.loops)
         self._finalized = set(snapshot.finalized)
         self._fork_seq = snapshot.fork_seq
-        self._final = snapshot.final if snapshot.has_final else _UNSET
-        self._restored = list(snapshot.pending)
+        self._final = (
+            self._coerce(self._spec.output_type, snapshot.final, what="final output") if snapshot.has_final else _UNSET
+        )
+        self._restored = [self._restore_input(task) for task in snapshot.pending]
+
+    def _restore_input(self, task: TaskSnapshot) -> TaskSnapshot:
+        """Restore a pending task's input value to its node's declared input type."""
+        step = self._spec.steps.get(task.node_id)
+        declared = step.input_type if step is not None else None
+        return replace(task, value=self._coerce(declared, task.value, what=f"input for node {task.node_id!r}"))
+
+    @staticmethod
+    def _coerce(declared: object | None, value: object, *, what: str) -> object:
+        """Validate a loaded snapshot value into a declared type, leaving it as-is when untyped.
+
+        Raises:
+            GraphPersistenceError: If a value cannot be validated into its declared type.
+        """
+        if declared is None:
+            return value
+        adapter: TypeAdapter[object] = TypeAdapter(declared)
+        try:
+            return adapter.validate_python(value)
+        except ValidationError as error:
+            raise GraphPersistenceError(f"stored {what} does not match its declared type {declared!r}") from error
 
     async def _save(
         self, status: RunStatus, *, final_output: object = _UNSET, paused: PausePoint | None = None
@@ -865,8 +899,10 @@ class Graph(Generic[InputT, OutputT, StateT, DepsT]):
 
         Loads the snapshot, restores the run's state, and re-runs the tasks that
         were still pending. Pending tasks run again, so steps should be safe to
-        re-run. Dependencies are not persisted and are supplied here; the run
-        continues to snapshot under the same id and store.
+        re-run. The run's state and each pending node's input are restored to the
+        types the graph declares, so resumed steps receive the same typed values
+        a fresh run would. Dependencies are not persisted and are supplied here;
+        the run continues to snapshot under the same id and store.
 
         Args:
             run_id: The id the run was snapshotted under.

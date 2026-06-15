@@ -6,14 +6,11 @@ counters, and the shared state, plus the terminal output once it exists. A
 [`StateStore`][StateStore] saves and loads these snapshots.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
-if TYPE_CHECKING:
-    from openfactcheck.graph.forks import ForkStack
+from openfactcheck.graph.forks import ForkStack
 
 
 class RunStatus(StrEnum):

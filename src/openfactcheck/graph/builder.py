@@ -549,6 +549,8 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
             fork_join=fork_join,
             start_id=START_ID,
             end_id=END_ID,
+            state_type=self._state_type,
+            output_type=self._output_type,
         )
         return Graph(spec, name=self._name)
 
