@@ -168,7 +168,7 @@ class PromptTemplate:
             and self.messages == other.messages
         )
 
-    __hash__ = None  # type: ignore[assignment]
+    __hash__ = None  # pyright: ignore[reportAssignmentType] - PromptTemplate is intentionally unhashable.
 
     # -----------------------------------------------------------------
     # Filling
