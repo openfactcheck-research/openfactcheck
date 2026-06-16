@@ -66,10 +66,10 @@ jobs:
           echo '${{ secrets.HASANIQBAL_DEV_BACKEND_CONF }}' > deployments/accounts/hasaniqbal-dev.backend.conf
 
       - name: Install OpenTofu
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@v2
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_PRODUCTION }}
           aws-region: us-east-1
