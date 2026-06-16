@@ -4,7 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from openfactcheck.chat.config import OpenAIConfig, RuntimeConfig
-from openfactcheck.chat.messages import UserMessage
+from openfactcheck.messages import UserMessage
 from openfactcheck.chat.requests import ChatRequest
 
 

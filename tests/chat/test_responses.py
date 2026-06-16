@@ -3,7 +3,7 @@
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
-from openfactcheck.chat.messages import AssistantMessage
+from openfactcheck.messages import AssistantMessage
 from openfactcheck.chat.responses import ChatResponse, FinishReason, StreamEnd, StreamEvent, TextDelta, Usage
 
 

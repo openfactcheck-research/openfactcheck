@@ -24,7 +24,7 @@ Role = Literal["system", "user", "assistant"]
 
 These are the roles a template authors directly, and the roles the
 ``(role, text)`` tuple shorthand accepts. The chat layer's
-[`Message`][openfactcheck.chat.messages.Message] union covers additional roles
+[`Message`][openfactcheck.messages.Message] union covers additional roles
 (such as tool results) that belong to a conversation rather than a template.
 """
 

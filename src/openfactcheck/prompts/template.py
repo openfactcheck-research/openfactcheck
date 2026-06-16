@@ -32,7 +32,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from openfactcheck.chat.messages import AssistantMessage, SystemMessage, UserMessage
+from openfactcheck.messages import AssistantMessage, SystemMessage, UserMessage
 from openfactcheck.prompts._substitution import find_placeholders, substitute
 from openfactcheck.prompts.errors import (
     PromptNotFoundError,
@@ -45,7 +45,7 @@ from openfactcheck.prompts.variables import VariableSpec
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
-    from openfactcheck.chat.messages import Message
+    from openfactcheck.messages import Message
     from openfactcheck.prompts.variables import Role
 
 

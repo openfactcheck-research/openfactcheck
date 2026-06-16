@@ -17,8 +17,8 @@ Example:
         ChatModelError,
         OpenAIConfig,
         RateLimitError,
-        UserMessage,
     )
+    from openfactcheck.messages import UserMessage
 
     client = ChatClient(config=OpenAIConfig(model="gpt-4o"))
 

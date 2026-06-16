@@ -10,7 +10,7 @@ from openfactcheck.chat.backends.openai import OpenAIBackend
 from openfactcheck.chat.client import ChatClient
 from openfactcheck.chat.config import AnthropicConfig, OpenAIConfig, RuntimeConfig
 from openfactcheck.chat.errors import StructuredOutputError, UnsupportedFeatureError
-from openfactcheck.chat.messages import AssistantMessage, UserMessage
+from openfactcheck.messages import AssistantMessage, UserMessage
 from openfactcheck.chat.requests import ChatRequest
 from openfactcheck.chat.responses import ChatResponse, FinishReason, StreamEnd, TextDelta, Usage
 

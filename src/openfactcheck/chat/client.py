@@ -17,7 +17,8 @@ All four raise [`ChatModelError`][ChatModelError] subclasses on failure.
 
 Example:
     ```python
-    from openfactcheck.chat import ChatClient, OpenAIConfig, UserMessage
+    from openfactcheck.chat import ChatClient, OpenAIConfig
+    from openfactcheck.messages import UserMessage
 
     client = ChatClient(config=OpenAIConfig(model="gpt-4o"))
     response = client.completion([UserMessage(content="Hello")])
@@ -34,17 +35,17 @@ from pydantic import BaseModel, ValidationError
 from openfactcheck.chat.backends import default_backend
 from openfactcheck.chat.config import RuntimeConfig
 from openfactcheck.chat.errors import StructuredOutputError, UnsupportedFeatureError
-from openfactcheck.chat.messages import UserMessage
 from openfactcheck.chat.providers import get_provider
 from openfactcheck.chat.requests import ChatRequest, ResponseFormat
+from openfactcheck.messages import UserMessage
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator
 
     from openfactcheck.chat.backends.base import ChatBackend
     from openfactcheck.chat.config import ModelConfig
-    from openfactcheck.chat.messages import Message
     from openfactcheck.chat.responses import ChatResponse, StreamEvent
+    from openfactcheck.messages import Message
 
 
 class ChatClient:

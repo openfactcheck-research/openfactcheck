@@ -2,21 +2,18 @@
 
 Build a [`ChatClient`][ChatClient] with a provider-specific configuration
 (for example [`OpenAIConfig`][OpenAIConfig]), send it a list of
-[`Message`][Message] values, and receive a [`ChatResponse`][ChatResponse] or
+[`Message`][openfactcheck.messages.Message] values, and receive a [`ChatResponse`][ChatResponse] or
 a stream of [`StreamEvent`][StreamEvent] values. Failures raise
 [`ChatModelError`][ChatModelError] subclasses.
 
-Import everything from ``openfactcheck.chat`` directly; submodule paths are
-not part of the public API.
+Import the chat API from ``openfactcheck.chat`` directly; submodule paths are
+not part of the public API. Message types live in the ``openfactcheck.messages``
+package.
 
 Example:
     ```python
-    from openfactcheck.chat import (
-        ChatClient,
-        OpenAIConfig,
-        SystemMessage,
-        UserMessage,
-    )
+    from openfactcheck.chat import ChatClient, OpenAIConfig
+    from openfactcheck.messages import SystemMessage, UserMessage
 
     client = ChatClient(config=OpenAIConfig(model="gpt-4o"))
     response = client.completion(
@@ -51,14 +48,6 @@ from openfactcheck.chat.errors import (
     StructuredOutputError,
     UnsupportedFeatureError,
 )
-from openfactcheck.chat.messages import (
-    AssistantMessage,
-    Message,
-    SystemMessage,
-    ToolCall,
-    ToolMessage,
-    UserMessage,
-)
 from openfactcheck.chat.providers.base import BaseProvider, ProviderCapabilities
 from openfactcheck.chat.requests import ChatRequest, ResponseFormat
 from openfactcheck.chat.responses import ChatResponse, FinishReason, StreamEnd, StreamEvent, TextDelta, Usage
@@ -76,16 +65,6 @@ __all__ += [
     "OpenRouterConfig",
     "ProviderName",
     "RuntimeConfig",
-]
-
-# Messages
-__all__ += [
-    "AssistantMessage",
-    "Message",
-    "SystemMessage",
-    "ToolCall",
-    "ToolMessage",
-    "UserMessage",
 ]
 
 # Requests and responses

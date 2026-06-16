@@ -1,42 +1,42 @@
 # Messages
 
-::: openfactcheck.chat.messages
+::: openfactcheck.messages
     options:
       members: false
       show_root_heading: false
 
 ## Core message types
 
-::: openfactcheck.chat.messages.SystemMessage
+::: openfactcheck.messages.SystemMessage
     options:
       show_root_heading: true
       heading_level: 3
 
-::: openfactcheck.chat.messages.UserMessage
+::: openfactcheck.messages.UserMessage
     options:
       show_root_heading: true
       heading_level: 3
 
-::: openfactcheck.chat.messages.AssistantMessage
+::: openfactcheck.messages.AssistantMessage
     options:
       show_root_heading: true
       heading_level: 3
 
-::: openfactcheck.chat.messages.ToolMessage
+::: openfactcheck.messages.ToolMessage
     options:
       show_root_heading: true
       heading_level: 3
 
 ## Tool calls
 
-::: openfactcheck.chat.messages.ToolCall
+::: openfactcheck.messages.ToolCall
     options:
       show_root_heading: true
       heading_level: 3
 
 ## Union type
 
-::: openfactcheck.chat.messages.Message
+::: openfactcheck.messages.Message
     options:
       show_root_heading: true
       heading_level: 3

@@ -11,7 +11,8 @@ branch on ``config.provider``.
 
 Example:
     ```python
-    from openfactcheck.chat import ChatClient, OpenAIConfig, UserMessage
+    from openfactcheck.chat import ChatClient, OpenAIConfig
+    from openfactcheck.messages import UserMessage
 
     client = ChatClient(config=OpenAIConfig(model="gpt-4o", temperature=0.2))
     response = client.completion([UserMessage(content="Hello")])

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from openfactcheck.chat import SystemMessage, UserMessage
+from openfactcheck.messages import SystemMessage, UserMessage
 from openfactcheck.prompts import (
     Prompt,
     PromptTemplate,

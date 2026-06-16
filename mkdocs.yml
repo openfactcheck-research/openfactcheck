@@ -106,10 +106,10 @@ nav:
   - Reference:
       - reference/index.md
       - REST API: reference/rest/index.md
+      - Messages: reference/messages/index.md
       - Chat:
           - reference/chat/index.md
           - reference/chat/client.md
-          - Messages: reference/chat/messages.md
           - Requests: reference/chat/requests.md
           - Responses: reference/chat/responses.md
           - Config: reference/chat/config.md

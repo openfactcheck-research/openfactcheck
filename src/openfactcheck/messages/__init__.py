@@ -1,14 +1,13 @@
 """Message types for the chat layer.
 
 Build a conversation as a list of messages, each carrying a ``role`` that
-identifies the sender, and pass it to
-[`ChatClient`][ChatClient] to get a completion or
+identifies the sender, and pass it to a chat client to get a completion or
 stream. Backend implementations convert messages to and from the underlying
 provider format at the boundary.
 
 Example:
     ```python
-    from openfactcheck.chat import (
+    from openfactcheck.messages import (
         AssistantMessage,
         SystemMessage,
         ToolCall,
@@ -152,7 +151,6 @@ Message = Annotated[
 ]
 """Union of every message type that can appear in a conversation.
 
-Callers build a ``list[Message]`` and pass it to
-[`ChatClient`][ChatClient]; branch on ``role`` to
-distinguish the concrete type.
+Callers build a ``list[Message]`` and pass it to a chat client; branch on
+``role`` to distinguish the concrete type.
 """

@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from openfactcheck.chat import AssistantMessage, ChatClient, OpenAIConfig
+from openfactcheck.chat import ChatClient, OpenAIConfig
 from openfactcheck.chat.responses import ChatResponse
+from openfactcheck.messages import AssistantMessage
 from openfactcheck.prompts import PromptTemplate
 
 if TYPE_CHECKING:

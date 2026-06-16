@@ -13,7 +13,7 @@ from openfactcheck.chat.backends.openrouter import OpenRouterBackend
 from openfactcheck.chat.backends.openrouter.backend import OPENROUTER_BASE_URL
 from openfactcheck.chat.config import OpenRouterConfig, RuntimeConfig
 from openfactcheck.chat.errors import AuthenticationError
-from openfactcheck.chat.messages import UserMessage
+from openfactcheck.messages import UserMessage
 from openfactcheck.chat.requests import ChatRequest
 
 

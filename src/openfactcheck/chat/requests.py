@@ -11,8 +11,8 @@ Example:
         ChatRequest,
         OpenAIConfig,
         RuntimeConfig,
-        UserMessage,
     )
+    from openfactcheck.messages import UserMessage
 
     request = ChatRequest(
         messages=[UserMessage(content="Hello")],
@@ -25,7 +25,7 @@ Example:
 from pydantic import BaseModel, ConfigDict, Field
 
 from openfactcheck.chat.config import ModelConfig, RuntimeConfig
-from openfactcheck.chat.messages import Message
+from openfactcheck.messages import Message
 
 
 class ResponseFormat(BaseModel):
