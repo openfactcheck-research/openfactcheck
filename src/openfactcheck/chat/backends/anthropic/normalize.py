@@ -15,15 +15,15 @@ from openfactcheck.chat.errors import (
     RateLimitError,
     UnsupportedFeatureError,
 )
-from openfactcheck.chat.messages import AssistantMessage, SystemMessage, UserMessage
 from openfactcheck.chat.responses import ChatResponse, FinishReason, StreamEnd, Usage
+from openfactcheck.messages import AssistantMessage, SystemMessage, UserMessage
 
 if TYPE_CHECKING:
     from anthropic.types import Message as AnthropicMessage
 
     from openfactcheck.chat.config import ProviderName
     from openfactcheck.chat.errors import ChatModelError
-    from openfactcheck.chat.messages import Message
+    from openfactcheck.messages import Message
 
 
 class AnthropicInputMessage(TypedDict):

@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from openfactcheck.chat.messages import (
+from openfactcheck.messages import (
     AssistantMessage,
     SystemMessage,
     ToolCall,

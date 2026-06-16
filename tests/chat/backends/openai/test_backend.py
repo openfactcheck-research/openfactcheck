@@ -7,7 +7,7 @@ import pytest
 from openfactcheck.chat.backends.openai import OpenAIBackend
 from openfactcheck.chat.config import OpenAIConfig, RuntimeConfig
 from openfactcheck.chat.errors import AuthenticationError
-from openfactcheck.chat.messages import UserMessage
+from openfactcheck.messages import UserMessage
 from openfactcheck.chat.requests import ChatRequest
 from openfactcheck.chat.responses import FinishReason, StreamEnd, TextDelta
 

@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from openfactcheck.chat.messages import Message
+    from openfactcheck.messages import Message
 
 
 @dataclass(frozen=True, slots=True)

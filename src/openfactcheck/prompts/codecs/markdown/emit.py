@@ -9,7 +9,7 @@ import yaml
 from openfactcheck.prompts.codecs.markdown._constants import ROLE_H1
 
 if TYPE_CHECKING:
-    from openfactcheck.chat.messages import Message
+    from openfactcheck.messages import Message
     from openfactcheck.prompts.template import PromptTemplate
     from openfactcheck.prompts.variables import Role
 

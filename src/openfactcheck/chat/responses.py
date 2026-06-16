@@ -16,8 +16,8 @@ Example:
         OpenAIConfig,
         StreamEnd,
         TextDelta,
-        UserMessage,
     )
+    from openfactcheck.messages import UserMessage
 
     client = ChatClient(config=OpenAIConfig(model="gpt-4o"))
 
@@ -42,7 +42,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Discriminator
 
 from openfactcheck.chat.config import ProviderName
-from openfactcheck.chat.messages import AssistantMessage
+from openfactcheck.messages import AssistantMessage
 
 
 class Usage(BaseModel):

@@ -15,7 +15,7 @@ from openfactcheck.chat.errors import (
     RateLimitError,
     UnsupportedFeatureError,
 )
-from openfactcheck.chat.messages import AssistantMessage, SystemMessage, ToolMessage, UserMessage
+from openfactcheck.messages import AssistantMessage, SystemMessage, ToolMessage, UserMessage
 from openfactcheck.chat.responses import FinishReason
 
 

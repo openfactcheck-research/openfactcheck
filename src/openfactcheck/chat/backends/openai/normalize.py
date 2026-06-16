@@ -13,15 +13,15 @@ from openfactcheck.chat.errors import (
     ProviderError,
     RateLimitError,
 )
-from openfactcheck.chat.messages import AssistantMessage, SystemMessage, ToolCall, UserMessage
 from openfactcheck.chat.responses import ChatResponse, FinishReason, StreamEnd, Usage
+from openfactcheck.messages import AssistantMessage, SystemMessage, ToolCall, UserMessage
 
 if TYPE_CHECKING:
     from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
     from openfactcheck.chat.config import ProviderName
     from openfactcheck.chat.errors import ChatModelError
-    from openfactcheck.chat.messages import Message
+    from openfactcheck.messages import Message
 
 
 class OpenAIMessage(TypedDict, total=False):

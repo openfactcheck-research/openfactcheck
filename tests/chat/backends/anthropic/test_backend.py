@@ -7,7 +7,7 @@ import pytest
 from openfactcheck.chat.backends.anthropic import AnthropicBackend
 from openfactcheck.chat.config import AnthropicConfig, RuntimeConfig
 from openfactcheck.chat.errors import AuthenticationError
-from openfactcheck.chat.messages import SystemMessage, UserMessage
+from openfactcheck.messages import SystemMessage, UserMessage
 from openfactcheck.chat.requests import ChatRequest
 from openfactcheck.chat.responses import FinishReason, StreamEnd, TextDelta
 
