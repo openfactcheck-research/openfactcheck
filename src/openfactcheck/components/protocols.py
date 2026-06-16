@@ -2,7 +2,7 @@
 
 Each component category is a ``Protocol`` defining the signature any
 implementation must match. Implementations live in sibling subpackages
-(``null``, ``default``, and paper ports such as ``factool``) and are
+(``dummy``, ``default``, and paper ports such as ``factool``) and are
 interchangeable with any other implementation of the same category.
 """
 

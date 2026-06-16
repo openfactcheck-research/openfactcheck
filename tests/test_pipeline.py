@@ -2,6 +2,12 @@
 
 import asyncio
 
+from openfactcheck.components.dummy import (
+    DummyAggregator,
+    DummyClaimProcessor,
+    DummyRetriever,
+    DummyVerifier,
+)
 from openfactcheck.pipeline import Components, PipelineState, build_pipeline
 from openfactcheck.types import Claim, Evidence, Input, OverallVerdict, Source, Verdict
 
@@ -90,3 +96,22 @@ def test_build_pipeline_state_records_input() -> None:
     build_pipeline().run(Input(content="The sky is blue."), state=state, deps=components)
 
     assert state.input == Input(content="The sky is blue.")
+
+
+def test_build_pipeline_with_dummy_components() -> None:
+    components = Components(
+        processor=DummyClaimProcessor(),
+        retriever=DummyRetriever(),
+        verifier=DummyVerifier(),
+        aggregator=DummyAggregator(),
+    )
+
+    result = build_pipeline().run(Input(content="The sky is blue."), state=PipelineState(), deps=components)
+
+    assert result.input.content == "The sky is blue."
+    assert result.claims == [Claim(text="The sky is blue.")]
+    assert len(result.evidence) == 1
+    assert result.evidence[0].sources == []
+    assert [verdict.label for verdict in result.verdicts] == ["not_enough_evidence"]
+    assert result.overall_label == "not_enough_evidence"
+    assert result.overall_score == 0.0
