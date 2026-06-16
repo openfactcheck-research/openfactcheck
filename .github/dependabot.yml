@@ -9,6 +9,10 @@ updates:
       github-actions:
         patterns:
           - "*"
+        # Keep patch bumps out of the group so they can't ride along on a minor/major PR.
+        update-types:
+          - "minor"
+          - "major"
     ignore:
       # Only major and minor updates open PRs; skip routine patch bumps.
       - dependency-name: "*"
@@ -22,6 +26,10 @@ updates:
       python:
         patterns:
           - "*"
+        # Keep patch bumps out of the group so they can't ride along on a minor/major PR.
+        update-types:
+          - "minor"
+          - "major"
     ignore:
       # Only major and minor updates open PRs; skip routine patch bumps.
       - dependency-name: "*"
