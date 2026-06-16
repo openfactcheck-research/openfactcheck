@@ -1,10 +1,15 @@
 """Tests for core data types."""
 
+import pytest
+from pydantic import ValidationError
+
 from openfactcheck.types import (
     Claim,
+    ClaimReport,
     Evidence,
     FactCheckResult,
     Input,
+    OverallVerdict,
     Query,
     Source,
     Verdict,
@@ -121,3 +126,28 @@ def test_serialization_round_trip() -> None:
     restored = FactCheckResult.model_validate(data)
     assert restored.verdicts[0].label == "supported"
     assert restored.evidence[0].sources[0].content == "Scientific consensus"
+
+
+def test_overall_verdict() -> None:
+    overall = OverallVerdict(label="supported", score=0.8)
+    assert overall.label == "supported"
+    assert overall.score == 0.8
+
+
+def test_claim_report() -> None:
+    claim = Claim(text="The earth is round")
+    evidence = Evidence(claim=claim, sources=[Source(content="NASA")])
+    verdict = Verdict(claim=claim, label="supported", confidence=0.9, reasoning="confirmed")
+
+    report = ClaimReport(claim=claim, evidence=evidence, verdict=verdict)
+
+    assert report.claim == claim
+    assert report.evidence == evidence
+    assert report.verdict.label == "supported"
+
+
+def test_frozen_model_rejects_mutation() -> None:
+    claim = Claim(text="The earth is round")
+
+    with pytest.raises(ValidationError):
+        claim.text = "mutated"

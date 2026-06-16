@@ -11,7 +11,7 @@ GRAPH_ROOT = Path(__file__).resolve().parent.parent.parent / "src" / "openfactch
 # the fact-checking domain. Pipelines that use the graph live outside this package.
 FORBIDDEN_PREFIXES = (
     "openfactcheck.types",
-    "openfactcheck.contracts",
+    "openfactcheck.components",
     "openfactcheck.chat",
     "openfactcheck.prompts",
 )

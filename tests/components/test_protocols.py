@@ -2,29 +2,30 @@
 
 import pytest
 
-from openfactcheck.contracts import Aggregator, ClaimExtractor, QueryGenerator, Retriever, Verifier
+from openfactcheck.components import Aggregator, ClaimProcessor, QueryGenerator, Retriever, Verifier
 from openfactcheck.types import (
     Claim,
     Evidence,
-    FactCheckResult,
     Input,
+    OverallVerdict,
     Query,
     Source,
     Verdict,
 )
 
+
 @pytest.mark.asyncio(loop_scope="function")
-async def test_ClaimExtractor_accepts_conforming_implementation() -> None:
+async def test_ClaimProcessor_accepts_conforming_implementation() -> None:
     """A class with matching async __call__ satisfies the Protocol and can be invoked."""
 
-    class DummyExtractor:
+    class DummyProcessor:
         async def __call__(self, text: Input) -> list[Claim]:
             return [Claim(text=f"claim from {text.content}")]
 
-    extractor: ClaimExtractor = DummyExtractor()
+    processor: ClaimProcessor = DummyProcessor()
 
-    assert isinstance(extractor, ClaimExtractor)
-    result = await extractor(Input(content="sample"))
+    assert isinstance(processor, ClaimProcessor)
+    result = await processor(Input(content="sample"))
     assert result == [Claim(text="claim from sample")]
 
 
@@ -83,15 +84,9 @@ async def test_Aggregator_accepts_conforming_implementation() -> None:
     """A class with matching async __call__ satisfies the Aggregator Protocol."""
 
     class DummyAggregator:
-        async def __call__(self, verdicts: list[Verdict]) -> FactCheckResult:
-            return FactCheckResult(
-                input=Input(content=""),
-                claims=[v.claim for v in verdicts],
-                evidence=[],
-                verdicts=verdicts,
-                overall_label="supported",
-                overall_score=1.0,
-            )
+        async def __call__(self, verdicts: list[Verdict]) -> OverallVerdict:
+            label = "supported" if verdicts else "not_enough_evidence"
+            return OverallVerdict(label=label, score=1.0)
 
     aggregator: Aggregator = DummyAggregator()
 
@@ -99,14 +94,14 @@ async def test_Aggregator_accepts_conforming_implementation() -> None:
     claim = Claim(text="c")
     verdict = Verdict(claim=claim, label="supported", confidence=1.0, reasoning="")
     result = await aggregator([verdict])
-    assert result.overall_label == "supported"
-    assert result.verdicts == [verdict]
+    assert result.label == "supported"
+    assert result.score == 1.0
 
 
 @pytest.mark.parametrize(
     "protocol",
-    [ClaimExtractor, QueryGenerator, Retriever, Verifier, Aggregator],
-    ids=["ClaimExtractor", "QueryGenerator", "Retriever", "Verifier", "Aggregator"],
+    [ClaimProcessor, QueryGenerator, Retriever, Verifier, Aggregator],
+    ids=["ClaimProcessor", "QueryGenerator", "Retriever", "Verifier", "Aggregator"],
 )
 def test_contracts_reject_class_without_call(protocol: type) -> None:
     """A class without __call__ does not satisfy any component Protocol."""

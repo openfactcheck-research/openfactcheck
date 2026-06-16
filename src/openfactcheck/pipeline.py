@@ -1,31 +1,33 @@
 """The default fact-check pipeline, composed on the graph layer.
 
 [`build_pipeline`][build_pipeline] wires the component contracts into a runnable
-[`Graph`][openfactcheck.graph.Graph]: it extracts claims from the input, fans
+[`Graph`][openfactcheck.graph.Graph]: it processes the input into claims, fans
 out over them to retrieve evidence and verify each claim in parallel, collects
-the per-claim verdicts, and aggregates them into a result. The components are
-supplied per run as [`Components`][Components] dependencies, so any
-implementation of a contract can be swapped in without touching the wiring.
+the per-claim reports, and assembles them with an overall judgment into a
+result. The components are supplied per run as [`Components`][Components]
+dependencies, and the original input rides on
+[`PipelineState`][PipelineState], so any implementation of a contract can be
+swapped in without touching the wiring.
 
 ```python
 graph = build_pipeline()
-result = graph.run(Input(content="..."), state=None, deps=components)
+result = graph.run(Input(content="..."), state=PipelineState(), deps=components)
 ```
 """
 
 from dataclasses import dataclass
 
-from openfactcheck.contracts import Aggregator, ClaimExtractor, Retriever, Verifier
+from openfactcheck.components.protocols import Aggregator, ClaimProcessor, Retriever, Verifier
 from openfactcheck.graph import Graph, GraphBuilder, StepContext
-from openfactcheck.types import Claim, Evidence, FactCheckResult, Input, Verdict
+from openfactcheck.types import Claim, ClaimReport, Evidence, FactCheckResult, Input
 
 
 @dataclass(frozen=True, slots=True)
 class Components:
     """The fact-check components a pipeline run draws on, injected as dependencies."""
 
-    extractor: ClaimExtractor
-    """Extracts atomic claims from the input."""
+    processor: ClaimProcessor
+    """Produces atomic claims from the input."""
 
     retriever: Retriever
     """Fetches evidence for one claim."""
@@ -34,47 +36,80 @@ class Components:
     """Judges one claim against its evidence."""
 
     aggregator: Aggregator
-    """Combines the per-claim verdicts into the overall result."""
+    """Combines the per-claim verdicts into the overall judgment."""
 
 
-def build_pipeline() -> Graph[Input, FactCheckResult, None, Components]:
+@dataclass
+class PipelineState:
+    """Run-scoped state for a fact-check run.
+
+    Carries the original input from the entry step to the assembly step. The
+    entry step runs once before any fan-out, so recording the input here is
+    free of races.
+    """
+
+    input: Input | None = None
+    """The run's original input, recorded by the entry step for assembly."""
+
+
+def build_pipeline() -> Graph[Input, FactCheckResult, PipelineState, Components]:
     """Build the default fact-check graph.
 
-    The returned graph extracts claims, fans out to retrieve and verify each
-    claim concurrently, collects the verdicts, and aggregates them. Supply the
-    components as ``deps`` when running it.
+    The returned graph records the input, processes it into claims, fans out to
+    retrieve and verify each claim concurrently, collects the per-claim reports,
+    and assembles them with an overall judgment into a result. Supply the
+    components as ``deps`` and a fresh [`PipelineState`][PipelineState] as
+    ``state`` when running it.
 
     Returns:
         A built [`Graph`][openfactcheck.graph.Graph] taking an
         [`Input`][openfactcheck.types.Input] and returning a
         [`FactCheckResult`][openfactcheck.types.FactCheckResult].
     """
-    g = GraphBuilder(deps_type=Components, input_type=Input, output_type=FactCheckResult)
+    g = GraphBuilder(
+        deps_type=Components,
+        input_type=Input,
+        output_type=FactCheckResult,
+        state_type=PipelineState,
+    )
 
     @g.step_node
-    async def extract(ctx: StepContext[Input, None, Components]) -> list[Claim]:
-        return await ctx.deps.extractor(ctx.inputs)
+    async def process(ctx: StepContext[Input, PipelineState, Components]) -> list[Claim]:
+        ctx.state.input = ctx.inputs
+        return await ctx.deps.processor(ctx.inputs)
 
     @g.step_node
-    async def retrieve(ctx: StepContext[Claim, None, Components]) -> Evidence:
+    async def retrieve(ctx: StepContext[Claim, PipelineState, Components]) -> Evidence:
         return await ctx.deps.retriever(ctx.inputs)
 
     @g.step_node
-    async def verify(ctx: StepContext[Evidence, None, Components]) -> Verdict:
-        return await ctx.deps.verifier(ctx.inputs.claim, ctx.inputs)
+    async def verify(ctx: StepContext[Evidence, PipelineState, Components]) -> ClaimReport:
+        verdict = await ctx.deps.verifier(ctx.inputs.claim, ctx.inputs)
+        return ClaimReport(claim=ctx.inputs.claim, evidence=ctx.inputs, verdict=verdict)
 
-    verdicts = g.collect_node(Verdict, node_id="verdicts")
+    reports = g.collect_node(ClaimReport, node_id="reports")
 
     @g.step_node
-    async def aggregate(ctx: StepContext[list[Verdict], None, Components]) -> FactCheckResult:
-        return await ctx.deps.aggregator(ctx.inputs)
+    async def assemble(ctx: StepContext[list[ClaimReport], PipelineState, Components]) -> FactCheckResult:
+        overall = await ctx.deps.aggregator([report.verdict for report in ctx.inputs])
+        recorded = ctx.state.input
+        if recorded is None:  # pragma: no cover - the process step records the input first.
+            raise RuntimeError("pipeline input was not recorded before assembly")
+        return FactCheckResult(
+            input=recorded,
+            claims=[report.claim for report in ctx.inputs],
+            evidence=[report.evidence for report in ctx.inputs],
+            verdicts=[report.verdict for report in ctx.inputs],
+            overall_label=overall.label,
+            overall_score=overall.score,
+        )
 
     g.add(
-        g.edge_from(g.start_node).to(extract),
-        g.edge_from(extract).map().to(retrieve),
+        g.edge_from(g.start_node).to(process),
+        g.edge_from(process).map().to(retrieve),
         g.edge_from(retrieve).to(verify),
-        g.edge_from(verify).to(verdicts),
-        g.edge_from(verdicts).to(aggregate),
-        g.edge_from(aggregate).to(g.end_node),
+        g.edge_from(verify).to(reports),
+        g.edge_from(reports).to(assemble),
+        g.edge_from(assemble).to(g.end_node),
     )
     return g.build()
