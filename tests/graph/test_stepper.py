@@ -2,7 +2,7 @@
 
 import asyncio
 
-from openfactcheck.graph import GraphBuilder, StepContext
+from openfactcheck.graph import GraphBuilder, StepContext, reduce_list_append
 
 
 def test_GraphStepper_advance_reports_each_step() -> None:
@@ -62,3 +62,36 @@ def test_GraphStepper_recover_overrides_failed_step() -> None:
             return run.output
 
     assert asyncio.run(drive()) == "recovered:fallback"
+
+
+def test_GraphStepper_drop_drops_failed_branch() -> None:
+    g = GraphBuilder[list[int], list[int]]()
+
+    @g.step_node
+    async def fan(ctx: StepContext[list[int]]) -> list[int]:
+        return ctx.inputs
+
+    @g.step_node
+    async def double_unless_two(ctx: StepContext[int]) -> int:
+        if ctx.inputs == 2:
+            raise RuntimeError("two is bad")
+        return ctx.inputs * 2
+
+    collected = g.reduce_node(reduce_list_append, list, item_type=int, node_id="collected")
+    g.add(
+        g.edge_from(g.start_node).to(fan),
+        g.edge_from(fan).map().to(double_unless_two),
+        g.edge_from(double_unless_two).to(collected),
+        g.edge_from(collected).to(g.end_node),
+    )
+    graph = g.build()
+
+    async def drive() -> list[int]:
+        async with graph.stepper([1, 2, 3], state=None, deps=None) as run:
+            while (step := await run.advance()) is not None:
+                if step.error is not None:
+                    run.drop(step)
+            return run.output
+
+    # The failing branch (2) is dropped; the join completes with the survivors.
+    assert sorted(asyncio.run(drive())) == [2, 6]

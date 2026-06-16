@@ -19,6 +19,7 @@ from openfactcheck.graph import (
     RunStatus,
     StepContext,
     TaskSnapshot,
+    reduce_first,
 )
 from openfactcheck.graph.forks import ForkStackItem
 
@@ -181,3 +182,35 @@ def test_Graph_resume_restores_declared_types(tmp_path: Path) -> None:
     result = graph.resume("resumed", store=resume_store, deps=None)
 
     assert result == "x:7"
+
+
+def test_Graph_early_stop_drops_canceled_pending() -> None:
+    g = GraphBuilder[list[int], int]()
+
+    @g.step_node
+    async def fan(ctx: StepContext[list[int]]) -> list[int]:
+        return ctx.inputs
+
+    @g.step_node
+    async def slow_unless_zero(ctx: StepContext[int]) -> int:
+        # Zero returns immediately and wins; the others are still in flight when
+        # reduce_first stops the fan-in and cancels them.
+        await asyncio.sleep(0.0 if ctx.inputs == 0 else 0.5)
+        return ctx.inputs
+
+    first = g.reduce_node(reduce_first, lambda: None, item_type=int, node_id="first")
+    g.add(
+        g.edge_from(g.start_node).to(fan),
+        g.edge_from(fan).map().to(slow_unless_zero),
+        g.edge_from(slow_unless_zero).to(first),
+        g.edge_from(first).to(g.end_node),
+    )
+    store = InMemoryStateStore()
+
+    result = g.build().run([0, 1, 2], state=None, deps=None, options=RunOptions(store=store, run_id="es"))
+
+    assert result == 0
+    latest = asyncio.run(store.load("es"))
+    assert latest is not None
+    assert latest.status == RunStatus.SUCCEEDED
+    assert latest.pending == ()  # canceled siblings were dropped from the pending set

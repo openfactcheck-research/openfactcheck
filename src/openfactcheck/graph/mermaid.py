@@ -155,7 +155,7 @@ def to_mermaid_image(
     """
     if urllib.parse.urlsplit(base_url).scheme not in {"http", "https"}:
         raise GraphRenderError(f"base_url must be an http or https URL, got {base_url!r}")
-    encoded = base64.b64encode(source.encode()).decode("ascii")
+    encoded = base64.urlsafe_b64encode(source.encode()).decode("ascii")
     url = f"{base_url}/{_IMAGE_PATHS[image_type]}/{encoded}"
     try:
         response = httpx.get(url, timeout=timeout)

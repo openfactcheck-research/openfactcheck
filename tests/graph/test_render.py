@@ -36,7 +36,7 @@ def test_to_mermaid_image(mocker: MockerFixture) -> None:
     result = to_mermaid_image("flowchart TD\n    A --> B")
 
     assert result == b"PNGDATA"
-    encoded = base64.b64encode(b"flowchart TD\n    A --> B").decode("ascii")
+    encoded = base64.urlsafe_b64encode(b"flowchart TD\n    A --> B").decode("ascii")
     assert get.call_args.args[0] == f"https://mermaid.ink/img/{encoded}"
 
 
@@ -46,7 +46,7 @@ def test_to_mermaid_image_svg_and_custom_base_url(mocker: MockerFixture) -> None
     result = to_mermaid_image("flowchart TD", image_type="svg", base_url="http://localhost:3000")
 
     assert result == b"<svg/>"
-    encoded = base64.b64encode(b"flowchart TD").decode("ascii")
+    encoded = base64.urlsafe_b64encode(b"flowchart TD").decode("ascii")
     assert get.call_args.args[0] == f"http://localhost:3000/svg/{encoded}"
 
 
@@ -55,6 +55,19 @@ def test_to_mermaid_image_raises_on_unreachable_server(mocker: MockerFixture) ->
 
     with pytest.raises(GraphRenderError):
         to_mermaid_image("flowchart TD")
+
+
+def test_to_mermaid_image_uses_url_safe_base64(mocker: MockerFixture) -> None:
+    get = _mock_httpx_get(mocker, b"PNG")
+    # A source whose *standard* base64 contains "/", which would split the URL path.
+    source = "flowchart LR??????"
+    assert b"/" in base64.b64encode(source.encode())
+
+    to_mermaid_image(source)
+
+    encoded = get.call_args.args[0].rsplit("/", 1)[-1]
+    assert "/" not in encoded
+    assert encoded == base64.urlsafe_b64encode(source.encode()).decode("ascii")
 
 
 def test_to_mermaid_image_raises_on_non_http_base_url() -> None:

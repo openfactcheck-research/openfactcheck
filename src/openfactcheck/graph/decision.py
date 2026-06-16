@@ -120,7 +120,7 @@ class Decision[InputT, StateT, DepsT]:
         """
         return Branch(self.id, dest.id, lambda value: value == expected, max_iterations)
 
-    def otherwise(self, dest: DestNode[StateT, DepsT, Any], *, max_iterations: int | None = None) -> Branch:
+    def otherwise(self, dest: DestNode[Any, StateT, DepsT], *, max_iterations: int | None = None) -> Branch:
         """Route to ``dest`` when no other branch matched.
 
         Args:

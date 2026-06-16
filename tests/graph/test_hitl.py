@@ -5,6 +5,7 @@ import pytest
 from openfactcheck.graph import (
     GraphBuilder,
     GraphPaused,
+    GraphRuntimeError,
     InMemoryStateStore,
     RunOptions,
     StepContext,
@@ -55,3 +56,10 @@ def test_Graph_resume_with_injects_answer() -> None:
     result = graph.resume_with("doc2", store=store, deps=None, value="approved draft of report")
 
     assert result == "published: approved draft of report"
+
+
+def test_Graph_run_without_store_at_pause_raises() -> None:
+    graph = _review_graph().build()
+
+    with pytest.raises(GraphRuntimeError, match="store"):
+        graph.run("report", state=None, deps=None)

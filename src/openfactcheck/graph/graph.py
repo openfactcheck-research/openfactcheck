@@ -170,7 +170,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._store = options.store
         self._run_id = options.run_id
         self._results: asyncio.Queue[_TaskResult] = asyncio.Queue()
-        self._task_stacks: dict[asyncio.Task[None], ForkStack] = {}
+        self._task_ids: dict[asyncio.Task[None], int] = {}
         self._pending: dict[int, TaskSnapshot] = {}
         self._restored: list[TaskSnapshot] = []
         self._task_seq = 0
@@ -227,7 +227,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
                         if self._on_error == "fail_fast":
                             await self._save(RunStatus.FAILED)
                             raise result.error
-                        self._drop_failed(result.fork_stack)
+                        self.drop_failed(result.fork_stack)
                     else:
                         self._emit(NodeFinished(result.node_id, result.output, result.duration, result.fork_stack))
                         self.route_output(result.node_id, result.output, result.fork_stack)
@@ -236,6 +236,11 @@ class _GraphRun[StateT, DepsT, OutputT]:
         finally:
             await self.cancel_pending()
         if self._paused is not None:
+            if self._store is None or self._run_id is None:
+                raise GraphRuntimeError(
+                    f"run reached pause node {self._paused.node_id!r} but no store and run_id are "
+                    "configured; a paused run must be snapshotted to be resumable",
+                )
             await self._save(RunStatus.PAUSED, paused=self._paused)
             raise GraphPaused(
                 f"run paused at {self._paused.node_id!r}",
@@ -485,7 +490,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
             acc = self._fold_ordered(join, state) if join.ordered else state.acc
             self._finalize_and_fire(join_id, key, acc, state.downstream_stack)
 
-    def _drop_failed(self, stack: ForkStack) -> None:
+    def drop_failed(self, stack: ForkStack) -> None:
         """Isolate a failed branch: drop it and let its downstream join fire with the survivors."""
         if not stack:
             return
@@ -506,12 +511,15 @@ class _GraphRun[StateT, DepsT, OutputT]:
 
     def _cancel_fork_run(self, fork_run_id: str) -> None:
         """Cancel any still-running tasks belonging to a fork run that has finished early."""
-        for task in list(self._task_stacks):
-            stack = self._task_stacks[task]
-            if not task.done() and any(frame.fork_run_id == fork_run_id for frame in stack):
+        for task, task_id in list(self._task_ids.items()):
+            snapshot = self._pending.get(task_id)
+            if snapshot is None or task.done():
+                continue
+            if any(frame.fork_run_id == fork_run_id for frame in snapshot.fork_stack):
                 task.cancel()
                 self._active -= 1
-                self._task_stacks.pop(task, None)
+                self._task_ids.pop(task, None)
+                self._pending.pop(task_id, None)
 
     def _fold_ordered(self, join: AnyJoin, state: _JoinState) -> object:
         """Fold a join's branch values in source order, starting from its seeded accumulator."""
@@ -540,12 +548,12 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._pending[task_id] = TaskSnapshot(node_id, value, stack)
         self._active += 1
         task = asyncio.create_task(self._worker(node_id, value, stack, task_id))
-        self._task_stacks[task] = stack
+        self._task_ids[task] = task_id
         task.add_done_callback(self._forget_task)
 
     def _forget_task(self, task: asyncio.Task[None]) -> None:
         """Drop a finished task from the in-flight set."""
-        self._task_stacks.pop(task, None)
+        self._task_ids.pop(task, None)
 
     async def _worker(self, node_id: str, value: object, stack: ForkStack, task_id: int) -> None:
         """Run one step, with retries and timeout, and report its result."""
@@ -584,7 +592,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
 
     async def cancel_pending(self) -> None:
         """Cancel and drain any still-running step tasks."""
-        pending = list(self._task_stacks)
+        pending = list(self._task_ids)
         for task in pending:
             task.cancel()
         if pending:
@@ -629,9 +637,9 @@ class GraphStepper[OutputT, StateT, DepsT]:
 
         Returns:
             The finished task's [`StepResult`][StepResult], or ``None`` once no
-            tasks remain. A result with an ``error`` has not been routed onward;
-            call [`recover`][GraphStepper.recover] to resume it or leave it to
-            drop the branch.
+            tasks remain. A result with an ``error`` has not been routed onward:
+            call [`recover`][GraphStepper.recover] to resume it with a fallback,
+            or [`drop`][GraphStepper.drop] to drop its branch.
         """
         result = await self._run.pump()
         if result is None:
@@ -654,6 +662,19 @@ class GraphStepper[OutputT, StateT, DepsT]:
             output: The value to route onward in place of the missing output.
         """
         self._run.route_output(step.node_id, output, step.fork_stack)
+
+    def drop(self, step: StepResult) -> None:
+        """Drop a failed step's branch so its downstream join can fire without it.
+
+        The counterpart to [`recover`][GraphStepper.recover]: where ``recover``
+        supplies a replacement value, ``drop`` abandons the branch and lets any
+        join awaiting it complete with the branches that did arrive.
+
+        Args:
+            step: The failed [`StepResult`][StepResult] from
+                [`advance`][GraphStepper.advance].
+        """
+        self._run.drop_failed(step.fork_stack)
 
     @property
     def output(self) -> OutputT:
