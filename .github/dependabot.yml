@@ -9,6 +9,10 @@ updates:
       github-actions:
         patterns:
           - "*"
+    ignore:
+      # Only major and minor updates open PRs; skip routine patch bumps.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
 
   - package-ecosystem: "uv"
     directory: "/"
@@ -18,3 +22,7 @@ updates:
       python:
         patterns:
           - "*"
+    ignore:
+      # Only major and minor updates open PRs; skip routine patch bumps.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
