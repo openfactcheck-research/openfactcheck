@@ -9,6 +9,10 @@
          <lastmod>2026-06-16</lastmod>
     </url>
     <url>
+         <loc>https://docs.openfactcheck.com/reference/types/</loc>
+         <lastmod>2026-06-16</lastmod>
+    </url>
+    <url>
          <loc>https://docs.openfactcheck.com/reference/api/</loc>
          <lastmod>2026-06-16</lastmod>
     </url>
@@ -150,6 +154,18 @@
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/providers/openrouter/</loc>
+         <lastmod>2026-06-16</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.openfactcheck.com/reference/components/</loc>
+         <lastmod>2026-06-16</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.openfactcheck.com/reference/components/dummy/</loc>
+         <lastmod>2026-06-16</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.openfactcheck.com/reference/components/protocols/</loc>
          <lastmod>2026-06-16</lastmod>
     </url>
     <url>

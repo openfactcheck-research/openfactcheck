@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://docs.openfactcheck.com/reference/api/repositories/">
+        <link rel="canonical" href="https://docs.openfactcheck.com/reference/components/dummy/">
       
       
-        <link rel="prev" href="../models/user/">
+        <link rel="prev" href="../protocols/">
       
       
-        <link rel="next" href="protocols/">
+        <link rel="next" href="../../api/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Repositories - OpenFactCheck</title>
+        <title>Dummy - OpenFactCheck</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#repositories" class="md-skip">
+        <a href="#dummy-components" class="md-skip">
           Skip to content
         </a>
       
@@ -117,7 +117,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Repositories
+              Dummy
             
           </span>
         </div>
@@ -1891,8 +1891,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -1916,17 +1918,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_8" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../components/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1950,7 +1950,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_8">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1970,7 +1970,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../components/protocols/" class="md-nav__link">
+      <a href="../protocols/" class="md-nav__link">
         
   
   
@@ -1995,10 +1995,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../components/dummy/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dummy
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2014,6 +2041,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.dummy.DummyAggregator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DummyAggregator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.dummy.DummyClaimProcessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DummyClaimProcessor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.dummy.DummyRetriever" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DummyRetriever
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.dummy.DummyVerifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DummyVerifier
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2031,8 +2122,6 @@
                 
   
   
-    
-  
   
   
     
@@ -2062,15 +2151,17 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../api/" class="md-nav__link ">
               
   
   
@@ -2094,7 +2185,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_9">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2145,7 +2236,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../auth/" class="md-nav__link ">
+            <a href="../../api/auth/" class="md-nav__link ">
               
   
   
@@ -2189,7 +2280,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../auth/protocol/" class="md-nav__link">
+      <a href="../../api/auth/protocol/" class="md-nav__link">
         
   
   
@@ -2217,7 +2308,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../auth/cognito/" class="md-nav__link">
+      <a href="../../api/auth/cognito/" class="md-nav__link">
         
   
   
@@ -2245,7 +2336,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../auth/dev/" class="md-nav__link">
+      <a href="../../api/auth/dev/" class="md-nav__link">
         
   
   
@@ -2312,7 +2403,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../models/" class="md-nav__link ">
+            <a href="../../api/models/" class="md-nav__link ">
               
   
   
@@ -2356,7 +2447,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/project/" class="md-nav__link">
+      <a href="../../api/models/project/" class="md-nav__link">
         
   
   
@@ -2384,7 +2475,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/workspace/" class="md-nav__link">
+      <a href="../../api/models/workspace/" class="md-nav__link">
         
   
   
@@ -2412,7 +2503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/user/" class="md-nav__link">
+      <a href="../../api/models/user/" class="md-nav__link">
         
   
   
@@ -2445,8 +2536,6 @@
                 
   
   
-    
-  
   
   
     
@@ -2473,15 +2562,17 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9_4" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9_4" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../../api/repositories/" class="md-nav__link ">
               
   
   
@@ -2499,13 +2590,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_2_9_4" id="__nav_2_9_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2_9_4" id="__nav_2_9_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_9_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_9_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_9_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2525,7 +2616,7 @@
   
   
     <li class="md-nav__item">
-      <a href="protocols/" class="md-nav__link">
+      <a href="../../api/repositories/protocols/" class="md-nav__link">
         
   
   
@@ -2553,7 +2644,7 @@
   
   
     <li class="md-nav__item">
-      <a href="constants/" class="md-nav__link">
+      <a href="../../api/repositories/constants/" class="md-nav__link">
         
   
   
@@ -2612,7 +2703,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="dynamodb/" class="md-nav__link ">
+            <a href="../../api/repositories/dynamodb/" class="md-nav__link ">
               
   
   
@@ -2656,7 +2747,7 @@
   
   
     <li class="md-nav__item">
-      <a href="dynamodb/base/" class="md-nav__link">
+      <a href="../../api/repositories/dynamodb/base/" class="md-nav__link">
         
   
   
@@ -2684,7 +2775,7 @@
   
   
     <li class="md-nav__item">
-      <a href="dynamodb/projects/" class="md-nav__link">
+      <a href="../../api/repositories/dynamodb/projects/" class="md-nav__link">
         
   
   
@@ -2712,7 +2803,7 @@
   
   
     <li class="md-nav__item">
-      <a href="dynamodb/workspaces/" class="md-nav__link">
+      <a href="../../api/repositories/dynamodb/workspaces/" class="md-nav__link">
         
   
   
@@ -2777,7 +2868,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="sqlite/" class="md-nav__link ">
+            <a href="../../api/repositories/sqlite/" class="md-nav__link ">
               
   
   
@@ -2821,7 +2912,7 @@
   
   
     <li class="md-nav__item">
-      <a href="sqlite/projects/" class="md-nav__link">
+      <a href="../../api/repositories/sqlite/projects/" class="md-nav__link">
         
   
   
@@ -2849,7 +2940,7 @@
   
   
     <li class="md-nav__item">
-      <a href="sqlite/workspaces/" class="md-nav__link">
+      <a href="../../api/repositories/sqlite/workspaces/" class="md-nav__link">
         
   
   
@@ -2893,7 +2984,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../errors/" class="md-nav__link">
+      <a href="../../api/errors/" class="md-nav__link">
         
   
   
@@ -2949,6 +3040,58 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.dummy.DummyAggregator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DummyAggregator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.dummy.DummyClaimProcessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DummyClaimProcessor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.dummy.DummyRetriever" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DummyRetriever
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.dummy.DummyVerifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DummyVerifier
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -2967,15 +3110,259 @@
   
 
 
-<h1 id="repositories">Repositories<a class="headerlink" href="#repositories" title="Permanent link">&para;</a></h1>
-<p>Data access layer for the REST API. Concrete implementations are backed by DynamoDB
-in production and swappable for tests.</p>
-<ul>
-<li><a href="protocols/">Protocols</a> — structural typing contracts every concrete repository satisfies.</li>
-<li><a href="constants/">Constants</a> — shared limits and ID helpers used by every implementation.</li>
-<li><a href="dynamodb/">DynamoDB</a> — DynamoDB-backed project and workspace repositories.</li>
-<li><a href="sqlite/">SQLite</a> — SQLite-backed project and workspace repositories.</li>
-</ul>
+<h1 id="dummy-components">Dummy components<a class="headerlink" href="#dummy-components" title="Permanent link">&para;</a></h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+
+    <div class="doc doc-contents first">
+
+        <p>Deterministic dummy components.</p>
+<p>A complete set of placeholder components: each satisfies a category contract but
+performs no real work. Wiring all four runs a pipeline end to end with no
+external dependencies, which makes them handy as placeholders and as test
+fixtures.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.components.dummy.DummyAggregator" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">DummyAggregator</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#openfactcheck.components.dummy.DummyAggregator" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">DummyAggregator</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Aggregator that reaches no overall judgment.</p>
+<p>Returns a fixed inconclusive judgment, ignoring the per-claim verdicts.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.components.dummy.DummyClaimProcessor" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">DummyClaimProcessor</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#openfactcheck.components.dummy.DummyClaimProcessor" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">DummyClaimProcessor</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Claim processor that performs no extraction.</p>
+<p>Wraps the whole input as a single claim, or yields nothing when the input is
+blank.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.components.dummy.DummyRetriever" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">DummyRetriever</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#openfactcheck.components.dummy.DummyRetriever" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">DummyRetriever</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Retriever that fetches no evidence.</p>
+<p>Returns an empty evidence set for any claim, which turns the pipeline into
+closed-book verification.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.components.dummy.DummyVerifier" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">DummyVerifier</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#openfactcheck.components.dummy.DummyVerifier" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">DummyVerifier</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Verifier that reaches no conclusion.</p>
+<p>Returns a fixed inconclusive verdict for any claim, ignoring the evidence.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 
 
