@@ -36,15 +36,13 @@ Example:
     ```
 """
 
-from __future__ import annotations
-
 from enum import StrEnum
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Discriminator
 
-from openfactcheck.chat.config import ProviderName  # noqa: TC001 - Pydantic needs this at runtime.
-from openfactcheck.chat.messages import AssistantMessage  # noqa: TC001 - Pydantic needs this at runtime.
+from openfactcheck.chat.config import ProviderName
+from openfactcheck.chat.messages import AssistantMessage
 
 
 class Usage(BaseModel):

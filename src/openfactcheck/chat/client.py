@@ -31,7 +31,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ValidationError
 
-from openfactcheck.chat.backends import _default_backend  # pyright: ignore[reportPrivateUsage] - internal API.
+from openfactcheck.chat.backends import default_backend
 from openfactcheck.chat.config import RuntimeConfig
 from openfactcheck.chat.errors import StructuredOutputError, UnsupportedFeatureError
 from openfactcheck.chat.messages import UserMessage
@@ -92,7 +92,7 @@ class ChatClient:
         self._runtime = runtime if runtime is not None else RuntimeConfig()
         self._provider = get_provider(config.provider)
         self._provider.validate_config(config)
-        self._backend: ChatBackend = backend if backend is not None else _default_backend(config.provider)
+        self._backend: ChatBackend = backend if backend is not None else default_backend(config.provider)
 
     def _build_request(self, messages: list[Message], response_format: ResponseFormat | None = None) -> ChatRequest:
         return ChatRequest(

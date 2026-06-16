@@ -191,7 +191,7 @@ class FrontMatterParser:
     def _parse_variable_entry(
         self,
         name: str,
-        entry: Any,  # noqa: ANN401 - entry shape validated below.
+        entry: object,
     ) -> VariableSpec:
         """Parse one frontmatter variable entry into a [`VariableSpec`][VariableSpec]."""
         if entry is None:

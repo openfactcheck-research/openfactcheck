@@ -1,0 +1,3 @@
+# Decisions
+
+::: openfactcheck.graph.decision

@@ -1,0 +1,3 @@
+# Pause
+
+::: openfactcheck.graph.pause
