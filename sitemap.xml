@@ -105,10 +105,6 @@
          <lastmod>2026-06-16</lastmod>
     </url>
     <url>
-         <loc>https://docs.openfactcheck.com/reference/chat/messages/</loc>
-         <lastmod>2026-06-16</lastmod>
-    </url>
-    <url>
          <loc>https://docs.openfactcheck.com/reference/chat/requests/</loc>
          <lastmod>2026-06-16</lastmod>
     </url>
@@ -202,6 +198,10 @@
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/step/</loc>
+         <lastmod>2026-06-16</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.openfactcheck.com/reference/messages/</loc>
          <lastmod>2026-06-16</lastmod>
     </url>
     <url>
