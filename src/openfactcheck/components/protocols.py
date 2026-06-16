@@ -1,32 +1,32 @@
 """Component category contracts for the fact-checking pipeline.
 
 Each component category is a ``Protocol`` defining the signature any
-implementation must match. Paper-specific components (Factool, RARR, and
-so on) live in separate modules under ``openfactcheck.components`` and
-are interchangeable with any other implementation of the same category.
+implementation must match. Implementations live in sibling subpackages
+(``null``, ``default``, and paper ports such as ``factool``) and are
+interchangeable with any other implementation of the same category.
 """
 
 from typing import Protocol, runtime_checkable
 
-from openfactcheck.types import Claim, Evidence, FactCheckResult, Input, Query, Verdict
+from openfactcheck.types import Claim, Evidence, Input, OverallVerdict, Query, Verdict
 
 
 @runtime_checkable
-class ClaimExtractor(Protocol):
-    """Extract atomic factual claims from input text.
+class ClaimProcessor(Protocol):
+    """Turn input text into atomic factual claims.
 
     One input may yield zero or more claims. Returning an empty list is
     valid (for example, when the input contains no checkable claims).
     """
 
     async def __call__(self, text: Input) -> list[Claim]:
-        """Extract claims from ``text``.
+        """Produce atomic claims from ``text``.
 
         Args:
-            text: Raw input text to scan for claims.
+            text: Input text to process into claims.
 
         Returns:
-            Atomic factual claims found in ``text``; empty when there are
+            Atomic factual claims drawn from ``text``; empty when there are
             no checkable claims.
         """
         ...
@@ -95,21 +95,21 @@ class Verifier(Protocol):
 
 @runtime_checkable
 class Aggregator(Protocol):
-    """Combine per-claim verdicts into the pipeline's overall result.
+    """Combine per-claim verdicts into one overall judgment.
 
-    Implementations set ``overall_label`` and ``overall_score`` on the
-    result. Strategy is implementation-defined (majority vote, weighted
-    average, worst-case, and so on).
+    Strategy is implementation-defined (majority vote, weighted average,
+    worst-case, and so on). The pipeline assembles the full result around
+    the returned judgment.
     """
 
-    async def __call__(self, verdicts: list[Verdict]) -> FactCheckResult:
-        """Aggregate per-claim verdicts.
+    async def __call__(self, verdicts: list[Verdict]) -> OverallVerdict:
+        """Aggregate per-claim verdicts into one overall judgment.
 
         Args:
-            verdicts: Per-claim verdicts produced earlier in the pipeline.
+            verdicts: Per-claim verdicts produced earlier in the pipeline;
+                may be empty when the input yielded no claims.
 
         Returns:
-            Overall fact-check result with an aggregate label and score
-            populated from ``verdicts``.
+            The overall judgment, with a strategy-defined label and score.
         """
         ...
