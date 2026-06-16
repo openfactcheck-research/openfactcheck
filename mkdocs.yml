@@ -106,6 +106,7 @@ nav:
   - Reference:
       - reference/index.md
       - REST API: reference/rest/index.md
+      - Types: reference/types.md
       - Messages: reference/messages/index.md
       - Chat:
           - reference/chat/index.md
@@ -149,6 +150,10 @@ nav:
           - Errors: reference/graph/errors.md
           - Persistence: reference/graph/persistence.md
           - Mermaid: reference/graph/mermaid.md
+      - Components:
+          - reference/components/index.md
+          - Contracts: reference/components/protocols.md
+          - Dummy: reference/components/dummy.md
       - API:
           - reference/api/index.md
           - Auth:
