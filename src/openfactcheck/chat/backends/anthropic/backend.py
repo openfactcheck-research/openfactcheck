@@ -136,8 +136,12 @@ class AnthropicBackend:
             for event in stream_iter:
                 if event.type == "message_start":
                     input_tokens = event.message.usage.input_tokens
-                elif event.type == "content_block_delta" and event.delta.type == "text_delta":
-                    yield TextDelta(content=event.delta.text)
+                elif event.type == "content_block_delta":
+                    if event.delta.type == "text_delta":
+                        yield TextDelta(content=event.delta.text)
+                    elif event.delta.type == "input_json_delta":
+                        # Structured output uses a forced tool call; its input JSON streams here.
+                        yield TextDelta(content=event.delta.partial_json)
                 elif event.type == "message_delta":
                     output_tokens = event.usage.output_tokens
                     if event.delta.stop_reason is not None:
@@ -176,8 +180,12 @@ class AnthropicBackend:
             async for event in stream_iter:
                 if event.type == "message_start":
                     input_tokens = event.message.usage.input_tokens
-                elif event.type == "content_block_delta" and event.delta.type == "text_delta":
-                    yield TextDelta(content=event.delta.text)
+                elif event.type == "content_block_delta":
+                    if event.delta.type == "text_delta":
+                        yield TextDelta(content=event.delta.text)
+                    elif event.delta.type == "input_json_delta":
+                        # Structured output uses a forced tool call; its input JSON streams here.
+                        yield TextDelta(content=event.delta.partial_json)
                 elif event.type == "message_delta":
                     output_tokens = event.usage.output_tokens
                     if event.delta.stop_reason is not None:

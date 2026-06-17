@@ -6,6 +6,8 @@ external dependencies, which makes them handy as placeholders and as test
 fixtures.
 """
 
+from typing import TYPE_CHECKING
+
 from openfactcheck.components.dummy.aggregator import DummyAggregator
 from openfactcheck.components.dummy.claim_processor import DummyClaimProcessor
 from openfactcheck.components.dummy.query_generator import DummyQueryGenerator
@@ -20,3 +22,21 @@ __all__ = [
     "DummyRetriever",
     "DummyVerifier",
 ]
+
+
+if TYPE_CHECKING:
+    from openfactcheck.components.protocols import (
+        Aggregator,
+        ClaimProcessor,
+        QueryGenerator,
+        Retriever,
+        Verifier,
+    )
+
+    # Type-only conformance: each dummy component must satisfy its category protocol,
+    # so pyright fails the gate the moment one drifts. Absent at runtime.
+    _processor: type[ClaimProcessor] = DummyClaimProcessor
+    _generator: type[QueryGenerator] = DummyQueryGenerator
+    _retriever: type[Retriever] = DummyRetriever
+    _verifier: type[Verifier] = DummyVerifier
+    _aggregator: type[Aggregator] = DummyAggregator

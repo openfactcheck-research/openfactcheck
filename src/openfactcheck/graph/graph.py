@@ -26,7 +26,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from openfactcheck.graph._typevars import DepsT, InputT, OutputT, StateT
 from openfactcheck.graph.errors import GraphPaused, GraphPersistenceError, GraphRuntimeError
-from openfactcheck.graph.events import NodeFailed, NodeFinished, NodeStarted, RunFinished
+from openfactcheck.graph.events import NodeEmitted, NodeFailed, NodeFinished, NodeStarted, RunFinished
 from openfactcheck.graph.forks import ForkStackItem
 from openfactcheck.graph.join import ReducerContext
 from openfactcheck.graph.mermaid import (
@@ -83,6 +83,15 @@ class RunOptions:
 
     on_event: GraphObserver | None = None
     """A callback invoked with each progress event during a run, or ``None`` for none."""
+
+    stream_node_data: bool = False
+    """Whether to surface data a node emits via its ``emit`` hook.
+
+    When ``False`` (the default) the stream carries node lifecycle events only and
+    a node's ``emit`` calls are discarded. When ``True`` each emitted datum becomes
+    a [`NodeEmitted`][openfactcheck.graph.events.NodeEmitted] event tagged with the
+    emitting node and its fork branch.
+    """
 
     store: StateStore | None = None
     """A store to snapshot the run to after each task, or ``None`` to not persist."""
@@ -167,6 +176,7 @@ class _GraphRun[StateT, DepsT, OutputT]:
         self._timeout = options.timeout
         self._on_error = options.on_error
         self._observer = options.on_event
+        self._stream_node_data = options.stream_node_data
         self._store = options.store
         self._run_id = options.run_id
         self._results: asyncio.Queue[_TaskResult] = asyncio.Queue()
@@ -559,6 +569,12 @@ class _GraphRun[StateT, DepsT, OutputT]:
         """Run one step, with retries and timeout, and report its result."""
         step = self._spec.steps[node_id]
         ctx: StepContext[object, StateT, DepsT] = StepContext(inputs=value, state=self._state, deps=self._deps)
+        if self._stream_node_data:
+
+            def emit(data: object) -> None:
+                self._emit(NodeEmitted(node_id, data, stack))
+
+            ctx = replace(ctx, emit=emit)
         started = perf_counter()
         try:
             output = await self._run_step(step, ctx)
@@ -835,8 +851,11 @@ class Graph(Generic[InputT, OutputT, StateT, DepsT]):
         Yields a [`NodeStarted`][openfactcheck.graph.events.NodeStarted] and a
         [`NodeFinished`][openfactcheck.graph.events.NodeFinished] (or
         [`NodeFailed`][openfactcheck.graph.events.NodeFailed]) per task, then a
-        final [`RunFinished`][openfactcheck.graph.events.RunFinished]. Any
-        ``on_event`` set in ``options`` is ignored; the stream is the observer.
+        final [`RunFinished`][openfactcheck.graph.events.RunFinished]. When
+        ``stream_node_data`` is set, a node's ``emit`` calls additionally appear as
+        [`NodeEmitted`][openfactcheck.graph.events.NodeEmitted] events between its
+        start and finish. Any ``on_event`` set in ``options`` is ignored; the
+        stream is the observer.
 
         Args:
             inputs: The value handed to the first node.

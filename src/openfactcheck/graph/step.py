@@ -31,6 +31,10 @@ END_ID = "__end__"
 """Fixed identifier of every graph's end node."""
 
 
+def _discard(_data: object) -> None:
+    """Drop an emitted datum; the default ``emit`` sink when nothing observes node data."""
+
+
 @dataclass(frozen=True, slots=True)
 class StepContext(Generic[InputT, StateT, DepsT]):
     """Context passed to a step function on each invocation.
@@ -68,6 +72,17 @@ class StepContext(Generic[InputT, StateT, DepsT]):
 
     deps: DepsT
     """Run-scoped dependencies (clients, configuration) injected into nodes."""
+
+    emit: Callable[[object], None] = _discard
+    """Emit a progress datum from inside this node while it runs.
+
+    Call it with any value to surface that value as a
+    [`NodeEmitted`][openfactcheck.graph.events.NodeEmitted] event tagged with this
+    node, for instance to forward chat token fragments as they arrive. The datum
+    is forwarded only when the run sets ``stream_node_data`` on
+    [`RunOptions`][openfactcheck.graph.RunOptions]; otherwise it is discarded, so a
+    node can emit unconditionally at no cost when nothing observes it.
+    """
 
 
 @dataclass(frozen=True, slots=True)
