@@ -28,19 +28,21 @@ Example:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
 from openfactcheck.chat.backends import default_backend
 from openfactcheck.chat.config import RuntimeConfig
 from openfactcheck.chat.errors import StructuredOutputError, UnsupportedFeatureError
+from openfactcheck.chat.partial import partial_model
 from openfactcheck.chat.providers import get_provider
 from openfactcheck.chat.requests import ChatRequest, ResponseFormat
+from openfactcheck.chat.responses import TextDelta
 from openfactcheck.messages import UserMessage
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator, Iterator
+    from collections.abc import AsyncIterator, Callable, Iterator
 
     from openfactcheck.chat.backends.base import ChatBackend
     from openfactcheck.chat.config import ModelConfig
@@ -108,6 +110,17 @@ class ChatClient:
         if not self._provider.capabilities.structured_output:
             raise UnsupportedFeatureError(f"provider '{self._config.provider}' does not support structured output.")
 
+    def _format_for(self, response_model: type[BaseModel] | None) -> ResponseFormat | None:
+        """Build the structured-output format for ``response_model``, or ``None`` for free text.
+
+        Requires provider support when a model is given, so the constraint surfaces
+        the same way as for [`acompletion_as`][ChatClient.acompletion_as].
+        """
+        if response_model is None:
+            return None
+        self._require_structured_output()
+        return ResponseFormat(name=response_model.__name__, json_schema=response_model.model_json_schema())
+
     def completion(self, messages: list[Message]) -> ChatResponse:
         """Send messages and return a complete response.
 
@@ -130,30 +143,122 @@ class ChatClient:
         """
         return await self._backend.acompletion(self._build_request(messages))
 
-    def stream(self, messages: list[Message]) -> Iterator[StreamEvent]:
+    def stream(
+        self, messages: list[Message], *, response_model: type[BaseModel] | None = None
+    ) -> Iterator[StreamEvent]:
         """Stream a response as typed events.
 
         Args:
             messages: The conversation to send.
+            response_model: When given, the reply is constrained to this model's
+                JSON schema and the streamed text is that JSON, chunk by chunk.
+                Omit it for free text. See [`stream_as`][ChatClient.stream_as] to
+                receive parsed objects instead of raw JSON.
 
         Yields:
             A [`TextDelta`][TextDelta] for each content chunk, then a final
             [`StreamEnd`][StreamEnd] carrying ``finish_reason`` and ``usage``.
-        """
-        yield from self._backend.stream(self._build_request(messages))
 
-    async def astream(self, messages: list[Message]) -> AsyncIterator[StreamEvent]:
+        Raises:
+            UnsupportedFeatureError: ``response_model`` is given but the provider
+                does not support structured output.
+        """
+        yield from self._backend.stream(self._build_request(messages, self._format_for(response_model)))
+
+    async def astream(
+        self, messages: list[Message], *, response_model: type[BaseModel] | None = None
+    ) -> AsyncIterator[StreamEvent]:
         """Stream a response as typed events over an async iterator.
 
         Args:
             messages: The conversation to send.
+            response_model: When given, the reply is constrained to this model's
+                JSON schema and the streamed text is that JSON, chunk by chunk.
+                Omit it for free text. See [`astream_as`][ChatClient.astream_as] to
+                receive parsed objects instead of raw JSON.
 
         Yields:
             A [`TextDelta`][TextDelta] for each content chunk, then a final
             [`StreamEnd`][StreamEnd] carrying ``finish_reason`` and ``usage``.
+
+        Raises:
+            UnsupportedFeatureError: ``response_model`` is given but the provider
+                does not support structured output.
         """
-        async for event in self._backend.astream(self._build_request(messages)):
+        async for event in self._backend.astream(self._build_request(messages, self._format_for(response_model))):
             yield event
+
+    def stream_collect(
+        self,
+        messages: list[Message],
+        *,
+        response_model: type[BaseModel] | None = None,
+        on_delta: Callable[[TextDelta], None] | None = None,
+    ) -> str:
+        """Stream a response, observe each chunk, and return the assembled text.
+
+        A convenience over [`stream`][ChatClient.stream] for callers that want both
+        the streaming side effect (a live display, a progress sink) and the final
+        text in one call, instead of collecting chunks by hand.
+
+        Args:
+            messages: The conversation to send.
+            response_model: When given, constrains the reply to this model's JSON
+                schema; the assembled text (and each chunk) is then that JSON.
+            on_delta: Called with each [`TextDelta`][TextDelta] as it arrives, for
+                example to forward tokens to a progress sink. The terminal
+                [`StreamEnd`][StreamEnd] is not passed.
+
+        Returns:
+            The concatenated text of every chunk (the JSON when ``response_model``
+            is given).
+
+        Raises:
+            UnsupportedFeatureError: ``response_model`` is given but the provider
+                does not support structured output.
+        """
+        parts: list[str] = []
+        for event in self.stream(messages, response_model=response_model):
+            if isinstance(event, TextDelta):
+                parts.append(event.content)
+                if on_delta is not None:
+                    on_delta(event)
+        return "".join(parts)
+
+    async def astream_collect(
+        self,
+        messages: list[Message],
+        *,
+        response_model: type[BaseModel] | None = None,
+        on_delta: Callable[[TextDelta], None] | None = None,
+    ) -> str:
+        """Stream a response over an async iterator, observe each chunk, and return the assembled text.
+
+        Async peer of [`stream_collect`][ChatClient.stream_collect]; same behavior.
+
+        Args:
+            messages: The conversation to send.
+            response_model: When given, constrains the reply to this model's JSON
+                schema; the assembled text (and each chunk) is then that JSON.
+            on_delta: Called with each [`TextDelta`][TextDelta] as it arrives, for
+                example to forward tokens to a progress sink. The terminal
+                [`StreamEnd`][StreamEnd] is not passed.
+
+        Returns:
+            The concatenated text of every chunk (the JSON when ``response_model``
+            is given).
+
+        Raises:
+            UnsupportedFeatureError: ``response_model`` is given but the provider
+                does not support structured output.
+        """
+        parts: list[str] = []
+        async for event in self.astream(messages, response_model=response_model):
+            if isinstance(event, TextDelta):
+                parts.append(event.content)
+                if on_delta is not None:
+                    on_delta(event)
+        return "".join(parts)
 
     def completion_as[T: BaseModel](self, messages: list[Message], response_model: type[T]) -> T:
         """Send messages and return a validated instance of ``response_model``.
@@ -251,3 +356,97 @@ class ChatClient:
                     ),
                 )
                 conversation = [*conversation, response.message, reprompt]
+
+    def stream_as[T: BaseModel](self, messages: list[Message], response_model: type[T]) -> Iterator[T]:
+        """Stream a structured reply as progressively complete instances.
+
+        Asks the model to reply with JSON matching ``response_model`` and yields
+        the object as it is built: each item carries the fields that have arrived
+        so far, the rest left unset, and the final item is the complete, validated
+        instance. Useful for showing a field (a verdict's reasoning, an answer)
+        filling in live while still ending with a fully typed result.
+
+        Unlike [`completion_as`][ChatClient.completion_as], a failed final
+        validation is not retried; streaming cannot replay a partial reply.
+
+        Args:
+            messages: The conversation to send.
+            response_model: The Pydantic model the reply must conform to.
+
+        Yields:
+            Progressively complete instances of ``response_model``; the final one
+            is fully validated.
+
+        Raises:
+            UnsupportedFeatureError: The provider does not support structured
+                output.
+            StructuredOutputError: The complete reply failed validation.
+        """
+        self._require_structured_output()
+        response_format = ResponseFormat(
+            name=response_model.__name__,
+            json_schema=response_model.model_json_schema(),
+        )
+        adapter = TypeAdapter(partial_model(response_model))
+        raw = ""
+        for event in self._backend.stream(self._build_request(messages, response_format)):
+            if not isinstance(event, TextDelta):
+                continue
+            raw += event.content
+            try:
+                partial = adapter.validate_json(raw, experimental_allow_partial="trailing-strings")
+            except ValidationError:
+                continue
+            yield cast("T", partial)
+        try:
+            yield response_model.model_validate_json(raw)
+        except ValidationError as exc:
+            raise StructuredOutputError(
+                f"reply did not match {response_model.__name__}.",
+                raw=raw,
+                validation_error=exc,
+            ) from exc
+
+    async def astream_as[T: BaseModel](self, messages: list[Message], response_model: type[T]) -> AsyncIterator[T]:
+        """Stream a structured reply over an async iterator as progressively complete instances.
+
+        Async peer of [`stream_as`][ChatClient.stream_as]; same progressive
+        behavior and same no-retry contract.
+
+        Args:
+            messages: The conversation to send.
+            response_model: The Pydantic model the reply must conform to.
+
+        Yields:
+            Progressively complete instances of ``response_model``; the final one
+            is fully validated.
+
+        Raises:
+            UnsupportedFeatureError: The provider does not support structured
+                output.
+            StructuredOutputError: The complete reply failed validation.
+        """
+        self._require_structured_output()
+        response_format = ResponseFormat(
+            name=response_model.__name__,
+            json_schema=response_model.model_json_schema(),
+        )
+        adapter = TypeAdapter(partial_model(response_model))
+        raw = ""
+        async for event in self._backend.astream(self._build_request(messages, response_format)):
+            if not isinstance(event, TextDelta):
+                continue
+            raw += event.content
+            try:
+                partial = adapter.validate_json(raw, experimental_allow_partial="trailing-strings")
+            except ValidationError:
+                continue
+            yield cast("T", partial)
+        try:
+            yield response_model.model_validate_json(raw)
+        except ValidationError as exc:
+            raise StructuredOutputError(
+                f"reply did not match {response_model.__name__}.",
+                raw=raw,
+                validation_error=exc,
+            ) from exc

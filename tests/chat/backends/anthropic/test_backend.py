@@ -203,3 +203,56 @@ async def test_AnthropicBackend_astream_yields_events(mocker) -> None:  # noqa: 
     assert ends[0].finish_reason == FinishReason.STOP
     assert ends[0].usage is not None
     assert ends[0].usage.output_tokens == 3
+
+
+# ---------------------------------------------------------------------------
+# Structured output: the forced tool's input JSON streams as text
+# ---------------------------------------------------------------------------
+
+
+def _fake_tool_stream_events():  # noqa: ANN202
+    """Sync iterable mimicking a forced-tool-use (structured output) stream."""
+    yield SimpleNamespace(type="message_start", message=SimpleNamespace(usage=SimpleNamespace(input_tokens=5)))
+    yield SimpleNamespace(
+        type="content_block_delta",
+        delta=SimpleNamespace(type="input_json_delta", partial_json='{"name": "Ada"'),
+    )
+    yield SimpleNamespace(
+        type="content_block_delta",
+        delta=SimpleNamespace(type="input_json_delta", partial_json=', "age": 36}'),
+    )
+    yield SimpleNamespace(
+        type="message_delta",
+        delta=SimpleNamespace(stop_reason="tool_use"),
+        usage=SimpleNamespace(output_tokens=7),
+    )
+    yield SimpleNamespace(type="message_stop")
+
+
+async def _fake_tool_astream_events():  # noqa: ANN202
+    """Async iterable of the structured-output stream events."""
+    for event in _fake_tool_stream_events():
+        yield event
+
+
+def test_AnthropicBackend_stream_surfaces_tool_input_json(mocker) -> None:  # noqa: ANN001
+    """Structured output streams the forced tool's input JSON as TextDelta chunks."""
+    _patch_sync_client(mocker, _fake_tool_stream_events())
+    backend = AnthropicBackend()
+
+    events = list(backend.stream(_build_request()))
+
+    deltas = [e for e in events if isinstance(e, TextDelta)]
+    assert "".join(d.content for d in deltas) == '{"name": "Ada", "age": 36}'
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_AnthropicBackend_astream_surfaces_tool_input_json(mocker) -> None:  # noqa: ANN001
+    """Structured output streams the forced tool's input JSON over the async iterator."""
+    _patch_async_client(mocker, _fake_tool_astream_events())
+    backend = AnthropicBackend()
+
+    events = [event async for event in backend.astream(_build_request())]
+
+    deltas = [e for e in events if isinstance(e, TextDelta)]
+    assert "".join(d.content for d in deltas) == '{"name": "Ada", "age": 36}'

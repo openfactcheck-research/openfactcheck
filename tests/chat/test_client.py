@@ -156,6 +156,58 @@ async def test_ChatClient_astream_yields_events(fake_response: ChatResponse, ope
     assert events[2].usage.output_tokens == 3
 
 
+def test_ChatClient_stream_collect_returns_text(fake_response: ChatResponse, openai_config: OpenAIConfig) -> None:
+    """ChatClient.stream_collect returns the concatenated chunk text."""
+    backend = FakeBackend(fake_response)
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    text = client.stream_collect([UserMessage(content="Hi")])
+
+    assert text == "Hello, world!"
+
+
+def test_ChatClient_stream_collect_forwards_each_delta(
+    fake_response: ChatResponse, openai_config: OpenAIConfig
+) -> None:
+    """ChatClient.stream_collect forwards each TextDelta to on_delta, skipping the terminator."""
+    backend = FakeBackend(fake_response)
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+    seen: list[str] = []
+
+    text = client.stream_collect([UserMessage(content="Hi")], on_delta=lambda delta: seen.append(delta.content))
+
+    assert seen == ["Hello", ", world!"]
+    assert text == "Hello, world!"
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_ChatClient_astream_collect_returns_text(
+    fake_response: ChatResponse, openai_config: OpenAIConfig
+) -> None:
+    """ChatClient.astream_collect returns the concatenated chunk text."""
+    backend = FakeBackend(fake_response)
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    text = await client.astream_collect([UserMessage(content="Hi")])
+
+    assert text == "Hello, world!"
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_ChatClient_astream_collect_forwards_each_delta(
+    fake_response: ChatResponse, openai_config: OpenAIConfig
+) -> None:
+    """ChatClient.astream_collect forwards each TextDelta to on_delta."""
+    backend = FakeBackend(fake_response)
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+    seen: list[TextDelta] = []
+
+    text = await client.astream_collect([UserMessage(content="Hi")], on_delta=seen.append)
+
+    assert [delta.content for delta in seen] == ["Hello", ", world!"]
+    assert text == "Hello, world!"
+
+
 def test_ChatClient_default_runtime(openai_config: OpenAIConfig, fake_response: ChatResponse) -> None:
     """ChatClient creates default RuntimeConfig when none provided."""
     backend = FakeBackend(fake_response)
@@ -239,3 +291,105 @@ def test_ChatClient_completion_as_unsupported_raises(openai_config: OpenAIConfig
 
     with pytest.raises(UnsupportedFeatureError):
         client.completion_as([UserMessage(content="Make a person")], _Person)
+
+
+class _StreamingJsonBackend:
+    """Backend double that streams a structured reply as JSON fragments."""
+
+    def __init__(self, fragments: list[str]) -> None:
+        self.fragments = fragments
+        self.last_request: ChatRequest | None = None
+
+    def completion(self, request):  # noqa: ANN001, ANN201 - unused by streaming tests.
+        raise NotImplementedError
+
+    async def acompletion(self, request):  # noqa: ANN001, ANN201 - unused by streaming tests.
+        raise NotImplementedError
+
+    def stream(self, request):  # noqa: ANN001, ANN201 - test double.
+        self.last_request = request
+        for fragment in self.fragments:
+            yield TextDelta(content=fragment)
+        yield StreamEnd(finish_reason=FinishReason.STOP)
+
+    async def astream(self, request):  # noqa: ANN001, ANN201 - test double.
+        self.last_request = request
+        for fragment in self.fragments:
+            yield TextDelta(content=fragment)
+        yield StreamEnd(finish_reason=FinishReason.STOP)
+
+
+def test_ChatClient_stream_as_yields_progressive_then_final(openai_config: OpenAIConfig) -> None:
+    """stream_as yields progressively filled instances, ending with the validated model."""
+    backend = _StreamingJsonBackend(['{"name": "A', 'da", "age', '": 36}'])
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    items = list(client.stream_as([UserMessage(content="hi")], _Person))
+
+    # The name fills in before the age arrives.
+    assert any(item.name is not None and item.age is None for item in items)
+    final = items[-1]
+    assert isinstance(final, _Person)
+    assert final == _Person(name="Ada", age=36)
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_ChatClient_astream_as_yields_progressive_then_final(openai_config: OpenAIConfig) -> None:
+    """astream_as yields progressively filled instances over the async iterator."""
+    backend = _StreamingJsonBackend(['{"name": "A', 'da", "age', '": 36}'])
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    items = [item async for item in client.astream_as([UserMessage(content="hi")], _Person)]
+
+    assert any(item.name is not None and item.age is None for item in items)
+    assert isinstance(items[-1], _Person)
+    assert items[-1] == _Person(name="Ada", age=36)
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_ChatClient_astream_as_raises_on_invalid_final(openai_config: OpenAIConfig) -> None:
+    """astream_as raises StructuredOutputError when the complete reply fails validation."""
+    backend = _StreamingJsonBackend(['{"name": "Ada", "age": "not-a-number"}'])
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    with pytest.raises(StructuredOutputError):
+        _ = [item async for item in client.astream_as([UserMessage(content="hi")], _Person)]
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_ChatClient_astream_with_response_model_streams_json(openai_config: OpenAIConfig) -> None:
+    """astream with a response_model streams the JSON as plain text deltas and sets the format."""
+    backend = _StreamingJsonBackend(['{"name": "A', 'da", "age', '": 36}'])
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    chunks = [
+        event.content
+        async for event in client.astream([UserMessage(content="hi")], response_model=_Person)
+        if isinstance(event, TextDelta)
+    ]
+
+    assert "".join(chunks) == '{"name": "Ada", "age": 36}'
+    assert backend.last_request is not None
+    assert backend.last_request.response_format is not None  # structured format was applied
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_ChatClient_astream_collect_with_response_model_returns_json(openai_config: OpenAIConfig) -> None:
+    """astream_collect with a response_model returns the assembled JSON string."""
+    backend = _StreamingJsonBackend(['{"name": "A', 'da", "age', '": 36}'])
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    raw = await client.astream_collect([UserMessage(content="hi")], response_model=_Person)
+
+    assert raw == '{"name": "Ada", "age": 36}'
+    assert _Person.model_validate_json(raw) == _Person(name="Ada", age=36)
+
+
+def test_ChatClient_stream_with_response_model_unsupported_raises(openai_config: OpenAIConfig, mocker) -> None:  # noqa: ANN001 - pytest-mock fixture.
+    """Streaming with a response_model raises when the provider lacks structured output."""
+    backend = _StreamingJsonBackend(['{"name": "Ada", "age": 36}'])
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+    mocker.patch.object(client._provider, "capabilities", SimpleNamespace(structured_output=False))
+
+    with pytest.raises(UnsupportedFeatureError):
+        list(client.stream([UserMessage(content="hi")], response_model=_Person))
