@@ -2142,6 +2142,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.components.factool.ClaimExtraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ClaimExtraction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.components.factool.FactoolClaimProcessor" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2220,6 +2231,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.components.factool.GeneratedQueries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GeneratedQueries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.components.factool.FactoolRetriever" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2294,6 +2316,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.factool.Verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Verification
+      
+    </span>
+  </a>
   
 </li>
       
@@ -3375,6 +3408,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.components.factool.ClaimExtraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ClaimExtraction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.components.factool.FactoolClaimProcessor" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3453,6 +3497,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.components.factool.GeneratedQueries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;GeneratedQueries
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.components.factool.FactoolRetriever" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3527,6 +3582,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.factool.Verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Verification
+      
+    </span>
+  </a>
   
 </li>
       
@@ -3651,6 +3717,57 @@ commit, and license. Import from <code>openfactcheck.components.factool</code>.<
 <p>A response is factual only when every claim is supported; a single
 unsupported claim makes the whole response non-factual. The score reports
 the fraction of supported claims.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.components.factool.ClaimExtraction" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">ClaimExtraction</span>
+
+
+<a href="#openfactcheck.components.factool.ClaimExtraction" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>Factool's structured claim-extraction result.</p>
+<p>The claim processor maps this onto a list of
+<a class="autorefs autorefs-internal" title="            Claim" href="../../types/#openfactcheck.types.Claim"><code>Claim</code></a>. It is also the value handed to a call's
+<code>on_partial</code> hook, the claim list growing as the model writes it.</p>
 
 
 
@@ -3911,6 +4028,57 @@ claim.</p>
 
 
 
+<h2 id="openfactcheck.components.factool.GeneratedQueries" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">GeneratedQueries</span>
+
+
+<a href="#openfactcheck.components.factool.GeneratedQueries" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>Factool's structured query-generation result.</p>
+<p>The query generator maps this onto a <a class="autorefs autorefs-internal" title="            Query" href="../../types/#openfactcheck.types.Query"><code>Query</code></a>. It
+is also the value handed to a call's <code>on_partial</code> hook, the query list
+growing as the model writes it.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h2 id="openfactcheck.components.factool.FactoolRetriever" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">FactoolRetriever</span>
 
@@ -4113,6 +4281,57 @@ Factool emits no confidence, so the verdict leaves it unset.</p>
     </div>
 
 </div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.components.factool.Verification" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Verification</span>
+
+
+<a href="#openfactcheck.components.factool.Verification" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>Factool's structured per-claim verification result.</p>
+<p>The verifier maps this onto a <a class="autorefs autorefs-internal" title="            Verdict" href="../../types/#openfactcheck.types.Verdict"><code>Verdict</code></a>. It is
+also the value handed to a verifier call's <code>on_partial</code> hook, filling in
+field by field as the model writes it.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
 
 
 

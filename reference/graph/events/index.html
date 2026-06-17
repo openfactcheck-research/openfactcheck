@@ -2024,6 +2024,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;NodeEmitted
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" NodeEmitted">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted.node_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;node_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted.data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted.fork_stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;fork_stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted.type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;type
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.graph.events.RunFinished" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3646,6 +3707,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;NodeEmitted
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" NodeEmitted">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted.node_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;node_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted.data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted.fork_stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;fork_stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.events.NodeEmitted.type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;type
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.graph.events.RunFinished" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3736,12 +3858,43 @@ during <a class="autorefs autorefs-internal" title="            arun
   " href="../graph/#openfactcheck.graph.graph.Graph.arun"><code>Graph.arun</code></a>. A node start and finish (or failure) is
 emitted per task, so a fanned-out collection reports one finish per item, and a
 single run-finished event closes a successful run.</p>
+<p>A run can also surface data a node emits from inside its own task (for example
+LLM token fragments) as <a class="autorefs autorefs-internal" title="            NodeEmitted
+
+
+  
+      dataclass
+  " href="#openfactcheck.graph.events.NodeEmitted"><code>NodeEmitted</code></a> events, but only when it
+opts in via <code>stream_node_data</code> on <a class="autorefs autorefs-internal" title="            RunOptions
+
+
+  
+      dataclass
+  " href="../graph/#openfactcheck.graph.graph.RunOptions"><code>RunOptions</code></a>; the default
+stream stays node-level.</p>
 <p>Match on the event class to handle each kind:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">match</span> <span class="n">event</span><span class="p">:</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="k">case</span> <span class="n">NodeFinished</span><span class="p">(</span><span class="n">node_id</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="n">seconds</span><span class="p">):</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        <span class="o">...</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">case</span> <span class="n">RunFinished</span><span class="p">(</span><span class="n">output</span><span class="o">=</span><span class="n">result</span><span class="p">):</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="o">...</span>
+</code></pre></div>
+<p>To stream a node's LLM tokens through the run, the node forwards them to its
+<code>emit</code> hook and the consumer opts in to receive them:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">answer</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">deps</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">astream</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">TextDelta</span><span class="p">):</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>            <span class="n">ctx</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>  <span class="c1"># surfaced as NodeEmitted when the run opts in</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">options</span> <span class="o">=</span> <span class="n">RunOptions</span><span class="p">(</span><span class="n">stream_node_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">astream</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">):</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">match</span> <span class="n">event</span><span class="p">:</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="k">case</span> <span class="n">NodeEmitted</span><span class="p">(</span><span class="n">node_id</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">TextDelta</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">token</span><span class="p">)):</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 </code></pre></div>
 
 
@@ -3772,8 +3925,12 @@ single run-finished event closes a successful run.</p>
 
 <a href="#openfactcheck.graph.events.GraphEvent" class="headerlink" title="Permanent link">&para;</a></h2>
 <div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nc">GraphEvent</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">NodeStarted</span> <span class="o">|</span> <span class="n">NodeFinished</span> <span class="o">|</span> <span class="n">NodeFailed</span> <span class="o">|</span> <span class="n">RunFinished</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">NodeStarted</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="o">|</span> <span class="n">NodeFinished</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="o">|</span> <span class="n">NodeFailed</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="o">|</span> <span class="n">NodeEmitted</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">|</span> <span class="n">RunFinished</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4271,6 +4428,176 @@ single run-finished event closes a successful run.</p>
     <div class="doc doc-contents ">
 
         <p>Event tag identifying a node failure.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.graph.events.NodeEmitted" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">NodeEmitted</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#openfactcheck.graph.events.NodeEmitted" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">NodeEmitted</span><span class="p">(</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">data</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">fork_stack</span><span class="p">:</span> <span class="n">ForkStack</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;node_emitted&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;node_emitted&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>A datum a node emitted from inside its task while running.</p>
+<p>Surfaced only when a run opts in via <code>stream_node_data</code> on
+<a class="autorefs autorefs-internal" title="            RunOptions
+
+
+  
+      dataclass
+  " href="../graph/#openfactcheck.graph.graph.RunOptions"><code>RunOptions</code></a>; the default stream carries node lifecycle events
+only. A node pushes the datum through <a class="autorefs autorefs-internal" title="            StepContext
+
+
+  
+      dataclass
+  " href="../step/#openfactcheck.graph.step.StepContext"><code>StepContext.emit</code></a>, so
+its meaning is whatever that node chose, for example a chat token fragment.
+Emissions are produced inside the node's own task, so those from concurrent
+fan-out branches interleave; <code>fork_stack</code> identifies the branch each
+belongs to.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="openfactcheck.graph.events.NodeEmitted.node_id" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">node_id</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.graph.events.NodeEmitted.node_id" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Identifier of the node that emitted the datum.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="openfactcheck.graph.events.NodeEmitted.data" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">data</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.graph.events.NodeEmitted.data" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">data</span><span class="p">:</span> <span class="nb">object</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The emitted value, of whatever type the node passed to its <code>emit</code> hook.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="openfactcheck.graph.events.NodeEmitted.fork_stack" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">fork_stack</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.graph.events.NodeEmitted.fork_stack" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">fork_stack</span><span class="p">:</span> <span class="n">ForkStack</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The fork branch the emitting task belongs to.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="openfactcheck.graph.events.NodeEmitted.type" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">type</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.graph.events.NodeEmitted.type" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;node_emitted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;node_emitted&#39;</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Event tag identifying a node-emitted datum.</p>
 
     </div>
 

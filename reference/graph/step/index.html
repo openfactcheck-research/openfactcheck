@@ -1795,6 +1795,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.step.StepContext.emit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;emit
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3618,6 +3629,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.step.StepContext.emit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;emit
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4076,7 +4098,12 @@ destination emits.</p>
   </span>
 
 <a href="#openfactcheck.graph.step.StepContext" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">StepContext</span><span class="p">(</span><span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span> <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">StepContext</span><span class="p">(</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">emit</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">object</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">_discard</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4195,6 +4222,47 @@ omitted, so a step with neither annotates <code>StepContext[str]</code>.</p>
     <div class="doc doc-contents ">
 
         <p>Run-scoped dependencies (clients, configuration) injected into nodes.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="openfactcheck.graph.step.StepContext.emit" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">emit</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.graph.step.StepContext.emit" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">emit</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">object</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">_discard</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Emit a progress datum from inside this node while it runs.</p>
+<p>Call it with any value to surface that value as a
+<a class="autorefs autorefs-internal" title="            NodeEmitted
+
+
+  
+      dataclass
+  " href="../events/#openfactcheck.graph.events.NodeEmitted"><code>NodeEmitted</code></a> event tagged with this
+node, for instance to forward chat token fragments as they arrive. The datum
+is forwarded only when the run sets <code>stream_node_data</code> on
+<a class="autorefs autorefs-internal" title="            RunOptions
+
+
+  
+      dataclass
+  " href="../graph/#openfactcheck.graph.graph.RunOptions"><code>RunOptions</code></a>; otherwise it is discarded, so a
+node can emit unconditionally at no cost when nothing observes it.</p>
 
     </div>
 
