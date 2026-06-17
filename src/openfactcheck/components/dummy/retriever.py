@@ -2,24 +2,24 @@
 
 from dataclasses import dataclass
 
-from openfactcheck.types import Claim, Evidence
+from openfactcheck.types import Evidence, Query
 
 
 @dataclass(frozen=True, slots=True)
 class DummyRetriever:
     """Retriever that fetches no evidence.
 
-    Returns an empty evidence set for any claim, which turns the pipeline into
+    Returns an empty evidence set for any query, which turns the pipeline into
     closed-book verification.
     """
 
-    async def __call__(self, claim: Claim) -> Evidence:
-        """Return empty evidence for ``claim``.
+    async def __call__(self, query: Query) -> Evidence:
+        """Return empty evidence for ``query``.
 
         Args:
-            claim: Claim to gather evidence for.
+            query: The claim and its search questions; ignored.
 
         Returns:
-            Evidence attached to ``claim`` with no sources.
+            Evidence attached to the query's claim with no sources.
         """
-        return Evidence(claim=claim, sources=[])
+        return Evidence(claim=query.claim, sources=[])

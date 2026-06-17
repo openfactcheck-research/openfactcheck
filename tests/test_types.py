@@ -50,6 +50,11 @@ def test_source_with_web_metadata() -> None:
     assert source.metadata.title == "NASA"
 
 
+def test_web_metadata_title_defaults_to_none() -> None:
+    metadata = WebMetadata(url="https://nasa.gov")
+    assert metadata.title is None
+
+
 def test_evidence() -> None:
     claim = Claim(text="The earth is round")
     evidence = Evidence(
@@ -73,6 +78,29 @@ def test_verdict() -> None:
     )
     assert verdict.label == "supported"
     assert verdict.confidence == 0.95
+
+
+def test_verdict_optional_fields_default_to_none() -> None:
+    claim = Claim(text="The earth is round")
+    verdict = Verdict(claim=claim, label="supported", reasoning="confirmed")
+
+    assert verdict.confidence is None
+    assert verdict.error is None
+    assert verdict.correction is None
+
+
+def test_verdict_carries_error_and_correction() -> None:
+    claim = Claim(text="The earth is flat")
+    verdict = Verdict(
+        claim=claim,
+        label="refuted",
+        reasoning="Contradicted by evidence.",
+        error="The earth is not flat.",
+        correction="The earth is round.",
+    )
+
+    assert verdict.error == "The earth is not flat."
+    assert verdict.correction == "The earth is round."
 
 
 def test_fact_check_result() -> None:

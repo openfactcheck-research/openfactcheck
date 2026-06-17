@@ -1,0 +1,3 @@
+# Serper
+
+::: openfactcheck.integrations.serper

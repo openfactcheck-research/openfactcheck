@@ -2,10 +2,10 @@
 
 [`build_pipeline`][build_pipeline] wires the component contracts into a runnable
 [`Graph`][openfactcheck.graph.Graph]: it processes the input into claims, fans
-out over them to retrieve evidence and verify each claim in parallel, collects
-the per-claim reports, and assembles them with an overall judgment into a
-result. The components are supplied per run as [`Components`][Components]
-dependencies, and the original input rides on
+out over them to generate queries, retrieve evidence, and verify each claim in
+parallel, collects the per-claim reports, and assembles them with an overall
+judgment into a result. The components are supplied per run as
+[`Components`][Components] dependencies, and the original input rides on
 [`PipelineState`][PipelineState], so any implementation of a contract can be
 swapped in without touching the wiring.
 
@@ -17,9 +17,9 @@ result = graph.run(Input(content="..."), state=PipelineState(), deps=components)
 
 from dataclasses import dataclass
 
-from openfactcheck.components.protocols import Aggregator, ClaimProcessor, Retriever, Verifier
+from openfactcheck.components.protocols import Aggregator, ClaimProcessor, QueryGenerator, Retriever, Verifier
 from openfactcheck.graph import Graph, GraphBuilder, StepContext
-from openfactcheck.types import Claim, ClaimReport, Evidence, FactCheckResult, Input
+from openfactcheck.types import Claim, ClaimReport, Evidence, FactCheckResult, Input, Query
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,8 +29,11 @@ class Components:
     processor: ClaimProcessor
     """Produces atomic claims from the input."""
 
+    generator: QueryGenerator
+    """Generates search queries for one claim."""
+
     retriever: Retriever
-    """Fetches evidence for one claim."""
+    """Fetches evidence for one claim's queries."""
 
     verifier: Verifier
     """Judges one claim against its evidence."""
@@ -56,10 +59,10 @@ def build_pipeline() -> Graph[Input, FactCheckResult, PipelineState, Components]
     """Build the default fact-check graph.
 
     The returned graph records the input, processes it into claims, fans out to
-    retrieve and verify each claim concurrently, collects the per-claim reports,
-    and assembles them with an overall judgment into a result. Supply the
-    components as ``deps`` and a fresh [`PipelineState`][PipelineState] as
-    ``state`` when running it.
+    generate queries, retrieve evidence, and verify each claim concurrently,
+    collects the per-claim reports, and assembles them with an overall judgment
+    into a result. Supply the components as ``deps`` and a fresh
+    [`PipelineState`][PipelineState] as ``state`` when running it.
 
     Returns:
         A built [`Graph`][openfactcheck.graph.Graph] taking an
@@ -79,7 +82,11 @@ def build_pipeline() -> Graph[Input, FactCheckResult, PipelineState, Components]
         return await ctx.deps.processor(ctx.inputs)
 
     @g.step_node
-    async def retrieve(ctx: StepContext[Claim, PipelineState, Components]) -> Evidence:
+    async def generate(ctx: StepContext[Claim, PipelineState, Components]) -> Query:
+        return await ctx.deps.generator(ctx.inputs)
+
+    @g.step_node
+    async def retrieve(ctx: StepContext[Query, PipelineState, Components]) -> Evidence:
         return await ctx.deps.retriever(ctx.inputs)
 
     @g.step_node
@@ -106,7 +113,8 @@ def build_pipeline() -> Graph[Input, FactCheckResult, PipelineState, Components]
 
     g.add(
         g.edge_from(g.start_node).to(process),
-        g.edge_from(process).map().to(retrieve),
+        g.edge_from(process).map().to(generate),
+        g.edge_from(generate).to(retrieve),
         g.edge_from(retrieve).to(verify),
         g.edge_from(verify).to(reports),
         g.edge_from(reports).to(assemble),

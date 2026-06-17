@@ -36,9 +36,9 @@ class ClaimProcessor(Protocol):
 class QueryGenerator(Protocol):
     """Generate search queries for a claim.
 
-    Optional category. Some pipelines separate query generation from
-    retrieval; others bundle both inside a ``Retriever``. The default
-    library pipeline bundles them.
+    Produces the search questions a [`Retriever`][Retriever] runs to gather
+    evidence. One claim yields one [`Query`][openfactcheck.types.Query] holding
+    any number of questions.
     """
 
     async def __call__(self, claim: Claim) -> Query:
@@ -55,21 +55,23 @@ class QueryGenerator(Protocol):
 
 @runtime_checkable
 class Retriever(Protocol):
-    """Fetch evidence for a single claim.
+    """Fetch evidence for a claim's queries.
 
-    Evidence is a set of sources bearing on the claim's truthfulness:
-    web pages, documents, vector-store results. A retriever that finds
-    nothing should return ``Evidence(claim=claim, sources=[])``.
+    A [`Query`][openfactcheck.types.Query] carries both the claim and the
+    search questions generated for it. Evidence is a set of sources bearing on
+    the claim's truthfulness: web pages, documents, vector-store results. A
+    retriever that finds nothing should return
+    ``Evidence(claim=query.claim, sources=[])``.
     """
 
-    async def __call__(self, claim: Claim) -> Evidence:
-        """Fetch evidence for ``claim``.
+    async def __call__(self, query: Query) -> Evidence:
+        """Fetch evidence for ``query``.
 
         Args:
-            claim: Claim to gather evidence for.
+            query: The claim paired with the search questions to run.
 
         Returns:
-            Evidence attached to ``claim``; may contain an empty
+            Evidence attached to the query's claim; may contain an empty
             ``sources`` list when nothing was found.
         """
         ...

@@ -14,6 +14,7 @@ from openfactcheck.components.protocols import (
     Retriever,
     Verifier,
 )
+from openfactcheck.components.provenance import Provenance
 
 # Component category contracts
 __all__ = [
@@ -22,4 +23,9 @@ __all__ = [
     "QueryGenerator",
     "Retriever",
     "Verifier",
+]
+
+# Shared metadata
+__all__ += [
+    "Provenance",
 ]

@@ -51,7 +51,7 @@ pattern = "(?P<version>.+)"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/openfactcheck"]
-artifacts = ["src/openfactcheck/prompts/_builtin/*.md"]
+artifacts = ["src/openfactcheck/**/prompts/*.md"]
 
 ###############################################################################
 # Testing
@@ -221,6 +221,9 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 ]
 "src/openfactcheck/graph/**" = [
     "UP046",  ## PEP-696 type-param defaults need typing_extensions + Generic[] on 3.12; native syntax is 3.13+.
+]
+"src/openfactcheck/integrations/**" = [
+    "PLR0913",  ## service clients take many keyword-only config knobs.
 ]
 "tests/**" = [
     "D",    ## test names already describe intent; no need for docstrings.

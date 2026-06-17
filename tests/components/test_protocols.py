@@ -50,13 +50,14 @@ async def test_Retriever_accepts_conforming_implementation() -> None:
     """A class with matching async __call__ satisfies the Retriever Protocol."""
 
     class DummyRetriever:
-        async def __call__(self, claim: Claim) -> Evidence:
-            return Evidence(claim=claim, sources=[Source(content="dummy source")])
+        async def __call__(self, query: Query) -> Evidence:
+            return Evidence(claim=query.claim, sources=[Source(content="dummy source")])
 
     retriever: Retriever = DummyRetriever()
 
     assert isinstance(retriever, Retriever)
-    result = await retriever(Claim(text="water is wet"))
+    claim = Claim(text="water is wet")
+    result = await retriever(Query(claim=claim, questions=["is water wet?"]))
     assert result.claim.text == "water is wet"
     assert len(result.sources) == 1
 
