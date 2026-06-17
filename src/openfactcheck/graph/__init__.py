@@ -49,6 +49,7 @@ from openfactcheck.graph.errors import (
 from openfactcheck.graph.events import (
     GraphEvent,
     GraphObserver,
+    NodeEmitted,
     NodeFailed,
     NodeFinished,
     NodeStarted,
@@ -117,6 +118,7 @@ __all__ += [
 __all__ += [
     "GraphEvent",
     "GraphObserver",
+    "NodeEmitted",
     "NodeFailed",
     "NodeFinished",
     "NodeStarted",
