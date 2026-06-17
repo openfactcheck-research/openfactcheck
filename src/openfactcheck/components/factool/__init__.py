@@ -11,11 +11,13 @@ recommended default model along with the source paper, repository, pinned
 commit, and license. Import from ``openfactcheck.components.factool``.
 """
 
+from typing import TYPE_CHECKING
+
 from openfactcheck.components.factool.aggregator import FactoolAggregator
-from openfactcheck.components.factool.claim_processor import FactoolClaimProcessor
-from openfactcheck.components.factool.query_generator import FactoolQueryGenerator
+from openfactcheck.components.factool.claim_processor import ClaimExtraction, FactoolClaimProcessor
+from openfactcheck.components.factool.query_generator import FactoolQueryGenerator, GeneratedQueries
 from openfactcheck.components.factool.retriever import FactoolRetriever
-from openfactcheck.components.factool.verifier import FactoolVerifier
+from openfactcheck.components.factool.verifier import FactoolVerifier, Verification
 from openfactcheck.components.provenance import Provenance
 
 _CITATION = """\
@@ -56,7 +58,32 @@ __all__ = [
     "FactoolVerifier",
 ]
 
+# Structured outputs (the value each component's ``on_partial`` hook streams)
+__all__ += [
+    "ClaimExtraction",
+    "GeneratedQueries",
+    "Verification",
+]
+
 # Provenance
 __all__ += [
     "PROVENANCE",
 ]
+
+
+if TYPE_CHECKING:
+    from openfactcheck.components.protocols import (
+        Aggregator,
+        ClaimProcessor,
+        QueryGenerator,
+        Retriever,
+        Verifier,
+    )
+
+    # Type-only conformance: each Factool component must satisfy its category protocol,
+    # so pyright fails the gate the moment one drifts. Absent at runtime.
+    _processor: type[ClaimProcessor] = FactoolClaimProcessor
+    _generator: type[QueryGenerator] = FactoolQueryGenerator
+    _retriever: type[Retriever] = FactoolRetriever
+    _verifier: type[Verifier] = FactoolVerifier
+    _aggregator: type[Aggregator] = FactoolAggregator
