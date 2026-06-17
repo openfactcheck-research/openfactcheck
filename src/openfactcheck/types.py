@@ -47,8 +47,8 @@ class WebMetadata(SourceMetadata):
     url: str
     """Address of the web page."""
 
-    title: str
-    """Title of the web page."""
+    title: str | None = None
+    """Title of the web page, or ``None`` when the source provides none."""
 
 
 class Source(BaseModel):
@@ -86,11 +86,17 @@ class Verdict(BaseModel):
     label: Literal["supported", "refuted", "not_enough_evidence"]
     """Whether the evidence supports, refutes, or is insufficient for the claim."""
 
-    confidence: float
-    """How strongly the evidence backs the assigned label."""
+    confidence: float | None = None
+    """How strongly the evidence backs the assigned label, or ``None`` when the verifier reports no confidence."""
 
     reasoning: str
     """Explanation for the assigned label."""
+
+    error: str | None = None
+    """The factual error found in the claim, or ``None`` when the claim is accurate or the verifier finds no error."""
+
+    correction: str | None = None
+    """A corrected version of the claim, or ``None`` when there is nothing to correct."""
 
 
 class OverallVerdict(BaseModel):

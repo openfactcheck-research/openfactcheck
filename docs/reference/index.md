@@ -9,4 +9,5 @@ Generated API reference for OpenFactCheck's public modules.
 - [Prompts](prompts/index.md) — prompt templates and the markdown codec.
 - [Graph](graph/index.md) — the typed orchestration layer for composing components.
 - [Components](components/index.md) — the category contracts and their implementations.
+- [Integrations](integrations/index.md) — typed clients for external services such as web search.
 - [API](api/index.md) — Python building blocks behind the REST API: auth, models, repositories.

@@ -62,6 +62,7 @@ htmlcov/
 *.md
 !README.md
 !docs/**/*.md
+!src/openfactcheck/**/prompts/*.md
 
 # TF files
 *.tfstate

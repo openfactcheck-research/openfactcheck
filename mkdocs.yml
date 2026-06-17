@@ -153,7 +153,12 @@ nav:
       - Components:
           - reference/components/index.md
           - Contracts: reference/components/protocols.md
+          - Provenance: reference/components/provenance.md
           - Dummy: reference/components/dummy.md
+          - Factool: reference/components/factool.md
+      - Integrations:
+          - reference/integrations/index.md
+          - Serper: reference/integrations/serper.md
       - API:
           - reference/api/index.md
           - Auth:

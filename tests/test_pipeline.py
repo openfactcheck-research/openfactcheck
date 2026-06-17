@@ -5,19 +5,24 @@ import asyncio
 from openfactcheck.components.dummy import (
     DummyAggregator,
     DummyClaimProcessor,
+    DummyQueryGenerator,
     DummyRetriever,
     DummyVerifier,
 )
 from openfactcheck.pipeline import Components, PipelineState, build_pipeline
-from openfactcheck.types import Claim, Evidence, Input, OverallVerdict, Source, Verdict
+from openfactcheck.types import Claim, Evidence, Input, OverallVerdict, Query, Source, Verdict
 
 
 async def _process(text: Input) -> list[Claim]:
     return [Claim(text=sentence.strip()) for sentence in text.content.split(".") if sentence.strip()]
 
 
-async def _retrieve(claim: Claim) -> Evidence:
-    return Evidence(claim=claim, sources=[Source(content=f"evidence for {claim.text}")])
+async def _generate(claim: Claim) -> Query:
+    return Query(claim=claim, questions=[f"is '{claim.text}' true?"])
+
+
+async def _retrieve(query: Query) -> Evidence:
+    return Evidence(claim=query.claim, sources=[Source(content=f"evidence for {query.claim.text}")])
 
 
 async def _verify(claim: Claim, evidence: Evidence) -> Verdict:
@@ -35,7 +40,9 @@ async def _aggregate(verdicts: list[Verdict]) -> OverallVerdict:
 
 
 def test_build_pipeline_runs_end_to_end() -> None:
-    components = Components(processor=_process, retriever=_retrieve, verifier=_verify, aggregator=_aggregate)
+    components = Components(
+        processor=_process, generator=_generate, retriever=_retrieve, verifier=_verify, aggregator=_aggregate
+    )
 
     result = build_pipeline().run(
         Input(content="The sky is blue. Water is wet."), state=PipelineState(), deps=components
@@ -54,11 +61,13 @@ def test_build_pipeline_runs_end_to_end() -> None:
 def test_build_pipeline_preserves_claim_order() -> None:
     delays = {"a": 0.03, "b": 0.0, "c": 0.0}
 
-    async def slow_retrieve(claim: Claim) -> Evidence:
-        await asyncio.sleep(delays.get(claim.text, 0.0))
-        return Evidence(claim=claim, sources=[Source(content=f"e:{claim.text}")])
+    async def slow_retrieve(query: Query) -> Evidence:
+        await asyncio.sleep(delays.get(query.claim.text, 0.0))
+        return Evidence(claim=query.claim, sources=[Source(content=f"e:{query.claim.text}")])
 
-    components = Components(processor=_process, retriever=slow_retrieve, verifier=_verify, aggregator=_aggregate)
+    components = Components(
+        processor=_process, generator=_generate, retriever=slow_retrieve, verifier=_verify, aggregator=_aggregate
+    )
 
     result = build_pipeline().run(Input(content="a. b. c."), state=PipelineState(), deps=components)
 
@@ -69,7 +78,9 @@ def test_build_pipeline_preserves_claim_order() -> None:
 
 
 def test_build_pipeline_zero_claims() -> None:
-    components = Components(processor=_process, retriever=_retrieve, verifier=_verify, aggregator=_aggregate)
+    components = Components(
+        processor=_process, generator=_generate, retriever=_retrieve, verifier=_verify, aggregator=_aggregate
+    )
 
     result = build_pipeline().run(Input(content="   "), state=PipelineState(), deps=components)
 
@@ -81,7 +92,9 @@ def test_build_pipeline_zero_claims() -> None:
 
 
 def test_build_pipeline_duplicate_claims() -> None:
-    components = Components(processor=_process, retriever=_retrieve, verifier=_verify, aggregator=_aggregate)
+    components = Components(
+        processor=_process, generator=_generate, retriever=_retrieve, verifier=_verify, aggregator=_aggregate
+    )
 
     result = build_pipeline().run(Input(content="dup. dup."), state=PipelineState(), deps=components)
 
@@ -90,7 +103,9 @@ def test_build_pipeline_duplicate_claims() -> None:
 
 
 def test_build_pipeline_state_records_input() -> None:
-    components = Components(processor=_process, retriever=_retrieve, verifier=_verify, aggregator=_aggregate)
+    components = Components(
+        processor=_process, generator=_generate, retriever=_retrieve, verifier=_verify, aggregator=_aggregate
+    )
     state = PipelineState()
 
     build_pipeline().run(Input(content="The sky is blue."), state=state, deps=components)
@@ -101,6 +116,7 @@ def test_build_pipeline_state_records_input() -> None:
 def test_build_pipeline_with_dummy_components() -> None:
     components = Components(
         processor=DummyClaimProcessor(),
+        generator=DummyQueryGenerator(),
         retriever=DummyRetriever(),
         verifier=DummyVerifier(),
         aggregator=DummyAggregator(),
