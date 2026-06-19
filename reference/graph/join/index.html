@@ -1830,6 +1830,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#openfactcheck.graph.join.Join.verb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;verb
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#openfactcheck.graph.join.Join.item_type" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1867,6 +1878,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;ordered
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.join.Join.inline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;inline
       
     </span>
   </a>
@@ -3502,6 +3524,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#openfactcheck.graph.join.Join.verb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;verb
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#openfactcheck.graph.join.Join.item_type" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3539,6 +3572,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;ordered
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.graph.join.Join.inline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;inline
       
     </span>
   </a>
@@ -3906,11 +3950,13 @@ executor can.</p>
 <a href="#openfactcheck.graph.join.Join" class="headerlink" title="Permanent link">&para;</a></h2>
 <div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">Join</span><span class="p">(</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">item_type</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">reducer</span><span class="p">:</span> <span class="n">NormalizedReducer</span><span class="p">,</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">initial_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">ordered</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">verb</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">item_type</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">reducer</span><span class="p">:</span> <span class="n">NormalizedReducer</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">initial_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">ordered</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">inline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3961,6 +4007,30 @@ early).</p>
     <div class="doc doc-contents ">
 
         <p>Stable identifier of this join node.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="openfactcheck.graph.join.Join.verb" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">verb</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.graph.join.Join.verb" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">verb</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Short name of the fold operation, shown when the graph is rendered.</p>
 
     </div>
 
@@ -4062,6 +4132,31 @@ early).</p>
 
 </div>
 
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="openfactcheck.graph.join.Join.inline" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">inline</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.graph.join.Join.inline" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">inline</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether the join was declared inline on an edge and renders without its own node.</p>
+
+    </div>
+
+</div>
+
 
 
 
@@ -4092,13 +4187,13 @@ early).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/join.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-93">93</a></span>
-<span class="normal"><a href="#__codelineno-0-94">94</a></span>
-<span class="normal"><a href="#__codelineno-0-95">95</a></span>
-<span class="normal"><a href="#__codelineno-0-96">96</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_list_append</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">acc</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Append each branch&#39;s value to a list.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-95" name="__codelineno-0-95"></a>    <span class="n">acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-<a id="__codelineno-0-96" name="__codelineno-0-96"></a>    <span class="k">return</span> <span class="n">acc</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_list_append</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">acc</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Append each branch&#39;s value to a list.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="n">acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>    <span class="k">return</span> <span class="n">acc</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4125,13 +4220,13 @@ early).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/join.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
-<span class="normal"><a href="#__codelineno-0-100">100</a></span>
-<span class="normal"><a href="#__codelineno-0-101">101</a></span>
-<span class="normal"><a href="#__codelineno-0-102">102</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-99" name="__codelineno-0-99"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_list_extend</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">acc</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">item</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-<a id="__codelineno-0-100" name="__codelineno-0-100"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extend a list with each branch&#39;s iterable of values.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-101" name="__codelineno-0-101"></a>    <span class="n">acc</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-<a id="__codelineno-0-102" name="__codelineno-0-102"></a>    <span class="k">return</span> <span class="n">acc</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_list_extend</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">acc</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">item</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extend a list with each branch&#39;s iterable of values.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>    <span class="n">acc</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span class="k">return</span> <span class="n">acc</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4158,13 +4253,13 @@ early).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/join.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-105">105</a></span>
-<span class="normal"><a href="#__codelineno-0-106">106</a></span>
-<span class="normal"><a href="#__codelineno-0-107">107</a></span>
-<span class="normal"><a href="#__codelineno-0-108">108</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_dict_update</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">](</span><span class="n">acc</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">],</span> <span class="n">item</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">]:</span>
-<a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge each branch&#39;s mapping into one dict, later branches winning on key clashes.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-107" name="__codelineno-0-107"></a>    <span class="n">acc</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-<a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span class="k">return</span> <span class="n">acc</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_dict_update</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">](</span><span class="n">acc</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">],</span> <span class="n">item</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">]:</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge each branch&#39;s mapping into one dict, later branches winning on key clashes.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="n">acc</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span class="k">return</span> <span class="n">acc</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4189,11 +4284,11 @@ early).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/join.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-111">111</a></span>
-<span class="normal"><a href="#__codelineno-0-112">112</a></span>
-<span class="normal"><a href="#__codelineno-0-113">113</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-111" name="__codelineno-0-111"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_sum</span><span class="p">(</span><span class="n">acc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<a id="__codelineno-0-112" name="__codelineno-0-112"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Add each branch&#39;s number to a running total.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="k">return</span> <span class="n">acc</span> <span class="o">+</span> <span class="n">item</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span>
+<span class="normal"><a href="#__codelineno-0-119">119</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_sum</span><span class="p">(</span><span class="n">acc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Add each branch&#39;s number to a running total.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119"></a>    <span class="k">return</span> <span class="n">acc</span> <span class="o">+</span> <span class="n">item</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4218,11 +4313,11 @@ early).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/join.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-116">116</a></span>
-<span class="normal"><a href="#__codelineno-0-117">117</a></span>
-<span class="normal"><a href="#__codelineno-0-118">118</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_null</span><span class="p">[</span><span class="n">AccT</span><span class="p">](</span><span class="n">acc</span><span class="p">:</span> <span class="n">AccT</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AccT</span><span class="p">:</span>  <span class="c1"># noqa: ARG001 - discards the value by design.</span>
-<a id="__codelineno-0-117" name="__codelineno-0-117"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Discard every branch&#39;s value, leaving the initial accumulator unchanged.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-118" name="__codelineno-0-118"></a>    <span class="k">return</span> <span class="n">acc</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-122">122</a></span>
+<span class="normal"><a href="#__codelineno-0-123">123</a></span>
+<span class="normal"><a href="#__codelineno-0-124">124</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_null</span><span class="p">[</span><span class="n">AccT</span><span class="p">](</span><span class="n">acc</span><span class="p">:</span> <span class="n">AccT</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AccT</span><span class="p">:</span>  <span class="c1"># noqa: ARG001 - discards the value by design.</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Discard every branch&#39;s value, leaving the initial accumulator unchanged.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-124" name="__codelineno-0-124"></a>    <span class="k">return</span> <span class="n">acc</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4251,13 +4346,13 @@ early).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/join.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-121">121</a></span>
-<span class="normal"><a href="#__codelineno-0-122">122</a></span>
-<span class="normal"><a href="#__codelineno-0-123">123</a></span>
-<span class="normal"><a href="#__codelineno-0-124">124</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-121" name="__codelineno-0-121"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_first</span><span class="p">[</span><span class="n">ItemT</span><span class="p">](</span><span class="n">ctx</span><span class="p">:</span> <span class="n">ReducerContext</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">acc</span><span class="p">:</span> <span class="n">ItemT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">ItemT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ItemT</span><span class="p">:</span>  <span class="c1"># noqa: ARG001 - acc is the unused running value.</span>
-<a id="__codelineno-0-122" name="__codelineno-0-122"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Keep the first branch&#39;s value and stop, dropping the rest.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-123" name="__codelineno-0-123"></a>    <span class="n">ctx</span><span class="o">.</span><span class="n">cancel_sibling_tasks</span><span class="p">()</span>
-<a id="__codelineno-0-124" name="__codelineno-0-124"></a>    <span class="k">return</span> <span class="n">item</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-127">127</a></span>
+<span class="normal"><a href="#__codelineno-0-128">128</a></span>
+<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+<span class="normal"><a href="#__codelineno-0-130">130</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-127" name="__codelineno-0-127"></a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_first</span><span class="p">[</span><span class="n">ItemT</span><span class="p">](</span><span class="n">ctx</span><span class="p">:</span> <span class="n">ReducerContext</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">acc</span><span class="p">:</span> <span class="n">ItemT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">ItemT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ItemT</span><span class="p">:</span>  <span class="c1"># noqa: ARG001 - acc is the unused running value.</span>
+<a id="__codelineno-0-128" name="__codelineno-0-128"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Keep the first branch&#39;s value and stop, dropping the rest.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129"></a>    <span class="n">ctx</span><span class="o">.</span><span class="n">cancel_sibling_tasks</span><span class="p">()</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130"></a>    <span class="k">return</span> <span class="n">item</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

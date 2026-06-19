@@ -3408,7 +3408,7 @@ valid (for example, when the input contains no checkable claims).</p>
 
         <p>Generate search queries for a claim.</p>
 <p>Produces the search questions a <a class="autorefs autorefs-internal" title="            Retriever" href="#openfactcheck.components.protocols.Retriever"><code>Retriever</code></a> runs to gather
-evidence. One claim yields one <a class="autorefs autorefs-internal" title="            Query" href="../../types/#openfactcheck.types.Query"><code>Query</code></a> holding
+evidence. One claim yields one <a class="autorefs autorefs-internal" title="            Query" href="../../types/#openfactcheck.components.types.Query"><code>Query</code></a> holding
 any number of questions.</p>
 
 
@@ -3458,7 +3458,7 @@ any number of questions.</p>
 
 
         <p>Fetch evidence for a claim's queries.</p>
-<p>A <a class="autorefs autorefs-internal" title="            Query" href="../../types/#openfactcheck.types.Query"><code>Query</code></a> carries both the claim and the
+<p>A <a class="autorefs autorefs-internal" title="            Query" href="../../types/#openfactcheck.components.types.Query"><code>Query</code></a> carries both the claim and the
 search questions generated for it. Evidence is a set of sources bearing on
 the claim's truthfulness: web pages, documents, vector-store results. A
 retriever that finds nothing should return
