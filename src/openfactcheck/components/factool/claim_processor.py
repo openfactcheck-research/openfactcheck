@@ -7,9 +7,9 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from openfactcheck.chat import ChatClient
+from openfactcheck.components.types import Claim, Input
 from openfactcheck.messages import Message
 from openfactcheck.prompts import PromptTemplate
-from openfactcheck.types import Claim, Input
 
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
@@ -18,7 +18,7 @@ class ClaimExtraction(BaseModel):
     """Factool's structured claim-extraction result.
 
     The claim processor maps this onto a list of
-    [`Claim`][openfactcheck.types.Claim]. It is also the value handed to a call's
+    [`Claim`][openfactcheck.components.types.Claim]. It is also the value handed to a call's
     ``on_partial`` hook, the claim list growing as the model writes it.
     """
 

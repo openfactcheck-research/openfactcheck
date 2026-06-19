@@ -6,7 +6,7 @@ import pytest
 
 from openfactcheck.components import Verifier
 from openfactcheck.components.factool import FactoolVerifier
-from openfactcheck.types import Claim, Evidence, Source
+from openfactcheck.components.types import Claim, Evidence, Source
 
 
 class _FakeClient:

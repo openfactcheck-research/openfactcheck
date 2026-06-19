@@ -7,7 +7,7 @@ import pytest
 from openfactcheck.components import Retriever
 from openfactcheck.components.factool import FactoolRetriever
 from openfactcheck.integrations.serper import SearchParams, SearchResponse
-from openfactcheck.types import Claim, Query, WebMetadata
+from openfactcheck.components.types import Claim, Query, WebMetadata
 
 
 class _FakeSerper:

@@ -4,7 +4,7 @@ import pytest
 
 from openfactcheck.components import Aggregator
 from openfactcheck.components.factool import FactoolAggregator
-from openfactcheck.types import Claim, Verdict
+from openfactcheck.components.types import Claim, Verdict
 
 
 def _verdict(label: str) -> Verdict:

@@ -8,7 +8,7 @@ interchangeable with any other implementation of the same category.
 
 from typing import Protocol, runtime_checkable
 
-from openfactcheck.types import Claim, Evidence, Input, OverallVerdict, Query, Verdict
+from openfactcheck.components.types import Assessment, Claim, Evidence, Input, Query, Verdict
 
 
 @runtime_checkable
@@ -37,7 +37,7 @@ class QueryGenerator(Protocol):
     """Generate search queries for a claim.
 
     Produces the search questions a [`Retriever`][Retriever] runs to gather
-    evidence. One claim yields one [`Query`][openfactcheck.types.Query] holding
+    evidence. One claim yields one [`Query`][openfactcheck.components.types.Query] holding
     any number of questions.
     """
 
@@ -57,7 +57,7 @@ class QueryGenerator(Protocol):
 class Retriever(Protocol):
     """Fetch evidence for a claim's queries.
 
-    A [`Query`][openfactcheck.types.Query] carries both the claim and the
+    A [`Query`][openfactcheck.components.types.Query] carries both the claim and the
     search questions generated for it. Evidence is a set of sources bearing on
     the claim's truthfulness: web pages, documents, vector-store results. A
     retriever that finds nothing should return
@@ -104,7 +104,7 @@ class Aggregator(Protocol):
     the returned judgment.
     """
 
-    async def __call__(self, verdicts: list[Verdict]) -> OverallVerdict:
+    async def __call__(self, verdicts: list[Verdict]) -> Assessment:
         """Aggregate per-claim verdicts into one overall judgment.
 
         Args:

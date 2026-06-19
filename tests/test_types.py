@@ -3,14 +3,13 @@
 import pytest
 from pydantic import ValidationError
 
-from openfactcheck.types import (
+from openfactcheck.components.types import (
+    Assessment,
     Claim,
-    ClaimReport,
     Evidence,
-    FactCheckResult,
     Input,
-    OverallVerdict,
     Query,
+    Report,
     Source,
     Verdict,
     WebMetadata,
@@ -84,6 +83,7 @@ def test_verdict_optional_fields_default_to_none() -> None:
     claim = Claim(text="The earth is round")
     verdict = Verdict(claim=claim, label="supported", reasoning="confirmed")
 
+    assert verdict.evidence is None
     assert verdict.confidence is None
     assert verdict.error is None
     assert verdict.correction is None
@@ -103,75 +103,56 @@ def test_verdict_carries_error_and_correction() -> None:
     assert verdict.correction == "The earth is round."
 
 
-def test_fact_check_result() -> None:
+def test_report() -> None:
     claim = Claim(text="The earth is flat")
     evidence = Evidence(claim=claim, sources=[Source(content="Earth is a sphere")])
-    verdict = Verdict(claim=claim, label="refuted", confidence=0.99, reasoning="Contradicted by evidence")
+    verdict = Verdict(claim=claim, evidence=evidence, label="refuted", confidence=0.99, reasoning="Contradicted")
 
-    result = FactCheckResult(
+    result = Report(
         input=Input(content="The earth is flat"),
-        claims=[claim],
-        evidence=[evidence],
         verdicts=[verdict],
-        overall_label="refuted",
-        overall_score=0.01,
+        assessment=Assessment(label="refuted", score=0.01),
     )
-    assert result.overall_label == "refuted"
-    assert len(result.claims) == 1
-    assert len(result.evidence) == 1
+    assert result.assessment.label == "refuted"
     assert len(result.verdicts) == 1
+    assert result.verdicts[0].label == "refuted"
+    assert result.verdicts[0].evidence is not None
+    assert result.verdicts[0].evidence.sources[0].content == "Earth is a sphere"
 
 
-def test_fact_check_result_empty() -> None:
-    result = FactCheckResult(
+def test_report_empty() -> None:
+    result = Report(
         input=Input(content=""),
-        claims=[],
-        evidence=[],
         verdicts=[],
-        overall_label="not_enough_evidence",
-        overall_score=0.0,
+        assessment=Assessment(label="not_enough_evidence", score=0.0),
     )
-    assert result.claims == []
     assert result.verdicts == []
+    assert result.assessment.label == "not_enough_evidence"
 
 
 def test_serialization_round_trip() -> None:
     claim = Claim(text="Water is wet")
     source = Source(content="Scientific consensus", metadata=WebMetadata(url="https://x.com", title="X"))
     evidence = Evidence(claim=claim, sources=[source])
-    verdict = Verdict(claim=claim, label="supported", confidence=0.9, reasoning="Well established fact")
+    verdict = Verdict(claim=claim, evidence=evidence, label="supported", confidence=0.9, reasoning="Well established")
 
-    result = FactCheckResult(
+    result = Report(
         input=Input(content="Water is wet"),
-        claims=[claim],
-        evidence=[evidence],
         verdicts=[verdict],
-        overall_label="supported",
-        overall_score=0.9,
+        assessment=Assessment(label="supported", score=0.9),
     )
 
     data = result.model_dump()
-    restored = FactCheckResult.model_validate(data)
+    restored = Report.model_validate(data)
     assert restored.verdicts[0].label == "supported"
-    assert restored.evidence[0].sources[0].content == "Scientific consensus"
+    assert restored.verdicts[0].evidence is not None
+    assert restored.verdicts[0].evidence.sources[0].content == "Scientific consensus"
 
 
-def test_overall_verdict() -> None:
-    overall = OverallVerdict(label="supported", score=0.8)
+def test_assessment() -> None:
+    overall = Assessment(label="supported", score=0.8)
     assert overall.label == "supported"
     assert overall.score == 0.8
-
-
-def test_claim_report() -> None:
-    claim = Claim(text="The earth is round")
-    evidence = Evidence(claim=claim, sources=[Source(content="NASA")])
-    verdict = Verdict(claim=claim, label="supported", confidence=0.9, reasoning="confirmed")
-
-    report = ClaimReport(claim=claim, evidence=evidence, verdict=verdict)
-
-    assert report.claim == claim
-    assert report.evidence == evidence
-    assert report.verdict.label == "supported"
 
 
 def test_frozen_model_rejects_mutation() -> None:

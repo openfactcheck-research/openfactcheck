@@ -4,7 +4,7 @@ import pytest
 
 from openfactcheck.components import Retriever
 from openfactcheck.components.dummy import DummyRetriever
-from openfactcheck.types import Claim, Query
+from openfactcheck.components.types import Claim, Query
 
 
 def test_DummyRetriever_satisfies_protocol() -> None:

@@ -4,7 +4,7 @@ import pytest
 
 from openfactcheck.components import Aggregator
 from openfactcheck.components.dummy import DummyAggregator
-from openfactcheck.types import Claim, Verdict
+from openfactcheck.components.types import Claim, Verdict
 
 
 def test_DummyAggregator_satisfies_protocol() -> None:

@@ -1,4 +1,10 @@
-"""Core data types for the fact-checking pipeline."""
+"""Core data types for fact-checking.
+
+The vocabulary that flows between components, the per-claim record the pipeline
+collects, and the assembled run result. Each category contract is defined in
+terms of these types, so any implementation of one category produces what the
+next can take.
+"""
 
 from typing import Literal
 
@@ -76,12 +82,15 @@ class Evidence(BaseModel):
 
 
 class Verdict(BaseModel):
-    """Verification result for a single claim."""
+    """Verification result for a single claim: the judgment and the evidence behind it."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
     claim: Claim
     """The claim being judged."""
+
+    evidence: Evidence | None = None
+    """Evidence weighed in reaching the verdict, or ``None`` when the claim was judged without retrieval."""
 
     label: Literal["supported", "refuted", "not_enough_evidence"]
     """Whether the evidence supports, refutes, or is insufficient for the claim."""
@@ -99,56 +108,28 @@ class Verdict(BaseModel):
     """A corrected version of the claim, or ``None`` when there is nothing to correct."""
 
 
-class OverallVerdict(BaseModel):
-    """Aggregate judgment over a run's per-claim verdicts."""
+class Assessment(BaseModel):
+    """The overall judgment for a fact-checked input."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
     label: str
-    """Overall outcome label for the run, named by the aggregation strategy."""
+    """Overall outcome label, named by the aggregation strategy."""
 
     score: float
-    """Overall confidence or agreement score for the run."""
+    """Overall confidence or agreement score."""
 
 
-class ClaimReport(BaseModel):
-    """A single claim paired with its evidence and verdict.
-
-    Keeps the per-claim artifacts produced across the pipeline aligned, so the
-    overall result can be assembled from a list of reports in claim order.
-    """
-
-    model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
-
-    claim: Claim
-    """The claim this report concerns."""
-
-    evidence: Evidence
-    """Evidence gathered for the claim."""
-
-    verdict: Verdict
-    """Verdict reached for the claim against its evidence."""
-
-
-class FactCheckResult(BaseModel):
-    """Complete result of a fact-checking pipeline run."""
+class Report(BaseModel):
+    """The complete result of fact-checking an input."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
     input: Input
     """The original input that was checked."""
 
-    claims: list[Claim]
-    """Claims extracted from the input."""
-
-    evidence: list[Evidence]
-    """Evidence gathered for each claim."""
-
     verdicts: list[Verdict]
-    """Per-claim verdicts."""
+    """The verdict for each extracted claim, each carrying its claim and the evidence behind it."""
 
-    overall_label: str
-    """Aggregate outcome label for the whole input."""
-
-    overall_score: float
-    """Aggregate confidence or agreement score for the whole input."""
+    assessment: Assessment
+    """The overall judgment across all claims."""

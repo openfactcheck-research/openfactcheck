@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
+from openfactcheck.components.types import Evidence, Query, Source, SourceMetadata, WebMetadata
 from openfactcheck.integrations.serper import SearchParams, SearchResponse, SerperClient
-from openfactcheck.types import Evidence, Query, Source, SourceMetadata, WebMetadata
 
 
 @dataclass(frozen=True, slots=True)

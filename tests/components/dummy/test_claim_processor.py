@@ -4,7 +4,7 @@ import pytest
 
 from openfactcheck.components import ClaimProcessor
 from openfactcheck.components.dummy import DummyClaimProcessor
-from openfactcheck.types import Claim, Input
+from openfactcheck.components.types import Claim, Input
 
 
 def test_DummyClaimProcessor_satisfies_protocol() -> None:

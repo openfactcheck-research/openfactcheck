@@ -1,3 +1,3 @@
 # Types
 
-::: openfactcheck.types
+::: openfactcheck.components.types

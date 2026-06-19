@@ -3,9 +3,14 @@
 [`to_mermaid`][to_mermaid] turns a built graph's structure into Mermaid
 flowchart source: each node kind gets a distinct shape (a step is a rectangle, a
 join a hexagon, a decision a rhombus, a pause a parallelogram, and the start and
-end are filled circles). Fan-out (map) edges are drawn thick and decision
-branches dotted, so the diagram shows where the graph forks and routes; nodes
-are emitted in breadth-first order from the start so the output is stable.
+end are filled circles). Fan-out (map) edges are drawn thick, decision branches
+dotted, and an edge entering a join is labeled with that join's fold operation
+(collect or reduce). A join declared inline on the edge itself has no node of
+its own and renders as that label on a single edge to its successor. So the
+diagram shows where the graph forks, routes, and rejoins; nodes are emitted in
+breadth-first order from the start so the output is stable. With ``show_types``,
+each edge is also labeled with the data it carries, read from the source node's
+declared output type.
 
 [`to_mermaid_image`][to_mermaid_image] takes that source and renders it to image
 bytes through a Mermaid server (mermaid.ink by default); the default server
@@ -19,7 +24,8 @@ import base64
 import urllib.parse
 from collections import deque
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from types import UnionType
+from typing import TYPE_CHECKING, Literal, Union, get_args, get_origin
 
 import httpx
 
@@ -45,6 +51,7 @@ def to_mermaid(
     direction: Direction = "TD",
     title: str | None = None,
     highlight: Iterable[str] | None = None,
+    show_types: bool = False,
 ) -> str:
     """Render a graph definition as Mermaid flowchart source.
 
@@ -53,11 +60,15 @@ def to_mermaid(
         direction: Layout direction of the flowchart.
         title: An optional title shown above the diagram.
         highlight: Node ids to draw with a highlight style.
+        show_types: Label each edge with the type of data it carries, read from
+            the source node's declared output type (the graph input type for the
+            start edge); a fan-in collect is labeled with the gathered list type.
 
     Returns:
         Mermaid flowchart source as a string.
     """
-    order = _ordered_nodes(spec)
+    inline = {join_id for join_id, join in spec.joins.items() if join.inline}
+    order = [node_id for node_id in _ordered_nodes(spec) if node_id not in inline]
     highlighted = set(highlight or ())
     lines: list[str] = []
     if title is not None:
@@ -66,7 +77,7 @@ def to_mermaid(
     lines.extend(f"    {_render_node(spec, node_id)}" for node_id in order)
     for source_id in order:
         for edge in spec.edges_by_source.get(source_id, []):
-            lines.append(f"    {source_id}{_connector(spec, edge)}{edge.dest_id}")
+            lines.append(f"    {_render_edge(spec, edge, inline, show_types=show_types)}")
     lines.append("    classDef boundary fill:#005355,stroke:#005355,color:#ffffff;")
     lines.append(f"    class {spec.start_id},{spec.end_id} boundary;")
     if highlighted:
@@ -75,13 +86,67 @@ def to_mermaid(
     return "\n".join(lines)
 
 
-def _connector(spec: GraphSpec, edge: Edge) -> str:
-    """Return the arrow for an edge: thick for map fan-out, dotted for a decision branch."""
-    if edge.kind is EdgeKind.MAP:
-        return " ==>|map| "
-    if edge.source_id in spec.decisions:
-        return " -.-> "
-    return " --> "
+def _render_edge(spec: GraphSpec, edge: Edge, inline: set[str], *, show_types: bool) -> str:
+    """Render one edge: pick its arrow and fold verb, collapsing an inline join into its successor.
+
+    An inline join has no node of its own, so an edge entering one is drawn
+    straight through to the join's single successor. With ``show_types`` the
+    label also carries the data type crossing the edge.
+    """
+    if edge.dest_id in inline:
+        dest_id, verb, arrow = spec.edges_by_source[edge.dest_id][0].dest_id, spec.joins[edge.dest_id].verb, "-->"
+    elif edge.kind is EdgeKind.MAP:
+        dest_id, verb, arrow = edge.dest_id, "map", "==>"
+    elif (dest_join := spec.joins.get(edge.dest_id)) is not None:
+        dest_id, verb, arrow = edge.dest_id, dest_join.verb, "-->"
+    elif edge.source_id in spec.decisions:
+        dest_id, verb, arrow = edge.dest_id, None, "-.->"
+    else:
+        dest_id, verb, arrow = edge.dest_id, None, "-->"
+    label = _edge_label(spec, edge.source_id, verb, show_types=show_types)
+    connector = f"{arrow}|{label}|" if label else arrow
+    return f"{edge.source_id} {connector} {dest_id}"
+
+
+def _edge_label(spec: GraphSpec, source_id: str, verb: str | None, *, show_types: bool) -> str:
+    """Build an edge label: the fold verb alone, or the verb plus the carried type when show_types is set."""
+    if not show_types:
+        return verb or ""
+    carried = _carried_type(spec, source_id, verb)
+    if verb and carried:
+        return f'"{verb}: {carried}"'
+    if carried:
+        return f'"{carried}"'
+    return f'"{verb}"' if verb else ""
+
+
+def _carried_type(spec: GraphSpec, source_id: str, verb: str | None) -> str | None:
+    """Format the type an edge carries: the source's output, wrapped in a list for a collect fan-in."""
+    emitted = spec.input_type if source_id == spec.start_id else _step_output(spec, source_id)
+    if emitted is None:
+        return None
+    formatted = _format_type(emitted)
+    return f"list[{formatted}]" if verb == "collect" else formatted
+
+
+def _step_output(spec: GraphSpec, source_id: str) -> object | None:
+    """Return a step node's declared output type, or ``None`` for the start node or a non-step source."""
+    step = spec.steps.get(source_id)
+    return step.output_type if step is not None else None
+
+
+def _format_type(annotation: object) -> str:
+    """Format a type annotation as a short label: drop module paths, render generics and unions."""
+    if annotation is None or annotation is type(None):
+        return "None"
+    origin = get_origin(annotation)
+    if origin is None:
+        return getattr(annotation, "__name__", None) or str(annotation).removeprefix("typing.")
+    args = ", ".join(_format_type(arg) for arg in get_args(annotation))
+    if origin in (Union, UnionType):
+        return " | ".join(_format_type(arg) for arg in get_args(annotation))
+    name = getattr(origin, "__name__", None) or str(origin)
+    return f"{name}[{args}]" if args else name
 
 
 def _ordered_nodes(spec: GraphSpec) -> list[str]:

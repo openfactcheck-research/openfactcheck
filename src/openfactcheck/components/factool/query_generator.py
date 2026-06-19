@@ -7,9 +7,9 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from openfactcheck.chat import ChatClient
+from openfactcheck.components.types import Claim, Query
 from openfactcheck.messages import Message
 from openfactcheck.prompts import PromptTemplate
-from openfactcheck.types import Claim, Query
 
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
@@ -17,7 +17,7 @@ _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 class GeneratedQueries(BaseModel):
     """Factool's structured query-generation result.
 
-    The query generator maps this onto a [`Query`][openfactcheck.types.Query]. It
+    The query generator maps this onto a [`Query`][openfactcheck.components.types.Query]. It
     is also the value handed to a call's ``on_partial`` hook, the query list
     growing as the model writes it.
     """

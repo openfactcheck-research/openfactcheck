@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from openfactcheck.types import Claim, Input
+from openfactcheck.components.types import Claim, Input
 
 
 @dataclass(frozen=True, slots=True)

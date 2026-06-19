@@ -6,7 +6,7 @@ import pytest
 
 from openfactcheck.components import QueryGenerator
 from openfactcheck.components.factool import FactoolQueryGenerator
-from openfactcheck.types import Claim
+from openfactcheck.components.types import Claim
 
 
 class _FakeClient:

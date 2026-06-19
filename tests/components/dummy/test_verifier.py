@@ -4,7 +4,7 @@ import pytest
 
 from openfactcheck.components import Verifier
 from openfactcheck.components.dummy import DummyVerifier
-from openfactcheck.types import Claim, Evidence
+from openfactcheck.components.types import Claim, Evidence
 
 
 def test_DummyVerifier_satisfies_protocol() -> None:

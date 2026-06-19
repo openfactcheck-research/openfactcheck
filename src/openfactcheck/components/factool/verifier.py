@@ -7,9 +7,9 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from openfactcheck.chat import ChatClient
+from openfactcheck.components.types import Claim, Evidence, Verdict
 from openfactcheck.messages import Message
 from openfactcheck.prompts import PromptTemplate
-from openfactcheck.types import Claim, Evidence, Verdict
 
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
@@ -17,7 +17,7 @@ _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 class Verification(BaseModel):
     """Factool's structured per-claim verification result.
 
-    The verifier maps this onto a [`Verdict`][openfactcheck.types.Verdict]. It is
+    The verifier maps this onto a [`Verdict`][openfactcheck.components.types.Verdict]. It is
     also the value handed to a verifier call's ``on_partial`` hook, filling in
     field by field as the model writes it.
     """

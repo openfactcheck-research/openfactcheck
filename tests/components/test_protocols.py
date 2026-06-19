@@ -3,11 +3,11 @@
 import pytest
 
 from openfactcheck.components import Aggregator, ClaimProcessor, QueryGenerator, Retriever, Verifier
-from openfactcheck.types import (
+from openfactcheck.components.types import (
+    Assessment,
     Claim,
     Evidence,
     Input,
-    OverallVerdict,
     Query,
     Source,
     Verdict,
@@ -85,9 +85,9 @@ async def test_Aggregator_accepts_conforming_implementation() -> None:
     """A class with matching async __call__ satisfies the Aggregator Protocol."""
 
     class DummyAggregator:
-        async def __call__(self, verdicts: list[Verdict]) -> OverallVerdict:
+        async def __call__(self, verdicts: list[Verdict]) -> Assessment:
             label = "supported" if verdicts else "not_enough_evidence"
-            return OverallVerdict(label=label, score=1.0)
+            return Assessment(label=label, score=1.0)
 
     aggregator: Aggregator = DummyAggregator()
 

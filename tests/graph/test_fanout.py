@@ -34,6 +34,62 @@ def test_Graph_run_fanout_collects_in_source_order() -> None:
     assert result == ["A", "B", "C"]
 
 
+def test_Graph_run_inline_collect_collects_in_source_order() -> None:
+    g = GraphBuilder[str, list[str]]()
+
+    @g.step_node
+    async def split(ctx: StepContext[str]) -> list[str]:
+        return ctx.inputs.split()
+
+    @g.step_node
+    async def shout(ctx: StepContext[str]) -> str:
+        await asyncio.sleep(0.01 if ctx.inputs == "a" else 0.0)
+        return ctx.inputs.upper()
+
+    @g.step_node
+    async def join(ctx: StepContext[list[str]]) -> list[str]:
+        return ctx.inputs
+
+    # .collect() builds the fan-in join inline, with no collect_node declared.
+    g.add(
+        g.edge_from(g.start_node).to(split),
+        g.edge_from(split).map().to(shout),
+        g.edge_from(shout).collect().to(join),
+        g.edge_from(join).to(g.end_node),
+    )
+
+    result = g.build().run("a b c", state=None, deps=None)
+
+    assert result == ["A", "B", "C"]
+
+
+def test_Graph_run_inline_collect_empty_collection() -> None:
+    g = GraphBuilder[list[str], list[str]]()
+
+    @g.step_node
+    async def passthrough(ctx: StepContext[list[str]]) -> list[str]:
+        return ctx.inputs
+
+    @g.step_node
+    async def shout(ctx: StepContext[str]) -> str:
+        return ctx.inputs.upper()
+
+    @g.step_node
+    async def join(ctx: StepContext[list[str]]) -> list[str]:
+        return ctx.inputs
+
+    g.add(
+        g.edge_from(g.start_node).to(passthrough),
+        g.edge_from(passthrough).map().to(shout),
+        g.edge_from(shout).collect().to(join),
+        g.edge_from(join).to(g.end_node),
+    )
+
+    result = g.build().run([], state=None, deps=None)
+
+    assert result == []
+
+
 def test_Graph_run_fanout_empty_collection() -> None:
     g = GraphBuilder[list[str], list[str]]()
 

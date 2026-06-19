@@ -74,6 +74,25 @@ _CONTEXT_REDUCER_ARITY = 3
 
 
 @dataclass(frozen=True, slots=True)
+class _InlineJoinSpec:
+    """A fan-in declared inline on an edge via collect/reduce, before the builder expands it into a join."""
+
+    verb: str
+    reducer: Callable[..., object]
+    initial_factory: Callable[[], object]
+    ordered: bool
+
+
+@dataclass(frozen=True, slots=True)
+class _InlineJoinEdge:
+    """An edge routed through an inline join; the builder expands it into a join node and two edges."""
+
+    source_id: str
+    dest_id: str
+    spec: _InlineJoinSpec
+
+
+@dataclass(frozen=True, slots=True)
 class EdgePathBuilder[OutputT, StateT, DepsT]:
     """A partially-built edge, awaiting its destination.
 
@@ -88,6 +107,9 @@ class EdgePathBuilder[OutputT, StateT, DepsT]:
 
     kind: EdgeKind = EdgeKind.PLAIN
     """Whether the edge delivers the whole output or fans an iterable per item."""
+
+    join: _InlineJoinSpec | None = None
+    """A fan-in folded onto this edge by [`collect`][EdgePathBuilder.collect] or [`reduce`][EdgePathBuilder.reduce]."""
 
     def map[ItemT](
         self: EdgePathBuilder[Iterable[ItemT], StateT, DepsT],
@@ -105,7 +127,57 @@ class EdgePathBuilder[OutputT, StateT, DepsT]:
         """
         return EdgePathBuilder(self.source_id, kind=EdgeKind.MAP)
 
-    def to(self, dest: DestNode[OutputT, StateT, DepsT]) -> Edge:
+    def collect[CollectItemT](
+        self: EdgePathBuilder[CollectItemT, StateT, DepsT],
+    ) -> EdgePathBuilder[list[CollectItemT], StateT, DepsT]:
+        """Gather a fork's branch outputs into one ordered list, inline on the edge.
+
+        The mirror of [`map`][EdgePathBuilder.map]: where ``map`` fans an
+        iterable out to one branch per item, ``collect`` folds those branches
+        back into a single list in source order and delivers it to the
+        destination. It builds the fan-in join for you, so the destination
+        receives ``list[item]`` with no separately declared
+        [`collect_node`][GraphBuilder.collect_node]; reach for that explicit form
+        when a join gathers several distinct inbound edges.
+
+        Returns:
+            A builder over the collected list type whose
+            [`to`][EdgePathBuilder.to] names the destination that receives it.
+        """
+        return EdgePathBuilder(
+            self.source_id,
+            join=_InlineJoinSpec(verb="collect", reducer=reduce_list_append, initial_factory=list, ordered=True),
+        )
+
+    def reduce[ReduceItemT, AccT](
+        self: EdgePathBuilder[ReduceItemT, StateT, DepsT],
+        reducer: Reducer[AccT, ReduceItemT] | ContextReducer[StateT, DepsT, AccT, ReduceItemT],
+        initial_factory: Callable[[], AccT],
+    ) -> EdgePathBuilder[AccT, StateT, DepsT]:
+        """Fold a fork's branch outputs with a reducer, inline on the edge.
+
+        The general fan-in that [`collect`][EdgePathBuilder.collect] specializes:
+        each branch's value folds into a running accumulator, and the final
+        accumulator is delivered to the destination. It builds the fan-in join
+        for you; reach for [`reduce_node`][GraphBuilder.reduce_node] when a join
+        gathers several distinct inbound edges.
+
+        Args:
+            reducer: The fold applied to each branch's value, taking the running
+                accumulator and one value, optionally preceded by a
+                [`ReducerContext`][ReducerContext].
+            initial_factory: Builds the accumulator each time the join fires.
+
+        Returns:
+            A builder over the accumulator type whose
+            [`to`][EdgePathBuilder.to] names the destination that receives it.
+        """
+        return EdgePathBuilder(
+            self.source_id,
+            join=_InlineJoinSpec(verb="reduce", reducer=reducer, initial_factory=initial_factory, ordered=False),
+        )
+
+    def to(self, dest: DestNode[OutputT, StateT, DepsT]) -> Edge | _InlineJoinEdge:
         """Complete the edge by naming its destination node.
 
         Args:
@@ -113,8 +185,13 @@ class EdgePathBuilder[OutputT, StateT, DepsT]:
                 source node's output type.
 
         Returns:
-            The finished edge from the recorded source to ``dest``.
+            The finished edge from the recorded source to ``dest``, or, when
+            [`collect`][EdgePathBuilder.collect] or [`reduce`][EdgePathBuilder.reduce]
+            folded a fan-in onto this edge, a token the builder expands into the
+            inline join and its two edges.
         """
+        if self.join is not None:
+            return _InlineJoinEdge(source_id=self.source_id, dest_id=dest.id, spec=self.join)
         return Edge(source_id=self.source_id, dest_id=dest.id, kind=self.kind)
 
 
@@ -337,6 +414,7 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
             reducer=self._normalize_reducer(reduce_list_append),
             initial_factory=list,
             ordered=True,
+            verb="collect",
             node_id=node_id,
         )
 
@@ -376,27 +454,32 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
             reducer=self._normalize_reducer(reducer),
             initial_factory=initial_factory,
             ordered=False,
+            verb="reduce",
             node_id=node_id,
         )
 
-    def _add_join(
+    def _add_join(  # noqa: PLR0913 - private keyword-only join registrar
         self,
         *,
         item_type: object,
         reducer: NormalizedReducer,
         initial_factory: Callable[[], object],
         ordered: bool,
+        verb: str,
         node_id: str,
+        inline: bool = False,
     ) -> AnyJoin:
         """Register a join node under the given id."""
         if self._id_taken(node_id):
             raise GraphBuildError(f"duplicate node id {node_id!r}")
         join: AnyJoin = Join(
             id=node_id,
+            verb=verb,
             item_type=item_type,
             reducer=reducer,
             initial_factory=initial_factory,
             ordered=ordered,
+            inline=inline,
         )
         self._joins[node_id] = join
         return join
@@ -509,19 +592,38 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
         """
         return EdgePathBuilder(source.id)
 
-    def add(self, *items: Edge | Branch) -> None:
+    def add(self, *items: Edge | Branch | _InlineJoinEdge) -> None:
         """Register edges and decision branches into the graph being built.
 
         Args:
-            items: Edges from [`edge_from`][GraphBuilder.edge_from] and branches
-                from a [`Decision`][Decision]'s branch methods, in any mix.
+            items: Edges from [`edge_from`][GraphBuilder.edge_from], inline-join
+                edges from [`collect`][EdgePathBuilder.collect] or
+                [`reduce`][EdgePathBuilder.reduce], and branches from a
+                [`Decision`][Decision]'s branch methods, in any mix.
         """
         for item in items:
             if isinstance(item, Branch):
                 self._branches.append(item)
                 self._edges.append(Edge(source_id=item.source_id, dest_id=item.dest_id))
+            elif isinstance(item, _InlineJoinEdge):
+                self._add_inline_join(item)
             else:
                 self._edges.append(item)
+
+    def _add_inline_join(self, item: _InlineJoinEdge) -> None:
+        """Expand an inline-join edge into a join node and the edges into and out of it."""
+        join_id = f"{item.spec.verb}:{item.source_id}->{item.dest_id}"
+        self._add_join(
+            item_type=None,
+            reducer=self._normalize_reducer(item.spec.reducer),
+            initial_factory=item.spec.initial_factory,
+            ordered=item.spec.ordered,
+            verb=item.spec.verb,
+            inline=True,
+            node_id=join_id,
+        )
+        self._edges.append(Edge(source_id=item.source_id, dest_id=join_id))
+        self._edges.append(Edge(source_id=join_id, dest_id=item.dest_id))
 
     def build(self) -> Graph[InputT, OutputT, StateT, DepsT]:
         """Validate the assembled graph and return a runnable [`Graph`][Graph].
@@ -550,6 +652,7 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
             start_id=START_ID,
             end_id=END_ID,
             state_type=self._state_type,
+            input_type=self._input_type,
             output_type=self._output_type,
         )
         return Graph(spec, name=self._name)

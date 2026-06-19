@@ -35,6 +35,34 @@ def test_Graph_reduce_sum() -> None:
     assert result == 14.0  # 1 + 4 + 9
 
 
+def test_Graph_inline_reduce_sum() -> None:
+    g = GraphBuilder[list[int], float]()
+
+    @g.step_node
+    async def fan(ctx: StepContext[list[int]]) -> list[int]:
+        return ctx.inputs
+
+    @g.step_node
+    async def square(ctx: StepContext[int]) -> int:
+        return ctx.inputs * ctx.inputs
+
+    @g.step_node
+    async def out(ctx: StepContext[float]) -> float:
+        return ctx.inputs
+
+    # .reduce() builds the fan-in join inline, with no reduce_node declared.
+    g.add(
+        g.edge_from(g.start_node).to(fan),
+        g.edge_from(fan).map().to(square),
+        g.edge_from(square).reduce(reduce_sum, lambda: 0.0).to(out),
+        g.edge_from(out).to(g.end_node),
+    )
+
+    result = g.build().run([1, 2, 3], state=None, deps=None)
+
+    assert result == 14.0  # 1 + 4 + 9
+
+
 def test_Graph_reduce_dict_update() -> None:
     g = GraphBuilder[list[str], dict[str, int]]()
 

@@ -4,7 +4,7 @@ import pytest
 
 from openfactcheck.components import QueryGenerator
 from openfactcheck.components.dummy import DummyQueryGenerator
-from openfactcheck.types import Claim
+from openfactcheck.components.types import Claim
 
 
 def test_DummyQueryGenerator_satisfies_protocol() -> None:

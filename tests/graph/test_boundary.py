@@ -10,8 +10,8 @@ GRAPH_ROOT = Path(__file__).resolve().parent.parent.parent / "src" / "openfactch
 # The graph engine is a generic orchestration substrate; it must not depend on
 # the fact-checking domain. Pipelines that use the graph live outside this package.
 FORBIDDEN_PREFIXES = (
-    "openfactcheck.types",
     "openfactcheck.components",
+    "openfactcheck.pipeline",
     "openfactcheck.chat",
     "openfactcheck.prompts",
 )

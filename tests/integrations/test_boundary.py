@@ -10,7 +10,6 @@ INTEGRATIONS_ROOT = Path(__file__).resolve().parent.parent.parent / "src" / "ope
 # Integrations are domain-agnostic service clients. They return service-shaped
 # data; components (not integrations) map that into the fact-checking domain.
 FORBIDDEN_PREFIXES = (
-    "openfactcheck.types",
     "openfactcheck.components",
     "openfactcheck.pipeline",
 )

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from openfactcheck.types import OverallVerdict, Verdict
+from openfactcheck.components.types import Assessment, Verdict
 
 
 @dataclass(frozen=True, slots=True)
@@ -12,7 +12,7 @@ class DummyAggregator:
     Returns a fixed inconclusive judgment, ignoring the per-claim verdicts.
     """
 
-    async def __call__(self, verdicts: list[Verdict]) -> OverallVerdict:
+    async def __call__(self, verdicts: list[Verdict]) -> Assessment:
         """Return a fixed inconclusive judgment.
 
         Args:
@@ -21,4 +21,4 @@ class DummyAggregator:
         Returns:
             An overall judgment labelled ``not_enough_evidence`` with zero score.
         """
-        return OverallVerdict(label="not_enough_evidence", score=0.0)
+        return Assessment(label="not_enough_evidence", score=0.0)

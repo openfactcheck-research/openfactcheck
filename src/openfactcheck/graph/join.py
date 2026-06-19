@@ -68,6 +68,9 @@ class Join[ItemT, AccT]:
     id: str
     """Stable identifier of this join node."""
 
+    verb: str
+    """Short name of the fold operation, shown when the graph is rendered."""
+
     item_type: object | None
     """The per-branch input type, recorded for build-time edge validation."""
 
@@ -79,6 +82,9 @@ class Join[ItemT, AccT]:
 
     ordered: bool
     """Whether to fold branches in source order; otherwise in arrival order."""
+
+    inline: bool = False
+    """Whether the join was declared inline on an edge and renders without its own node."""
 
     if TYPE_CHECKING:
         # Pin ItemT to a contravariant position so a join reads as a valid edge

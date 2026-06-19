@@ -117,6 +117,7 @@ class GraphSpec:
     start_id: str
     end_id: str
     state_type: object | None
+    input_type: object | None
     output_type: object | None
 
 
@@ -705,10 +706,27 @@ class GraphStepper[OutputT, StateT, DepsT]:
 class Graph(Generic[InputT, OutputT, StateT, DepsT]):
     """An executable graph of typed nodes.
 
-    Assembled by [`GraphBuilder.build`][GraphBuilder]; construct it through the
-    builder rather than directly. Run it with [`run`][Graph.run] or its async
-    peer [`arun`][Graph.arun], or drive it one task at a time with
-    [`stepper`][Graph.stepper].
+    Assembled by [`GraphBuilder.build`][GraphBuilder] rather than constructed
+    directly. Run it with [`run`][Graph.run] or its async peer
+    [`arun`][Graph.arun], or drive it one task at a time with
+    [`stepper`][Graph.stepper]. The type parameters, in order, are:
+
+    1. ``InputT``: the value the graph accepts.
+    2. ``OutputT``: the value the graph returns.
+    3. ``StateT``: run-scoped mutable state shared across every node. Optional;
+       defaults to ``None`` (no shared state).
+    4. ``DepsT``: read-only dependencies injected into every node (clients,
+       configuration). Optional; defaults to ``None`` (no deps).
+
+    Pass the matching ``state`` and ``deps`` when running; they flow unchanged
+    into every [`StepContext`][StepContext].
+
+    Example:
+        ```python
+        # str in, a dict out, no shared state, a Deps bag of clients.
+        graph = builder.build()  # Graph[str, dict[str, int], None, Deps]
+        result = graph.run("hello", state=None, deps=Deps(...))
+        ```
     """
 
     def __init__(self, spec: GraphSpec, *, name: str) -> None:
@@ -722,7 +740,12 @@ class Graph(Generic[InputT, OutputT, StateT, DepsT]):
         self.name = name
 
     def to_mermaid(
-        self, *, direction: Direction = "TD", title: str | None = None, highlight: Iterable[str] | None = None
+        self,
+        *,
+        direction: Direction = "TD",
+        title: str | None = None,
+        highlight: Iterable[str] | None = None,
+        show_types: bool = False,
     ) -> str:
         """Render this graph as Mermaid flowchart source.
 
@@ -730,11 +753,13 @@ class Graph(Generic[InputT, OutputT, StateT, DepsT]):
             direction: Layout direction of the flowchart.
             title: An optional title shown above the diagram.
             highlight: Node ids to draw with a highlight style.
+            show_types: Label each edge with the type of data it carries, read
+                from the source node's declared output type.
 
         Returns:
             Mermaid flowchart source as a string.
         """
-        return to_mermaid(self._spec, direction=direction, title=title, highlight=highlight)
+        return to_mermaid(self._spec, direction=direction, title=title, highlight=highlight, show_types=show_types)
 
     def to_mermaid_image(
         self, *, base_url: str = "https://mermaid.ink", image_type: ImageType = "png", timeout: float = 30.0

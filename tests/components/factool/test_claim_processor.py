@@ -6,7 +6,7 @@ import pytest
 
 from openfactcheck.components import ClaimProcessor
 from openfactcheck.components.factool import FactoolClaimProcessor
-from openfactcheck.types import Claim, Input
+from openfactcheck.components.types import Claim, Input
 
 
 class _FakeClient:
