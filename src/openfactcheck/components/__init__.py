@@ -2,7 +2,7 @@
 
 A component is a callable implementing one of the category contracts:
 ``ClaimProcessor``, ``Retriever``, ``Verifier``, and ``Aggregator`` (plus the
-optional ``QueryGenerator``). Any implementation of a contract is
+optional ``QueryGenerator`` and ``Reviser``). Any implementation of a contract is
 interchangeable with any other. The contracts are defined in terms of the data
 types in this layer (``Claim``, ``Evidence``, ``Verdict``, and so on). Import
 both from ``openfactcheck.components``; concrete implementations live in
@@ -14,6 +14,7 @@ from openfactcheck.components.protocols import (
     ClaimProcessor,
     QueryGenerator,
     Retriever,
+    Reviser,
     Verifier,
 )
 from openfactcheck.components.provenance import Provenance
@@ -36,6 +37,7 @@ __all__ = [
     "ClaimProcessor",
     "QueryGenerator",
     "Retriever",
+    "Reviser",
     "Verifier",
 ]
 

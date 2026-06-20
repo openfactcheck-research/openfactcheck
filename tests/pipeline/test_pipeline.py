@@ -3,6 +3,8 @@
 import asyncio
 from collections.abc import AsyncIterator, Callable
 
+import pytest
+
 from openfactcheck.components.dummy import (
     DummyAggregator,
     DummyClaimProcessor,
@@ -49,6 +51,13 @@ async def _aggregate(verdicts: list[Verdict]) -> Assessment:
     score = supported / len(verdicts)
     label = "supported" if score >= 0.5 else "refuted"  # noqa: PLR2004 - simple stub threshold.
     return Assessment(label=label, score=score)
+
+
+async def _revise(text: Input, verdicts: list[Verdict], *, on_partial: Callable[[object], None] | None = None) -> str:
+    revised = f"revised: {text.content} ({len(verdicts)} claims)"
+    if on_partial is not None:
+        on_partial(revised)
+    return revised
 
 
 def _stub_components(retriever: Retriever = _retrieve) -> Components:
@@ -127,6 +136,38 @@ def test_build_graph_records_input() -> None:
     build_graph().run(Input(content="The sky is blue."), state=state, deps=_stub_components())
 
     assert state.input == Input(content="The sky is blue.")
+
+
+# ---------------------------------------------------------------------------
+# build_graph(revise=True): the optional revision step
+# ---------------------------------------------------------------------------
+
+
+def test_build_graph_default_has_no_revision() -> None:
+    result = build_graph().run(Input(content="The sky is blue."), state=PipelineState(), deps=_stub_components())
+
+    assert result.revision is None
+
+
+def test_build_graph_revise_sets_revision() -> None:
+    components = Components(
+        claim_processor=_process,
+        query_generator=_generate,
+        retriever=_retrieve,
+        verifier=_verify,
+        aggregator=_aggregate,
+        reviser=_revise,
+    )
+
+    result = build_graph(revise=True).run(Input(content="The sky is green."), state=PipelineState(), deps=components)
+
+    assert [v.claim.text for v in result.verdicts] == ["The sky is green"]
+    assert result.revision == "revised: The sky is green. (1 claims)"
+
+
+def test_build_graph_revise_without_reviser_raises() -> None:
+    with pytest.raises(RuntimeError):
+        build_graph(revise=True).run(Input(content="The sky is blue."), state=PipelineState(), deps=_stub_components())
 
 
 # ---------------------------------------------------------------------------

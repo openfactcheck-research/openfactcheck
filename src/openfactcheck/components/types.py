@@ -133,3 +133,6 @@ class Report(BaseModel):
 
     assessment: Assessment
     """The overall judgment across all claims."""
+
+    revision: str | None = None
+    """The input rewritten to correct its factual errors, or ``None`` when no revision was produced."""

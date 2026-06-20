@@ -130,3 +130,33 @@ class Aggregator(Protocol):
             The overall judgment, with a strategy-defined label and score.
         """
         ...
+
+
+@runtime_checkable
+class Reviser(Protocol):
+    """Rewrite input text to correct the factual errors its verdicts found.
+
+    An optional final stage: most pipelines stop at the
+    [`Verdict`][openfactcheck.components.types.Verdict] for each claim. A reviser
+    weaves the per-claim corrections back into the original text, producing a
+    revised version that preserves the wording and style of what was checked.
+    """
+
+    async def __call__(
+        self, text: Input, verdicts: list[Verdict], *, on_partial: Callable[[object], None] | None = None
+    ) -> str:
+        """Rewrite ``text`` to fix the errors recorded in ``verdicts``.
+
+        Args:
+            text: The original input that was checked.
+            verdicts: Per-claim verdicts, carrying the corrections to apply.
+            on_partial: Optional sink called with the in-progress result as it
+                streams in, each call carrying more of it. Omit it for a single
+                non-streaming call; an implementation without streaming may
+                ignore it.
+
+        Returns:
+            The input rewritten so its claims read as factually correct, with
+            the original style preserved.
+        """
+        ...

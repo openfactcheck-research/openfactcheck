@@ -16,7 +16,14 @@ result = pipeline.run("The capital of Australia is Sydney.")
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
-from openfactcheck.components.protocols import Aggregator, ClaimProcessor, QueryGenerator, Retriever, Verifier
+from openfactcheck.components.protocols import (
+    Aggregator,
+    ClaimProcessor,
+    QueryGenerator,
+    Retriever,
+    Reviser,
+    Verifier,
+)
 from openfactcheck.components.types import Claim, Evidence, Input, Query, Report, Verdict
 from openfactcheck.graph import Graph, GraphBuilder, GraphEvent, RunOptions, StepContext
 
@@ -40,6 +47,9 @@ class Components:
     aggregator: Aggregator
     """Combines the per-claim verdicts into the overall judgment."""
 
+    reviser: Reviser | None = None
+    """Rewrites the input to fix its errors. Required only when the graph is built with revision."""
+
 
 @dataclass
 class PipelineState:
@@ -54,15 +64,21 @@ class PipelineState:
     """The run's original input, recorded by the entry step for assembly."""
 
 
-def build_graph() -> Graph[Input, Report, PipelineState, Components]:
-    """Build the default fact-check graph.
+def build_graph(*, revise: bool = False) -> Graph[Input, Report, PipelineState, Components]:
+    """Build the fact-check graph.
 
-    The returned graph records the input, processes it into claims, fans out to
-    generate queries, retrieve evidence, and verify each claim concurrently,
-    collects the checked claims, and assembles them with an overall judgment
-    into a result. Supply the components as ``deps`` and a fresh
-    [`PipelineState`][PipelineState] as ``state`` when running it, or wrap it in a
-    [`Pipeline`][Pipeline] that does so.
+    The graph records the input, processes it into claims, fans out to generate
+    queries, retrieve evidence, and verify each claim concurrently, collects the
+    checked claims, and assembles them with an overall judgment into a result.
+    With ``revise`` set, a final step rewrites the input to fix its errors and
+    records the result on the report. Supply the components as ``deps`` and a
+    fresh [`PipelineState`][PipelineState] as ``state`` when running it, or wrap
+    it in a [`Pipeline`][Pipeline] that does so.
+
+    Args:
+        revise: Append a revision step that rewrites the input from the verdicts'
+            corrections. The graph's [`Components`][Components] must then carry a
+            [`reviser`][Components.reviser].
 
     Returns:
         A built [`Graph`][Graph] taking an [`Input`][Input] and returning a [`Report`][Report].
@@ -99,13 +115,29 @@ def build_graph() -> Graph[Input, Report, PipelineState, Components]:
             raise RuntimeError("pipeline input was not recorded before assembly")
         return Report(input=ctx.state.input, verdicts=list(ctx.inputs), assessment=assessment)
 
-    g.add(
+    spine = [
         g.edge_from(g.start_node).to(claim_processor),
         g.edge_from(claim_processor).map().to(query_generator),
         g.edge_from(query_generator).to(retriever),
         g.edge_from(retriever).to(verifier),
         g.edge_from(verifier).collect().to(aggregator),
-        g.edge_from(aggregator).to(g.end_node),
+    ]
+    if not revise:
+        g.add(*spine, g.edge_from(aggregator).to(g.end_node))
+        return g.build()
+
+    @g.step_node
+    async def reviser(ctx: StepContext[Report, PipelineState, Components]) -> Report:
+        if ctx.deps.reviser is None:
+            raise RuntimeError("the graph was built with revise=True but no reviser component was supplied")
+        report = ctx.inputs
+        revision = await ctx.deps.reviser(report.input, report.verdicts, on_partial=ctx.emit if ctx.streaming else None)
+        return report.model_copy(update={"revision": revision})
+
+    g.add(
+        *spine,
+        g.edge_from(aggregator).to(reviser),
+        g.edge_from(reviser).to(g.end_node),
     )
     return g.build()
 
