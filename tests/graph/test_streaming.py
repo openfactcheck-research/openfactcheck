@@ -172,3 +172,28 @@ def test_Graph_astream_node_data_tagged_by_fork_branch() -> None:
     assert {e.data for e in emitted} == {"a", "b", "c"}
     # Each mapped item ran in its own branch, so every emission carries a distinct fork stack.
     assert len({e.fork_stack for e in emitted}) == 3
+
+
+def test_StepContext_streaming_reflects_run_option() -> None:
+    g = GraphBuilder(input_type=str, output_type=str, state_type=list)
+
+    @g.step_node
+    async def record(ctx: StepContext[str, list[bool]]) -> str:
+        ctx.state.append(ctx.streaming)
+        return ctx.inputs
+
+    g.add(
+        g.edge_from(g.start_node).to(record),
+        g.edge_from(record).to(g.end_node),
+    )
+    graph = g.build()
+
+    default_state: list[bool] = []
+    graph.run("x", state=default_state, deps=None)
+
+    streaming_state: list[bool] = []
+    graph.run("x", state=streaming_state, deps=None, options=RunOptions(stream_node_data=True))
+
+    # The flag mirrors stream_node_data: a node knows when its emitted data is observed.
+    assert default_state == [False]
+    assert streaming_state == [True]

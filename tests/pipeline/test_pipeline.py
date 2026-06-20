@@ -1,6 +1,7 @@
 """Tests for the fact-check pipeline and its default graph."""
 
 import asyncio
+from collections.abc import AsyncIterator, Callable
 
 from openfactcheck.components.dummy import (
     DummyAggregator,
@@ -10,25 +11,35 @@ from openfactcheck.components.dummy import (
     DummyVerifier,
 )
 from openfactcheck.components.protocols import Retriever
-from openfactcheck.components.types import Assessment, Claim, Evidence, Input, Query, Source, Verdict
+from openfactcheck.components.types import Assessment, Claim, Evidence, Input, Query, Report, Source, Verdict
+from openfactcheck.graph import GraphEvent, NodeEmitted, RunFinished
 from openfactcheck.pipeline import Components, Pipeline, PipelineState, build_graph
 
 
-async def _process(text: Input) -> list[Claim]:
-    return [Claim(text=sentence.strip()) for sentence in text.content.split(".") if sentence.strip()]
+async def _process(text: Input, *, on_partial: Callable[[object], None] | None = None) -> list[Claim]:
+    claims = [Claim(text=sentence.strip()) for sentence in text.content.split(".") if sentence.strip()]
+    if on_partial is not None:
+        on_partial(claims)
+    return claims
 
 
-async def _generate(claim: Claim) -> Query:
-    return Query(claim=claim, questions=[f"is '{claim.text}' true?"])
+async def _generate(claim: Claim, *, on_partial: Callable[[object], None] | None = None) -> Query:
+    query = Query(claim=claim, questions=[f"is '{claim.text}' true?"])
+    if on_partial is not None:
+        on_partial(query)
+    return query
 
 
 async def _retrieve(query: Query) -> Evidence:
     return Evidence(claim=query.claim, sources=[Source(content=f"evidence for {query.claim.text}")])
 
 
-async def _verify(claim: Claim, evidence: Evidence) -> Verdict:
+async def _verify(claim: Claim, evidence: Evidence, *, on_partial: Callable[[object], None] | None = None) -> Verdict:
     label = "supported" if evidence.sources else "not_enough_evidence"
-    return Verdict(claim=claim, label=label, confidence=0.9, reasoning="stub")
+    verdict = Verdict(claim=claim, label=label, confidence=0.9, reasoning="stub")
+    if on_partial is not None:
+        on_partial(verdict)
+    return verdict
 
 
 async def _aggregate(verdicts: list[Verdict]) -> Assessment:
@@ -162,3 +173,39 @@ def test_Pipeline_run_with_dummy_components() -> None:
     assert [v.label for v in result.verdicts] == ["not_enough_evidence"]
     assert result.assessment.label == "not_enough_evidence"
     assert result.assessment.score == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline.astream: node-level events and opt-in token partials
+# ---------------------------------------------------------------------------
+
+
+async def _collect(stream: AsyncIterator[GraphEvent]) -> list[GraphEvent]:
+    return [event async for event in stream]
+
+
+def test_Pipeline_astream_emits_node_events() -> None:
+    pipeline = Pipeline(build_graph(), _stub_components())
+
+    events = asyncio.run(_collect(pipeline.astream("The sky is blue. Water is wet.")))
+
+    assert any(type(event).__name__ == "NodeStarted" for event in events)
+    assert isinstance(events[-1], RunFinished)
+    assert isinstance(events[-1].output, Report)
+
+
+def test_Pipeline_astream_omits_partials_by_default() -> None:
+    pipeline = Pipeline(build_graph(), _stub_components())
+
+    events = asyncio.run(_collect(pipeline.astream("The sky is blue.")))
+
+    # The components' on_partial is not bridged unless partial streaming is requested.
+    assert not any(isinstance(event, NodeEmitted) for event in events)
+
+
+def test_Pipeline_astream_streams_partials_when_requested() -> None:
+    pipeline = Pipeline(build_graph(), _stub_components())
+
+    events = asyncio.run(_collect(pipeline.astream("The sky is blue.", stream_partials=True)))
+
+    assert any(isinstance(event, NodeEmitted) for event in events)

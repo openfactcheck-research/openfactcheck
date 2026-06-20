@@ -569,7 +569,9 @@ class _GraphRun[StateT, DepsT, OutputT]:
     async def _worker(self, node_id: str, value: object, stack: ForkStack, task_id: int) -> None:
         """Run one step, with retries and timeout, and report its result."""
         step = self._spec.steps[node_id]
-        ctx: StepContext[object, StateT, DepsT] = StepContext(inputs=value, state=self._state, deps=self._deps)
+        ctx: StepContext[object, StateT, DepsT] = StepContext(
+            inputs=value, state=self._state, deps=self._deps, streaming=self._stream_node_data
+        )
         if self._stream_node_data:
 
             def emit(data: object) -> None:

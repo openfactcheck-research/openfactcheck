@@ -84,6 +84,15 @@ class StepContext(Generic[InputT, StateT, DepsT]):
     node can emit unconditionally at no cost when nothing observes it.
     """
 
+    streaming: bool = False
+    """Whether emitted data is observed on this run.
+
+    True only when the run sets ``stream_node_data`` on
+    [`RunOptions`][openfactcheck.graph.RunOptions]. A node that can stream partial
+    results (for instance through a component's ``on_partial`` hook) should do so
+    only when this is set, and take its cheaper one-shot path otherwise.
+    """
+
 
 @dataclass(frozen=True, slots=True)
 class Step[InputT, OutputT, StateT, DepsT]:

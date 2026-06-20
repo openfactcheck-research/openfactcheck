@@ -1,9 +1,9 @@
 """The runnable fact-check pipeline and the default graph that powers it.
 
-A [`Pipeline`][openfactcheck.pipeline.Pipeline] pairs a built
-[`Graph`][openfactcheck.graph.Graph] with the [`Components`][openfactcheck.pipeline.Components] that fill
+A [`Pipeline`][Pipeline] pairs a built
+[`Graph`][Graph] with the [`Components`][Components] that fill
 it, exposing a plain ``run(text) -> Report`` surface so a caller never touches the graph's
-``state``/``deps`` plumbing. [`build_graph`][openfactcheck.pipeline.build_graph] builds the
+``state``/``deps`` plumbing. [`build_graph`][build_graph] builds the
 default claim-to-verdict topology; an established pipeline pairs that graph with a component family (see the
 ``factool`` module).
 
@@ -13,11 +13,12 @@ result = pipeline.run("The capital of Australia is Sydney.")
 ```
 """
 
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
 from openfactcheck.components.protocols import Aggregator, ClaimProcessor, QueryGenerator, Retriever, Verifier
 from openfactcheck.components.types import Claim, Evidence, Input, Query, Report, Verdict
-from openfactcheck.graph import Graph, GraphBuilder, StepContext
+from openfactcheck.graph import Graph, GraphBuilder, GraphEvent, RunOptions, StepContext
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,13 +61,11 @@ def build_graph() -> Graph[Input, Report, PipelineState, Components]:
     generate queries, retrieve evidence, and verify each claim concurrently,
     collects the checked claims, and assembles them with an overall judgment
     into a result. Supply the components as ``deps`` and a fresh
-    [`PipelineState`][openfactcheck.pipeline.PipelineState] as ``state`` when running it, or wrap it in a
-    [`Pipeline`][openfactcheck.pipeline.Pipeline] that does so.
+    [`PipelineState`][PipelineState] as ``state`` when running it, or wrap it in a
+    [`Pipeline`][Pipeline] that does so.
 
     Returns:
-        A built [`Graph`][openfactcheck.graph.Graph] taking an
-        [`Input`][openfactcheck.components.types.Input] and returning a
-        [`Report`][openfactcheck.components.types.Report].
+        A built [`Graph`][Graph] taking an [`Input`][Input] and returning a [`Report`][Report].
     """
     g = GraphBuilder(
         deps_type=Components,
@@ -78,11 +77,11 @@ def build_graph() -> Graph[Input, Report, PipelineState, Components]:
     @g.step_node
     async def claim_processor(ctx: StepContext[Input, PipelineState, Components]) -> list[Claim]:
         ctx.state.input = ctx.inputs
-        return await ctx.deps.claim_processor(ctx.inputs)
+        return await ctx.deps.claim_processor(ctx.inputs, on_partial=ctx.emit if ctx.streaming else None)
 
     @g.step_node
     async def query_generator(ctx: StepContext[Claim, PipelineState, Components]) -> Query:
-        return await ctx.deps.query_generator(ctx.inputs)
+        return await ctx.deps.query_generator(ctx.inputs, on_partial=ctx.emit if ctx.streaming else None)
 
     @g.step_node
     async def retriever(ctx: StepContext[Query, PipelineState, Components]) -> Evidence:
@@ -90,7 +89,7 @@ def build_graph() -> Graph[Input, Report, PipelineState, Components]:
 
     @g.step_node
     async def verifier(ctx: StepContext[Evidence, PipelineState, Components]) -> Verdict:
-        verdict = await ctx.deps.verifier(ctx.inputs.claim, ctx.inputs)
+        verdict = await ctx.deps.verifier(ctx.inputs.claim, ctx.inputs, on_partial=ctx.emit if ctx.streaming else None)
         return verdict.model_copy(update={"evidence": ctx.inputs})
 
     @g.step_node
@@ -117,8 +116,8 @@ class Pipeline:
 
     Pairs a built graph with the components that fill it, and hides the graph's
     run-time plumbing (wrapping the input, a fresh state, and the component
-    dependencies) behind [`run`][openfactcheck.pipeline.Pipeline.run] and its async peer
-    [`arun`][openfactcheck.pipeline.Pipeline.arun].
+    dependencies) behind [`run`][Pipeline.run], its async peer [`arun`][Pipeline.arun], and the
+    event-streaming [`astream`][Pipeline.astream].
     """
 
     graph: Graph[Input, Report, PipelineState, Components]
@@ -132,25 +131,45 @@ class Pipeline:
 
         Args:
             text: The content to check, as a string or an
-                [`Input`][openfactcheck.components.types.Input].
+                [`Input`][Input].
 
         Returns:
             The completed fact-check result.
         """
-        return self.graph.run(self._as_input(text), state=PipelineState(), deps=self.components)
+        source = text if isinstance(text, Input) else Input(content=text)
+        return self.graph.run(source, state=PipelineState(), deps=self.components)
 
     async def arun(self, text: str | Input) -> Report:
         """Fact-check text and return the assembled result.
 
         Args:
             text: The content to check, as a string or an
-                [`Input`][openfactcheck.components.types.Input].
+                [`Input`][Input].
 
         Returns:
             The completed fact-check result.
         """
-        return await self.graph.arun(self._as_input(text), state=PipelineState(), deps=self.components)
+        source = text if isinstance(text, Input) else Input(content=text)
+        return await self.graph.arun(source, state=PipelineState(), deps=self.components)
 
-    @staticmethod
-    def _as_input(text: str | Input) -> Input:
-        return text if isinstance(text, Input) else Input(content=text)
+    def astream(self, text: str | Input, *, stream_partials: bool = False) -> AsyncIterator[GraphEvent]:
+        """Fact-check text and stream progress events as the run unfolds.
+
+        Yields the run's node-level events: a node started, then finished (or
+        failed), and a final run-finished. With ``stream_partials`` set, the
+        streaming-capable components also surface their in-progress result as
+        [`NodeEmitted`][openfactcheck.graph.NodeEmitted] events while they run, for
+        token-by-token progress.
+
+        Args:
+            text: The content to check, as a string or an
+                [`Input`][Input].
+            stream_partials: Also stream each component's in-progress result, not
+                just the node-level events.
+
+        Returns:
+            An async iterator over the run's [`GraphEvent`][GraphEvent]s.
+        """
+        source = text if isinstance(text, Input) else Input(content=text)
+        options = RunOptions(stream_node_data=stream_partials)
+        return self.graph.astream(source, state=PipelineState(), deps=self.components, options=options)

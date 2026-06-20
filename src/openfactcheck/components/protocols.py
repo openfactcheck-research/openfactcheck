@@ -6,6 +6,7 @@ implementation must match. Implementations live in sibling subpackages
 interchangeable with any other implementation of the same category.
 """
 
+from collections.abc import Callable
 from typing import Protocol, runtime_checkable
 
 from openfactcheck.components.types import Assessment, Claim, Evidence, Input, Query, Verdict
@@ -19,11 +20,15 @@ class ClaimProcessor(Protocol):
     valid (for example, when the input contains no checkable claims).
     """
 
-    async def __call__(self, text: Input) -> list[Claim]:
+    async def __call__(self, text: Input, *, on_partial: Callable[[object], None] | None = None) -> list[Claim]:
         """Produce atomic claims from ``text``.
 
         Args:
             text: Input text to process into claims.
+            on_partial: Optional sink called with the in-progress result as it
+                streams in, each call carrying more of it. Omit it for a single
+                non-streaming call; an implementation without streaming may
+                ignore it.
 
         Returns:
             Atomic factual claims drawn from ``text``; empty when there are
@@ -41,11 +46,15 @@ class QueryGenerator(Protocol):
     any number of questions.
     """
 
-    async def __call__(self, claim: Claim) -> Query:
+    async def __call__(self, claim: Claim, *, on_partial: Callable[[object], None] | None = None) -> Query:
         """Generate a query for ``claim``.
 
         Args:
             claim: Claim to fetch evidence for.
+            on_partial: Optional sink called with the in-progress result as it
+                streams in, each call carrying more of it. Omit it for a single
+                non-streaming call; an implementation without streaming may
+                ignore it.
 
         Returns:
             Search query derived from the claim.
@@ -81,12 +90,18 @@ class Retriever(Protocol):
 class Verifier(Protocol):
     """Decide whether evidence supports, refutes, or is insufficient for a claim."""
 
-    async def __call__(self, claim: Claim, evidence: Evidence) -> Verdict:
+    async def __call__(
+        self, claim: Claim, evidence: Evidence, *, on_partial: Callable[[object], None] | None = None
+    ) -> Verdict:
         """Verify ``claim`` against ``evidence``.
 
         Args:
             claim: Claim under evaluation.
             evidence: Sources bearing on the claim's truthfulness.
+            on_partial: Optional sink called with the in-progress result as it
+                streams in, each call carrying more of it. Omit it for a single
+                non-streaming call; an implementation without streaming may
+                ignore it.
 
         Returns:
             Verdict describing whether the evidence supports, refutes, or
