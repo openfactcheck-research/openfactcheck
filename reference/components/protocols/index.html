@@ -2090,6 +2090,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.protocols.Reviser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Reviser
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3284,6 +3295,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.protocols.Reviser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Reviser
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3562,6 +3584,58 @@ retriever that finds nothing should return
 <p>Strategy is implementation-defined (majority vote, weighted average,
 worst-case, and so on). The pipeline assembles the full result around
 the returned judgment.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.components.protocols.Reviser" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Reviser</span>
+
+
+<a href="#openfactcheck.components.protocols.Reviser" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.Protocol">Protocol</span></code></p>
+
+
+
+        <p>Rewrite input text to correct the factual errors its verdicts found.</p>
+<p>An optional final stage: most pipelines stop at the
+<a class="autorefs autorefs-internal" title="            Verdict" href="../../types/#openfactcheck.components.types.Verdict"><code>Verdict</code></a> for each claim. A reviser
+weaves the per-claim corrections back into the original text, producing a
+revised version that preserves the wording and style of what was checked.</p>
 
 
 
