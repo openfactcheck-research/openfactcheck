@@ -67,6 +67,20 @@ class FakeBackend:
         yield StreamEnd(finish_reason=FinishReason.STOP, usage=Usage(input_tokens=5, output_tokens=3))
 
 
+class _LifecycleBackend:
+    """Backend double that records how often it is closed."""
+
+    def __init__(self) -> None:
+        self.closed = 0
+        self.aclosed = 0
+
+    def close(self) -> None:
+        self.closed += 1
+
+    async def aclose(self) -> None:
+        self.aclosed += 1
+
+
 @pytest.fixture()
 def fake_response() -> ChatResponse:
     """A canned ChatResponse for testing."""
@@ -393,3 +407,50 @@ def test_ChatClient_stream_with_response_model_unsupported_raises(openai_config:
 
     with pytest.raises(UnsupportedFeatureError):
         list(client.stream([UserMessage(content="hi")], response_model=_Person))
+
+
+# ---------------------------------------------------------------------------
+# Lifecycle
+# ---------------------------------------------------------------------------
+
+
+def test_ChatClient_close_delegates_to_backend(openai_config: OpenAIConfig) -> None:
+    """close forwards to the backend's sync lifecycle method."""
+    backend = _LifecycleBackend()
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    client.close()
+
+    assert backend.closed == 1
+
+
+def test_ChatClient_context_manager_closes(openai_config: OpenAIConfig) -> None:
+    """Leaving a with block closes the backend, and __enter__ yields the client."""
+    backend = _LifecycleBackend()
+
+    with ChatClient(config=openai_config, backend=backend) as client:  # type: ignore[arg-type]
+        assert isinstance(client, ChatClient)
+
+    assert backend.closed == 1
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_ChatClient_aclose_delegates_to_backend(openai_config: OpenAIConfig) -> None:
+    """aclose forwards to the backend's async lifecycle method."""
+    backend = _LifecycleBackend()
+    client = ChatClient(config=openai_config, backend=backend)  # type: ignore[arg-type]
+
+    await client.aclose()
+
+    assert backend.aclosed == 1
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_ChatClient_async_context_manager_closes(openai_config: OpenAIConfig) -> None:
+    """Leaving an async with block closes the backend, and __aenter__ yields the client."""
+    backend = _LifecycleBackend()
+
+    async with ChatClient(config=openai_config, backend=backend) as client:  # type: ignore[arg-type]
+        assert isinstance(client, ChatClient)
+
+    assert backend.aclosed == 1

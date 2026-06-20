@@ -44,6 +44,8 @@ def _patch_sync_client(mocker) -> object:  # noqa: ANN001
             completions=SimpleNamespace(create=mocker.MagicMock(return_value=_fake_response())),
         ),
     )
+    mock_client.with_options = lambda **_: mock_client
+    mock_client.close = mocker.MagicMock()
     mock_cls = mocker.MagicMock(return_value=mock_client)
     mocker.patch("openfactcheck.chat.backends.openai.backend.load_openai", return_value=mock_cls)
     return mock_cls

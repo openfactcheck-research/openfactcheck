@@ -47,13 +47,30 @@ class AnthropicBackend:
     must be set on the config.
     """
 
+    def __init__(self) -> None:
+        """Build the backend with no client yet; clients are created on first use."""
+        self._sync_client: Anthropic | None = None
+        self._async_client: AsyncAnthropic | None = None
+
     def _client(self, request: ChatRequest) -> Anthropic:
-        """Build a sync SDK client for ``request``."""
-        return load_anthropic()(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
+        """Return the reused sync SDK client, scoped to this request's runtime.
+
+        Builds the client once and shares its connection pool across calls; the
+        returned view overrides only the per-request timeout and retry count.
+        """
+        if self._sync_client is None:
+            self._sync_client = load_anthropic()()
+        return self._sync_client.with_options(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
 
     def _aclient(self, request: ChatRequest) -> AsyncAnthropic:
-        """Build an async SDK client for ``request``."""
-        return load_async_anthropic()(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
+        """Return the reused async SDK client, scoped to this request's runtime.
+
+        Builds the client once and shares its connection pool across calls; the
+        returned view overrides only the per-request timeout and retry count.
+        """
+        if self._async_client is None:
+            self._async_client = load_async_anthropic()()
+        return self._async_client.with_options(timeout=request.runtime.timeout, max_retries=request.runtime.max_retries)
 
     def _prepare(self, request: ChatRequest) -> tuple[Kwargs, list[AnthropicInputMessage]]:
         """Build SDK kwargs and convert messages. System prompt is merged into kwargs."""
@@ -194,3 +211,21 @@ class AnthropicBackend:
             raise map_error(exc) from exc
 
         yield to_stream_end(stop_reason, input_tokens, output_tokens)
+
+    def close(self) -> None:
+        """Release the sync SDK client and its connection pool, if one was built.
+
+        Idempotent: the client is rebuilt on the next sync call.
+        """
+        if self._sync_client is not None:
+            self._sync_client.close()
+            self._sync_client = None
+
+    async def aclose(self) -> None:
+        """Release the async SDK client and its connection pool, if one was built.
+
+        Idempotent: the client is rebuilt on the next async call.
+        """
+        if self._async_client is not None:
+            await self._async_client.close()
+            self._async_client = None

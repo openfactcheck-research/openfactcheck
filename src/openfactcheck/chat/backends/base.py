@@ -5,11 +5,16 @@ A backend owns the actual SDK call for a given provider.
 [`ChatClient`][ChatClient] talks to; the rest of the chat layer depends
 only on the protocol, never on a concrete backend.
 
-Four methods describe the full surface: sync and async variants of
+Four call methods describe the request surface: sync and async variants of
 single-shot completion and streaming. Implementations accept a
 [`ChatRequest`][ChatRequest] and produce a [`ChatResponse`][ChatResponse]
 or a stream of [`StreamEvent`][StreamEvent] values, mapping any SDK or
 transport error to a [`ChatModelError`][ChatModelError] subclass.
+
+A backend reuses one underlying client per axis across calls, so it owns a
+connection pool. The lifecycle pair `close` and `aclose` release that pool;
+[`ChatClient`][ChatClient] forwards them through its own lifecycle methods
+and context managers.
 
 See [`OpenAIBackend`][OpenAIBackend] for a reference implementation.
 """
@@ -97,5 +102,21 @@ class ChatBackend(Protocol):
 
         Raises:
             ChatModelError: On any failure.
+        """
+        ...
+
+    def close(self) -> None:
+        """Release the sync client and its connection pool.
+
+        Idempotent, and a no-op when no sync call has been made. Closes only
+        the sync side; call [`aclose`][ChatBackend.aclose] for the async side.
+        """
+        ...
+
+    async def aclose(self) -> None:
+        """Release the async client and its connection pool.
+
+        Idempotent, and a no-op when no async call has been made. Closes only
+        the async side; call [`close`][ChatBackend.close] for the sync side.
         """
         ...

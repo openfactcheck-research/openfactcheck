@@ -28,7 +28,7 @@ Example:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Self, cast
 
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
@@ -65,6 +65,16 @@ class ChatClient:
     [`RateLimitError`][RateLimitError],
     [`ProviderError`][ProviderError], or
     [`UnsupportedFeatureError`][UnsupportedFeatureError].
+
+    The client keeps one pooled connection open across calls. Close it with
+    [`close`][ChatClient.close] (or a `with` block) for sync use, and
+    [`aclose`][ChatClient.aclose] (or an `async with` block) for async use, to
+    release the pool when done.
+
+    Note:
+        Use one client within a single event loop. Sharing a client across
+        separate `asyncio.run` calls reuses a pool bound to a loop that has
+        since closed; run the work under one loop instead.
     """
 
     def __init__(
@@ -450,3 +460,35 @@ class ChatClient:
                 raw=raw,
                 validation_error=exc,
             ) from exc
+
+    def close(self) -> None:
+        """Release the pooled sync connection.
+
+        Pairs with the sync call methods; safe to call more than once. Prefer a
+        `with` block, which calls this on exit.
+        """
+        self._backend.close()
+
+    async def aclose(self) -> None:
+        """Release the pooled async connection.
+
+        Pairs with the async call methods; safe to call more than once. Prefer an
+        `async with` block, which calls this on exit.
+        """
+        await self._backend.aclose()
+
+    def __enter__(self) -> Self:
+        """Enter a sync context that closes the client on exit."""
+        return self
+
+    def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:
+        """Close the client on leaving a `with` block."""
+        self.close()
+
+    async def __aenter__(self) -> Self:
+        """Enter an async context that closes the client on exit."""
+        return self
+
+    async def __aexit__(self, exc_type: object, exc: object, traceback: object) -> None:
+        """Close the client on leaving an `async with` block."""
+        await self.aclose()

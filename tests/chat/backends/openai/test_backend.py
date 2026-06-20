@@ -54,16 +54,26 @@ async def _fake_astream_chunks():  # noqa: ANN202
         yield chunk
 
 
+def _fake_client(mocker, create, *, is_async: bool = False):  # noqa: ANN001, ANN202
+    """Wrap a ``create`` mock in a reusable, closable fake OpenAI client and its class.
+
+    ``with_options`` returns the same client, mirroring the SDK sharing one pool
+    across per-request views. ``close`` stands in for the SDK lifecycle method,
+    which is a coroutine on the async client.
+    """
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    client.with_options = lambda **_: client
+    client.close = mocker.AsyncMock() if is_async else mocker.MagicMock()
+    cls = mocker.MagicMock(return_value=client)
+    return cls, client
+
+
 def _patch_sync_client(mocker, response) -> object:  # noqa: ANN001
     """Mock the sync OpenAI client to return the given response."""
-    mock_client = SimpleNamespace(
-        chat=SimpleNamespace(
-            completions=SimpleNamespace(create=mocker.MagicMock(return_value=response)),
-        ),
-    )
-    mock_cls = mocker.MagicMock(return_value=mock_client)
-    mocker.patch("openfactcheck.chat.backends.openai.backend.load_openai", return_value=mock_cls)
-    return mock_client.chat.completions.create
+    create = mocker.MagicMock(return_value=response)
+    cls, _ = _fake_client(mocker, create)
+    mocker.patch("openfactcheck.chat.backends.openai.backend.load_openai", return_value=cls)
+    return create
 
 
 def _patch_async_client(mocker, response, *, is_coro: bool = True):  # noqa: ANN001, ANN202
@@ -78,11 +88,8 @@ def _patch_async_client(mocker, response, *, is_coro: bool = True):  # noqa: ANN
             return response
 
     mock_create = mocker.MagicMock(side_effect=_create)
-    mock_client = SimpleNamespace(
-        chat=SimpleNamespace(completions=SimpleNamespace(create=mock_create)),
-    )
-    mock_cls = mocker.MagicMock(return_value=mock_client)
-    mocker.patch("openfactcheck.chat.backends.openai.backend.load_async_openai", return_value=mock_cls)
+    cls, _ = _fake_client(mocker, mock_create, is_async=True)
+    mocker.patch("openfactcheck.chat.backends.openai.backend.load_async_openai", return_value=cls)
     return mock_create
 
 
@@ -116,13 +123,8 @@ def test_OpenAIBackend_completion_maps_errors_sync(mocker) -> None:  # noqa: ANN
         response=httpx.Response(status_code=401, request=httpx.Request("POST", "https://api.openai.com")),
         body=None,
     )
-    mock_client = SimpleNamespace(
-        chat=SimpleNamespace(
-            completions=SimpleNamespace(create=mocker.MagicMock(side_effect=err)),
-        ),
-    )
-    mock_cls = mocker.MagicMock(return_value=mock_client)
-    mocker.patch("openfactcheck.chat.backends.openai.backend.load_openai", return_value=mock_cls)
+    cls, _ = _fake_client(mocker, mocker.MagicMock(side_effect=err))
+    mocker.patch("openfactcheck.chat.backends.openai.backend.load_openai", return_value=cls)
     backend = OpenAIBackend()
 
     with pytest.raises(AuthenticationError):
@@ -186,3 +188,72 @@ async def test_OpenAIBackend_astream_yields_events(mocker) -> None:  # noqa: ANN
     assert ends[0].finish_reason == FinishReason.STOP
     assert ends[0].usage is not None
     assert ends[0].usage.output_tokens == 3
+
+
+# ---------------------------------------------------------------------------
+# Client reuse and lifecycle
+# ---------------------------------------------------------------------------
+
+
+def test_OpenAIBackend_reuses_one_sync_client(mocker) -> None:  # noqa: ANN001
+    """The sync client is built once and reused across calls."""
+    cls, _ = _fake_client(mocker, mocker.MagicMock(return_value=_fake_response()))
+    mocker.patch("openfactcheck.chat.backends.openai.backend.load_openai", return_value=cls)
+    backend = OpenAIBackend()
+
+    backend.completion(_build_request())
+    backend.completion(_build_request())
+
+    assert cls.call_count == 1
+
+
+def test_OpenAIBackend_close_releases_sync_client(mocker) -> None:  # noqa: ANN001
+    """close shuts the sync client, is idempotent, and lets a later call rebuild it."""
+    cls, client = _fake_client(mocker, mocker.MagicMock(return_value=_fake_response()))
+    mocker.patch("openfactcheck.chat.backends.openai.backend.load_openai", return_value=cls)
+    backend = OpenAIBackend()
+
+    backend.completion(_build_request())
+    backend.close()
+    backend.close()
+    backend.completion(_build_request())
+
+    client.close.assert_called_once()
+    assert cls.call_count == 2
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_OpenAIBackend_reuses_one_async_client(mocker) -> None:  # noqa: ANN001
+    """The async client is built once and reused across calls."""
+
+    async def _create(**kwargs):  # noqa: ANN002, ANN003, ANN202, ARG001
+        return _fake_response()
+
+    cls, _ = _fake_client(mocker, mocker.MagicMock(side_effect=_create), is_async=True)
+    mocker.patch("openfactcheck.chat.backends.openai.backend.load_async_openai", return_value=cls)
+    backend = OpenAIBackend()
+
+    await backend.acompletion(_build_request())
+    await backend.acompletion(_build_request())
+
+    assert cls.call_count == 1
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_OpenAIBackend_aclose_releases_async_client(mocker) -> None:  # noqa: ANN001
+    """aclose shuts the async client, is idempotent, and lets a later call rebuild it."""
+
+    async def _create(**kwargs):  # noqa: ANN002, ANN003, ANN202, ARG001
+        return _fake_response()
+
+    cls, client = _fake_client(mocker, mocker.MagicMock(side_effect=_create), is_async=True)
+    mocker.patch("openfactcheck.chat.backends.openai.backend.load_async_openai", return_value=cls)
+    backend = OpenAIBackend()
+
+    await backend.acompletion(_build_request())
+    await backend.aclose()
+    await backend.aclose()
+    await backend.acompletion(_build_request())
+
+    client.close.assert_awaited_once()
+    assert cls.call_count == 2
