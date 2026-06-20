@@ -12,10 +12,13 @@ settings object. Resolving configuration into clients is the facade's concern, n
 
 from openfactcheck.pipeline.factcheckgpt import FactcheckGPTPipeline, factcheckgpt
 from openfactcheck.pipeline.factool import FactoolPipeline, factool
+from openfactcheck.pipeline.rarr import RARRPipeline, rarr
 
 __all__ = [
     "FactcheckGPTPipeline",
     "FactoolPipeline",
+    "RARRPipeline",
     "factcheckgpt",
     "factool",
+    "rarr",
 ]

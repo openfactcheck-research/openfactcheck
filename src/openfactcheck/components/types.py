@@ -116,9 +116,6 @@ class Assessment(BaseModel):
     label: str
     """Overall outcome label, named by the aggregation strategy."""
 
-    score: float
-    """Overall confidence or agreement score."""
-
 
 class Report(BaseModel):
     """The complete result of fact-checking an input."""
@@ -136,3 +133,6 @@ class Report(BaseModel):
 
     revision: str | None = None
     """The input rewritten to correct its factual errors, or ``None`` when no revision was produced."""
+
+    attribution: list[Source] | None = None
+    """Sources cited as the attribution report for the result, or ``None`` when the pipeline produces none."""

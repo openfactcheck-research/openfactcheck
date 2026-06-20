@@ -127,7 +127,7 @@ class Aggregator(Protocol):
                 may be empty when the input yielded no claims.
 
         Returns:
-            The overall judgment, with a strategy-defined label and score.
+            The overall judgment, with a strategy-defined label.
         """
         ...
 

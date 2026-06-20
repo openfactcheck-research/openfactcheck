@@ -44,9 +44,8 @@ async def _verify(claim: Claim, evidence: Evidence, *, on_partial: Callable[[obj
 
 async def _aggregate(verdicts: list[Verdict]) -> Assessment:
     if not verdicts:
-        return Assessment(label="not_enough_evidence", score=0.0)
-    supported = sum(1 for verdict in verdicts if verdict.label == "supported")
-    return Assessment(label="supported", score=supported / len(verdicts))
+        return Assessment(label="not_enough_evidence")
+    return Assessment(label="supported")
 
 
 def _patch_components(mocker: MockerFixture, *, retriever: Callable[[Query], object] = _retrieve) -> None:
@@ -75,7 +74,6 @@ def test_factool_runs_end_to_end(pipeline: FactoolPipeline) -> None:
     assert [v.claim.text for v in result.verdicts] == ["The sky is blue", "Water is wet"]
     assert all(v.label == "supported" for v in result.verdicts)
     assert result.assessment.label == "supported"
-    assert result.assessment.score == 1.0
     assert result.input.content == "The sky is blue. Water is wet."
     # Each verdict carries the evidence it was reached on, aligned to its claim.
     assert all(v.evidence is not None and v.evidence.claim == v.claim for v in result.verdicts)

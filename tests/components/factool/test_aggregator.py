@@ -20,7 +20,6 @@ async def test_FactoolAggregator_all_supported_is_factual() -> None:
     result = await FactoolAggregator()([_verdict("supported"), _verdict("supported")])
 
     assert result.label == "factual"
-    assert result.score == 1.0
 
 
 @pytest.mark.asyncio(loop_scope="function")
@@ -28,7 +27,6 @@ async def test_FactoolAggregator_any_refuted_is_non_factual() -> None:
     result = await FactoolAggregator()([_verdict("supported"), _verdict("refuted")])
 
     assert result.label == "non_factual"
-    assert result.score == 0.5
 
 
 @pytest.mark.asyncio(loop_scope="function")
@@ -36,4 +34,3 @@ async def test_FactoolAggregator_empty_is_not_enough_evidence() -> None:
     result = await FactoolAggregator()([])
 
     assert result.label == "not_enough_evidence"
-    assert result.score == 0.0

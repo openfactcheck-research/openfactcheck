@@ -156,6 +156,7 @@ nav:
           - Provenance: reference/components/provenance.md
           - Dummy: reference/components/dummy.md
           - Factool: reference/components/factool.md
+          - RARR: reference/components/rarr.md
       - Integrations:
           - reference/integrations/index.md
           - Serper: reference/integrations/serper.md

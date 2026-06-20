@@ -36,8 +36,7 @@ api = [
 cloud = [
     "boto3>=1.43",
 ]
-factcheckgpt = [
-    "beautifulsoup4>=4.15.0",
+rarr = [
     "sentence-transformers>=5.6.0",
 ]
 
@@ -115,11 +114,11 @@ reportAttributeAccessIssue = false
 reportArgumentType = false
 reportCallIssue = false
 
-# Optional [factcheckgpt] deps (beautifulsoup4, sentence-transformers) are not
-# installed in the base dev env; they are lazily imported and mocked in tests,
-# so their symbols are unresolved and pyright cannot infer their types here.
+# Optional [rarr] dep (sentence-transformers) is not installed in the base dev
+# env; the cross-encoder used for evidence selection is lazily imported and
+# mocked in tests, so its symbols are unresolved and pyright cannot infer types here.
 [[tool.pyright.executionEnvironments]]
-root = "src/openfactcheck/integrations/google_scraper"
+root = "src/openfactcheck/components/rarr"
 reportMissingImports = false
 reportMissingModuleSource = false
 reportUnknownMemberType = false

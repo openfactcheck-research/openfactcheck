@@ -27,7 +27,7 @@ from openfactcheck.components.factcheckgpt import (
 )
 from openfactcheck.components.types import Claim, Evidence, Input, Query, Report, Verdict
 from openfactcheck.graph import Graph, GraphBuilder, GraphEvent, RunOptions, StepContext
-from openfactcheck.integrations.google_scraper import GoogleScraperClient
+from openfactcheck.integrations.serper import SerperClient
 
 
 @dataclass
@@ -104,29 +104,29 @@ class FactcheckGPTPipeline:
         return self.graph.astream(source, state=_State(), deps=None, options=options)
 
 
-def factcheckgpt(chat: ChatClient, scraper: GoogleScraperClient | None = None) -> FactcheckGPTPipeline:
+def factcheckgpt(chat: ChatClient, serper: SerperClient | None = None) -> FactcheckGPTPipeline:
     """Build the FactcheckGPT fact-check pipeline.
 
     Wires the FactcheckGPT components onto a fact-check graph that ends with a
     revision step. The claim processor, query generator, verifier, and reviser
-    run on ``chat``; the retriever runs on ``scraper``.
+    run on ``chat``; the retriever runs on ``serper``.
 
     Args:
         chat: Chat client backing the LLM components. Its model is the caller's
             choice; the paper's recommended default is recorded on the
             FactcheckGPT components' provenance.
-        scraper: Web retrieval client for the retriever. Defaults to a
-            [`GoogleScraperClient`][openfactcheck.integrations.google_scraper.GoogleScraperClient],
-            which needs the ``factcheckgpt`` extra.
+        serper: Web-search client for the retriever. Defaults to a
+            [`SerperClient`][openfactcheck.integrations.serper.SerperClient] that
+            reads its key from the environment.
 
     Returns:
         A pipeline that runs the FactcheckGPT method end to end, including the
         final revision of the input.
     """
-    scraper = scraper if scraper is not None else GoogleScraperClient()
+    serper = serper if serper is not None else SerperClient()
     _processor = FactcheckGPTClaimProcessor(client=chat)
     _generator = FactcheckGPTQueryGenerator(client=chat)
-    _retriever = FactcheckGPTRetriever(scraper=scraper)
+    _retriever = FactcheckGPTRetriever(serper=serper)
     _verifier = FactcheckGPTVerifier(client=chat)
     _aggregator = FactcheckGPTAggregator()
     _reviser = FactcheckGPTReviser(client=chat)

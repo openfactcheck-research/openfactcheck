@@ -34,7 +34,7 @@ async def _verify(claim: Claim, evidence: Evidence, *, on_partial: Callable[[obj
 
 
 async def _aggregate(verdicts: list[Verdict]) -> Assessment:
-    return Assessment(label="non_factual" if verdicts else "not_enough_evidence", score=0.0)
+    return Assessment(label="non_factual" if verdicts else "not_enough_evidence")
 
 
 async def _revise(text: Input, verdicts: list[Verdict], *, on_partial: Callable[[object], None] | None = None) -> str:
@@ -50,7 +50,7 @@ def pipeline(mocker: MockerFixture) -> FactcheckGPTPipeline:
     mocker.patch("openfactcheck.pipeline.factcheckgpt.FactcheckGPTVerifier", return_value=_verify)
     mocker.patch("openfactcheck.pipeline.factcheckgpt.FactcheckGPTAggregator", return_value=_aggregate)
     mocker.patch("openfactcheck.pipeline.factcheckgpt.FactcheckGPTReviser", return_value=_revise)
-    return factcheckgpt(chat=mocker.Mock(), scraper=mocker.Mock())
+    return factcheckgpt(chat=mocker.Mock(), serper=mocker.Mock())
 
 
 def test_factcheckgpt_runs_end_to_end(pipeline: FactcheckGPTPipeline) -> None:

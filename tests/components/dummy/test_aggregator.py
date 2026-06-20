@@ -19,7 +19,6 @@ async def test_DummyAggregator_returns_inconclusive_judgment() -> None:
     overall = await aggregator([verdict])
 
     assert overall.label == "not_enough_evidence"
-    assert overall.score == 0.0
 
 
 @pytest.mark.asyncio(loop_scope="function")
@@ -29,4 +28,3 @@ async def test_DummyAggregator_handles_empty_verdicts() -> None:
     overall = await aggregator([])
 
     assert overall.label == "not_enough_evidence"
-    assert overall.score == 0.0

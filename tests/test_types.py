@@ -111,23 +111,40 @@ def test_report() -> None:
     result = Report(
         input=Input(content="The earth is flat"),
         verdicts=[verdict],
-        assessment=Assessment(label="refuted", score=0.01),
+        assessment=Assessment(label="refuted"),
     )
     assert result.assessment.label == "refuted"
     assert len(result.verdicts) == 1
     assert result.verdicts[0].label == "refuted"
     assert result.verdicts[0].evidence is not None
     assert result.verdicts[0].evidence.sources[0].content == "Earth is a sphere"
+    assert result.revision is None
+    assert result.attribution is None
 
 
 def test_report_empty() -> None:
     result = Report(
         input=Input(content=""),
         verdicts=[],
-        assessment=Assessment(label="not_enough_evidence", score=0.0),
+        assessment=Assessment(label="not_enough_evidence"),
     )
     assert result.verdicts == []
     assert result.assessment.label == "not_enough_evidence"
+
+
+def test_report_carries_revision_and_attribution() -> None:
+    sources = [Source(content="cited passage", metadata=WebMetadata(url="https://x.com"))]
+
+    result = Report(
+        input=Input(content="The sky is green"),
+        verdicts=[],
+        assessment=Assessment(label="revised"),
+        revision="The sky is blue",
+        attribution=sources,
+    )
+
+    assert result.revision == "The sky is blue"
+    assert result.attribution == sources
 
 
 def test_serialization_round_trip() -> None:
@@ -139,7 +156,7 @@ def test_serialization_round_trip() -> None:
     result = Report(
         input=Input(content="Water is wet"),
         verdicts=[verdict],
-        assessment=Assessment(label="supported", score=0.9),
+        assessment=Assessment(label="supported"),
     )
 
     data = result.model_dump()
@@ -150,9 +167,8 @@ def test_serialization_round_trip() -> None:
 
 
 def test_assessment() -> None:
-    overall = Assessment(label="supported", score=0.8)
+    overall = Assessment(label="supported")
     assert overall.label == "supported"
-    assert overall.score == 0.8
 
 
 def test_frozen_model_rejects_mutation() -> None:

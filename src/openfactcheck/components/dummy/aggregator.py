@@ -19,6 +19,6 @@ class DummyAggregator:
             verdicts: Per-claim verdicts; ignored.
 
         Returns:
-            An overall judgment labelled ``not_enough_evidence`` with zero score.
+            An overall judgment labelled ``not_enough_evidence``.
         """
-        return Assessment(label="not_enough_evidence", score=0.0)
+        return Assessment(label="not_enough_evidence")

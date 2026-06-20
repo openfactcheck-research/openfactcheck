@@ -10,8 +10,7 @@ class FactcheckGPTAggregator:
     """Combine per-claim verdicts with FactcheckGPT's response-level rule.
 
     A response is factual only when every claim is supported; a single
-    unsupported claim makes the whole response non-factual. The score reports
-    the fraction of supported claims.
+    unsupported claim makes the whole response non-factual.
     """
 
     async def __call__(self, verdicts: list[Verdict]) -> Assessment:
@@ -25,7 +24,6 @@ class FactcheckGPTAggregator:
             ``not_enough_evidence`` when there are no verdicts.
         """
         if not verdicts:
-            return Assessment(label="not_enough_evidence", score=0.0)
-        supported = sum(1 for verdict in verdicts if verdict.label == "supported")
-        label = "factual" if supported == len(verdicts) else "non_factual"
-        return Assessment(label=label, score=supported / len(verdicts))
+            return Assessment(label="not_enough_evidence")
+        factual = all(verdict.label == "supported" for verdict in verdicts)
+        return Assessment(label="factual" if factual else "non_factual")

@@ -87,7 +87,7 @@ async def test_Aggregator_accepts_conforming_implementation() -> None:
     class DummyAggregator:
         async def __call__(self, verdicts: list[Verdict]) -> Assessment:
             label = "supported" if verdicts else "not_enough_evidence"
-            return Assessment(label=label, score=1.0)
+            return Assessment(label=label)
 
     aggregator: Aggregator = DummyAggregator()
 
@@ -96,7 +96,6 @@ async def test_Aggregator_accepts_conforming_implementation() -> None:
     verdict = Verdict(claim=claim, label="supported", confidence=1.0, reasoning="")
     result = await aggregator([verdict])
     assert result.label == "supported"
-    assert result.score == 1.0
 
 
 @pytest.mark.parametrize(
