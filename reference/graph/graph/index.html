@@ -4580,13 +4580,13 @@ once the run is complete, read <a class="autorefs autorefs-internal" title="    
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-638">638</a></span>
-<span class="normal"><a href="#__codelineno-0-639">639</a></span>
-<span class="normal"><a href="#__codelineno-0-640">640</a></span>
-<span class="normal"><a href="#__codelineno-0-641">641</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-638" name="__codelineno-0-638"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">],</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-639" name="__codelineno-0-639"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap an executor and the input that seeds it; construct via [`Graph.stepper`][Graph.stepper].&quot;&quot;&quot;</span>
-<a id="__codelineno-0-640" name="__codelineno-0-640"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_run</span> <span class="o">=</span> <span class="n">run</span>
-<a id="__codelineno-0-641" name="__codelineno-0-641"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span> <span class="o">=</span> <span class="n">inputs</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-640">640</a></span>
+<span class="normal"><a href="#__codelineno-0-641">641</a></span>
+<span class="normal"><a href="#__codelineno-0-642">642</a></span>
+<span class="normal"><a href="#__codelineno-0-643">643</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-640" name="__codelineno-0-640"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">],</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-641" name="__codelineno-0-641"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap an executor and the input that seeds it; construct via [`Graph.stepper`][Graph.stepper].&quot;&quot;&quot;</span>
+<a id="__codelineno-0-642" name="__codelineno-0-642"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_run</span> <span class="o">=</span> <span class="n">run</span>
+<a id="__codelineno-0-643" name="__codelineno-0-643"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_inputs</span> <span class="o">=</span> <span class="n">inputs</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
@@ -4649,9 +4649,7 @@ once the run is complete, read <a class="autorefs autorefs-internal" title="    
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-652">652</a></span>
-<span class="normal"><a href="#__codelineno-0-653">653</a></span>
-<span class="normal"><a href="#__codelineno-0-654">654</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-654">654</a></span>
 <span class="normal"><a href="#__codelineno-0-655">655</a></span>
 <span class="normal"><a href="#__codelineno-0-656">656</a></span>
 <span class="normal"><a href="#__codelineno-0-657">657</a></span>
@@ -4668,26 +4666,28 @@ once the run is complete, read <a class="autorefs autorefs-internal" title="    
 <span class="normal"><a href="#__codelineno-0-668">668</a></span>
 <span class="normal"><a href="#__codelineno-0-669">669</a></span>
 <span class="normal"><a href="#__codelineno-0-670">670</a></span>
-<span class="normal"><a href="#__codelineno-0-671">671</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-652" name="__codelineno-0-652"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StepResult</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-653" name="__codelineno-0-653"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the next task, dispatch its successors on success, and report it.</span>
-<a id="__codelineno-0-654" name="__codelineno-0-654"></a>
-<a id="__codelineno-0-655" name="__codelineno-0-655"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-656" name="__codelineno-0-656"></a><span class="sd">        The finished task&#39;s [`StepResult`][StepResult], or ``None`` once no</span>
-<a id="__codelineno-0-657" name="__codelineno-0-657"></a><span class="sd">        tasks remain. A result with an ``error`` has not been routed onward:</span>
-<a id="__codelineno-0-658" name="__codelineno-0-658"></a><span class="sd">        call [`recover`][GraphStepper.recover] to resume it with a fallback,</span>
-<a id="__codelineno-0-659" name="__codelineno-0-659"></a><span class="sd">        or [`drop`][GraphStepper.drop] to drop its branch.</span>
-<a id="__codelineno-0-660" name="__codelineno-0-660"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-661" name="__codelineno-0-661"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="o">.</span><span class="n">pump</span><span class="p">()</span>
-<a id="__codelineno-0-662" name="__codelineno-0-662"></a>    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-663" name="__codelineno-0-663"></a>        <span class="k">return</span> <span class="kc">None</span>
-<a id="__codelineno-0-664" name="__codelineno-0-664"></a>    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">error</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-665" name="__codelineno-0-665"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="o">.</span><span class="n">route_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">fork_stack</span><span class="p">)</span>
-<a id="__codelineno-0-666" name="__codelineno-0-666"></a>    <span class="k">return</span> <span class="n">StepResult</span><span class="p">(</span>
-<a id="__codelineno-0-667" name="__codelineno-0-667"></a>        <span class="n">node_id</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
-<a id="__codelineno-0-668" name="__codelineno-0-668"></a>        <span class="n">output</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="p">,</span>
-<a id="__codelineno-0-669" name="__codelineno-0-669"></a>        <span class="n">error</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">,</span>
-<a id="__codelineno-0-670" name="__codelineno-0-670"></a>        <span class="n">fork_stack</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">fork_stack</span><span class="p">,</span>
-<a id="__codelineno-0-671" name="__codelineno-0-671"></a>    <span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-671">671</a></span>
+<span class="normal"><a href="#__codelineno-0-672">672</a></span>
+<span class="normal"><a href="#__codelineno-0-673">673</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-654" name="__codelineno-0-654"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StepResult</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-655" name="__codelineno-0-655"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the next task, dispatch its successors on success, and report it.</span>
+<a id="__codelineno-0-656" name="__codelineno-0-656"></a>
+<a id="__codelineno-0-657" name="__codelineno-0-657"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-658" name="__codelineno-0-658"></a><span class="sd">        The finished task&#39;s [`StepResult`][StepResult], or ``None`` once no</span>
+<a id="__codelineno-0-659" name="__codelineno-0-659"></a><span class="sd">        tasks remain. A result with an ``error`` has not been routed onward:</span>
+<a id="__codelineno-0-660" name="__codelineno-0-660"></a><span class="sd">        call [`recover`][GraphStepper.recover] to resume it with a fallback,</span>
+<a id="__codelineno-0-661" name="__codelineno-0-661"></a><span class="sd">        or [`drop`][GraphStepper.drop] to drop its branch.</span>
+<a id="__codelineno-0-662" name="__codelineno-0-662"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-663" name="__codelineno-0-663"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="o">.</span><span class="n">pump</span><span class="p">()</span>
+<a id="__codelineno-0-664" name="__codelineno-0-664"></a>    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-665" name="__codelineno-0-665"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-0-666" name="__codelineno-0-666"></a>    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">error</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-667" name="__codelineno-0-667"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="o">.</span><span class="n">route_output</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">fork_stack</span><span class="p">)</span>
+<a id="__codelineno-0-668" name="__codelineno-0-668"></a>    <span class="k">return</span> <span class="n">StepResult</span><span class="p">(</span>
+<a id="__codelineno-0-669" name="__codelineno-0-669"></a>        <span class="n">node_id</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
+<a id="__codelineno-0-670" name="__codelineno-0-670"></a>        <span class="n">output</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="p">,</span>
+<a id="__codelineno-0-671" name="__codelineno-0-671"></a>        <span class="n">error</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">error</span><span class="p">,</span>
+<a id="__codelineno-0-672" name="__codelineno-0-672"></a>        <span class="n">fork_stack</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">fork_stack</span><span class="p">,</span>
+<a id="__codelineno-0-673" name="__codelineno-0-673"></a>    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4772,23 +4772,23 @@ once the run is complete, read <a class="autorefs autorefs-internal" title="    
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-673">673</a></span>
-<span class="normal"><a href="#__codelineno-0-674">674</a></span>
-<span class="normal"><a href="#__codelineno-0-675">675</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-675">675</a></span>
 <span class="normal"><a href="#__codelineno-0-676">676</a></span>
 <span class="normal"><a href="#__codelineno-0-677">677</a></span>
 <span class="normal"><a href="#__codelineno-0-678">678</a></span>
 <span class="normal"><a href="#__codelineno-0-679">679</a></span>
 <span class="normal"><a href="#__codelineno-0-680">680</a></span>
-<span class="normal"><a href="#__codelineno-0-681">681</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-673" name="__codelineno-0-673"></a><span class="k">def</span><span class="w"> </span><span class="nf">recover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="n">StepResult</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-674" name="__codelineno-0-674"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a failed task by routing ``output`` as if its node had returned it.</span>
-<a id="__codelineno-0-675" name="__codelineno-0-675"></a>
-<a id="__codelineno-0-676" name="__codelineno-0-676"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-677" name="__codelineno-0-677"></a><span class="sd">        step: The failed [`StepResult`][StepResult] from</span>
-<a id="__codelineno-0-678" name="__codelineno-0-678"></a><span class="sd">            [`advance`][GraphStepper.advance].</span>
-<a id="__codelineno-0-679" name="__codelineno-0-679"></a><span class="sd">        output: The value to route onward in place of the missing output.</span>
-<a id="__codelineno-0-680" name="__codelineno-0-680"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-681" name="__codelineno-0-681"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="o">.</span><span class="n">route_output</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">fork_stack</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-681">681</a></span>
+<span class="normal"><a href="#__codelineno-0-682">682</a></span>
+<span class="normal"><a href="#__codelineno-0-683">683</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-675" name="__codelineno-0-675"></a><span class="k">def</span><span class="w"> </span><span class="nf">recover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="n">StepResult</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-676" name="__codelineno-0-676"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a failed task by routing ``output`` as if its node had returned it.</span>
+<a id="__codelineno-0-677" name="__codelineno-0-677"></a>
+<a id="__codelineno-0-678" name="__codelineno-0-678"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-679" name="__codelineno-0-679"></a><span class="sd">        step: The failed [`StepResult`][StepResult] from</span>
+<a id="__codelineno-0-680" name="__codelineno-0-680"></a><span class="sd">            [`advance`][GraphStepper.advance].</span>
+<a id="__codelineno-0-681" name="__codelineno-0-681"></a><span class="sd">        output: The value to route onward in place of the missing output.</span>
+<a id="__codelineno-0-682" name="__codelineno-0-682"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-683" name="__codelineno-0-683"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="o">.</span><span class="n">route_output</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">fork_stack</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4860,9 +4860,7 @@ join awaiting it complete with the branches that did arrive.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-683">683</a></span>
-<span class="normal"><a href="#__codelineno-0-684">684</a></span>
-<span class="normal"><a href="#__codelineno-0-685">685</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-685">685</a></span>
 <span class="normal"><a href="#__codelineno-0-686">686</a></span>
 <span class="normal"><a href="#__codelineno-0-687">687</a></span>
 <span class="normal"><a href="#__codelineno-0-688">688</a></span>
@@ -4871,18 +4869,20 @@ join awaiting it complete with the branches that did arrive.</p>
 <span class="normal"><a href="#__codelineno-0-691">691</a></span>
 <span class="normal"><a href="#__codelineno-0-692">692</a></span>
 <span class="normal"><a href="#__codelineno-0-693">693</a></span>
-<span class="normal"><a href="#__codelineno-0-694">694</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-683" name="__codelineno-0-683"></a><span class="k">def</span><span class="w"> </span><span class="nf">drop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="n">StepResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-684" name="__codelineno-0-684"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Drop a failed step&#39;s branch so its downstream join can fire without it.</span>
-<a id="__codelineno-0-685" name="__codelineno-0-685"></a>
-<a id="__codelineno-0-686" name="__codelineno-0-686"></a><span class="sd">    The counterpart to [`recover`][GraphStepper.recover]: where ``recover``</span>
-<a id="__codelineno-0-687" name="__codelineno-0-687"></a><span class="sd">    supplies a replacement value, ``drop`` abandons the branch and lets any</span>
-<a id="__codelineno-0-688" name="__codelineno-0-688"></a><span class="sd">    join awaiting it complete with the branches that did arrive.</span>
-<a id="__codelineno-0-689" name="__codelineno-0-689"></a>
-<a id="__codelineno-0-690" name="__codelineno-0-690"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-691" name="__codelineno-0-691"></a><span class="sd">        step: The failed [`StepResult`][StepResult] from</span>
-<a id="__codelineno-0-692" name="__codelineno-0-692"></a><span class="sd">            [`advance`][GraphStepper.advance].</span>
-<a id="__codelineno-0-693" name="__codelineno-0-693"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-694" name="__codelineno-0-694"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="o">.</span><span class="n">drop_failed</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">fork_stack</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-694">694</a></span>
+<span class="normal"><a href="#__codelineno-0-695">695</a></span>
+<span class="normal"><a href="#__codelineno-0-696">696</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-685" name="__codelineno-0-685"></a><span class="k">def</span><span class="w"> </span><span class="nf">drop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="n">StepResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-686" name="__codelineno-0-686"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Drop a failed step&#39;s branch so its downstream join can fire without it.</span>
+<a id="__codelineno-0-687" name="__codelineno-0-687"></a>
+<a id="__codelineno-0-688" name="__codelineno-0-688"></a><span class="sd">    The counterpart to [`recover`][GraphStepper.recover]: where ``recover``</span>
+<a id="__codelineno-0-689" name="__codelineno-0-689"></a><span class="sd">    supplies a replacement value, ``drop`` abandons the branch and lets any</span>
+<a id="__codelineno-0-690" name="__codelineno-0-690"></a><span class="sd">    join awaiting it complete with the branches that did arrive.</span>
+<a id="__codelineno-0-691" name="__codelineno-0-691"></a>
+<a id="__codelineno-0-692" name="__codelineno-0-692"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-693" name="__codelineno-0-693"></a><span class="sd">        step: The failed [`StepResult`][StepResult] from</span>
+<a id="__codelineno-0-694" name="__codelineno-0-694"></a><span class="sd">            [`advance`][GraphStepper.advance].</span>
+<a id="__codelineno-0-695" name="__codelineno-0-695"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-696" name="__codelineno-0-696"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="o">.</span><span class="n">drop_failed</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">fork_stack</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5009,23 +5009,23 @@ into every <a class="autorefs autorefs-internal" title="            StepContext
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-732">732</a></span>
-<span class="normal"><a href="#__codelineno-0-733">733</a></span>
-<span class="normal"><a href="#__codelineno-0-734">734</a></span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-734">734</a></span>
 <span class="normal"><a href="#__codelineno-0-735">735</a></span>
 <span class="normal"><a href="#__codelineno-0-736">736</a></span>
 <span class="normal"><a href="#__codelineno-0-737">737</a></span>
 <span class="normal"><a href="#__codelineno-0-738">738</a></span>
 <span class="normal"><a href="#__codelineno-0-739">739</a></span>
-<span class="normal"><a href="#__codelineno-0-740">740</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-732" name="__codelineno-0-732"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">GraphSpec</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-733" name="__codelineno-0-733"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Record the validated definition of a built graph.</span>
-<a id="__codelineno-0-734" name="__codelineno-0-734"></a>
-<a id="__codelineno-0-735" name="__codelineno-0-735"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-736" name="__codelineno-0-736"></a><span class="sd">        spec: The validated nodes, edges, and routing from the builder.</span>
-<a id="__codelineno-0-737" name="__codelineno-0-737"></a><span class="sd">        name: Human-readable name for diagrams and logs.</span>
-<a id="__codelineno-0-738" name="__codelineno-0-738"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-739" name="__codelineno-0-739"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_spec</span> <span class="o">=</span> <span class="n">spec</span>
-<a id="__codelineno-0-740" name="__codelineno-0-740"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="normal"><a href="#__codelineno-0-740">740</a></span>
+<span class="normal"><a href="#__codelineno-0-741">741</a></span>
+<span class="normal"><a href="#__codelineno-0-742">742</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-734" name="__codelineno-0-734"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">GraphSpec</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-735" name="__codelineno-0-735"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Record the validated definition of a built graph.</span>
+<a id="__codelineno-0-736" name="__codelineno-0-736"></a>
+<a id="__codelineno-0-737" name="__codelineno-0-737"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-738" name="__codelineno-0-738"></a><span class="sd">        spec: The validated nodes, edges, and routing from the builder.</span>
+<a id="__codelineno-0-739" name="__codelineno-0-739"></a><span class="sd">        name: Human-readable name for diagrams and logs.</span>
+<a id="__codelineno-0-740" name="__codelineno-0-740"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-741" name="__codelineno-0-741"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_spec</span> <span class="o">=</span> <span class="n">spec</span>
+<a id="__codelineno-0-742" name="__codelineno-0-742"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
@@ -5159,9 +5159,7 @@ from the source node's declared output type.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-742">742</a></span>
-<span class="normal"><a href="#__codelineno-0-743">743</a></span>
-<span class="normal"><a href="#__codelineno-0-744">744</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-744">744</a></span>
 <span class="normal"><a href="#__codelineno-0-745">745</a></span>
 <span class="normal"><a href="#__codelineno-0-746">746</a></span>
 <span class="normal"><a href="#__codelineno-0-747">747</a></span>
@@ -5179,27 +5177,29 @@ from the source node's declared output type.</p>
 <span class="normal"><a href="#__codelineno-0-759">759</a></span>
 <span class="normal"><a href="#__codelineno-0-760">760</a></span>
 <span class="normal"><a href="#__codelineno-0-761">761</a></span>
-<span class="normal"><a href="#__codelineno-0-762">762</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-742" name="__codelineno-0-742"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_mermaid</span><span class="p">(</span>
-<a id="__codelineno-0-743" name="__codelineno-0-743"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-744" name="__codelineno-0-744"></a>    <span class="o">*</span><span class="p">,</span>
-<a id="__codelineno-0-745" name="__codelineno-0-745"></a>    <span class="n">direction</span><span class="p">:</span> <span class="n">Direction</span> <span class="o">=</span> <span class="s2">&quot;TD&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-746" name="__codelineno-0-746"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-747" name="__codelineno-0-747"></a>    <span class="n">highlight</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-748" name="__codelineno-0-748"></a>    <span class="n">show_types</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<a id="__codelineno-0-749" name="__codelineno-0-749"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-750" name="__codelineno-0-750"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Render this graph as Mermaid flowchart source.</span>
-<a id="__codelineno-0-751" name="__codelineno-0-751"></a>
-<a id="__codelineno-0-752" name="__codelineno-0-752"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-753" name="__codelineno-0-753"></a><span class="sd">        direction: Layout direction of the flowchart.</span>
-<a id="__codelineno-0-754" name="__codelineno-0-754"></a><span class="sd">        title: An optional title shown above the diagram.</span>
-<a id="__codelineno-0-755" name="__codelineno-0-755"></a><span class="sd">        highlight: Node ids to draw with a highlight style.</span>
-<a id="__codelineno-0-756" name="__codelineno-0-756"></a><span class="sd">        show_types: Label each edge with the type of data it carries, read</span>
-<a id="__codelineno-0-757" name="__codelineno-0-757"></a><span class="sd">            from the source node&#39;s declared output type.</span>
-<a id="__codelineno-0-758" name="__codelineno-0-758"></a>
-<a id="__codelineno-0-759" name="__codelineno-0-759"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-760" name="__codelineno-0-760"></a><span class="sd">        Mermaid flowchart source as a string.</span>
-<a id="__codelineno-0-761" name="__codelineno-0-761"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-762" name="__codelineno-0-762"></a>    <span class="k">return</span> <span class="n">to_mermaid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="n">highlight</span><span class="p">,</span> <span class="n">show_types</span><span class="o">=</span><span class="n">show_types</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-762">762</a></span>
+<span class="normal"><a href="#__codelineno-0-763">763</a></span>
+<span class="normal"><a href="#__codelineno-0-764">764</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-744" name="__codelineno-0-744"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_mermaid</span><span class="p">(</span>
+<a id="__codelineno-0-745" name="__codelineno-0-745"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-746" name="__codelineno-0-746"></a>    <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-747" name="__codelineno-0-747"></a>    <span class="n">direction</span><span class="p">:</span> <span class="n">Direction</span> <span class="o">=</span> <span class="s2">&quot;TD&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-748" name="__codelineno-0-748"></a>    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-749" name="__codelineno-0-749"></a>    <span class="n">highlight</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-750" name="__codelineno-0-750"></a>    <span class="n">show_types</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-0-751" name="__codelineno-0-751"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-0-752" name="__codelineno-0-752"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Render this graph as Mermaid flowchart source.</span>
+<a id="__codelineno-0-753" name="__codelineno-0-753"></a>
+<a id="__codelineno-0-754" name="__codelineno-0-754"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-755" name="__codelineno-0-755"></a><span class="sd">        direction: Layout direction of the flowchart.</span>
+<a id="__codelineno-0-756" name="__codelineno-0-756"></a><span class="sd">        title: An optional title shown above the diagram.</span>
+<a id="__codelineno-0-757" name="__codelineno-0-757"></a><span class="sd">        highlight: Node ids to draw with a highlight style.</span>
+<a id="__codelineno-0-758" name="__codelineno-0-758"></a><span class="sd">        show_types: Label each edge with the type of data it carries, read</span>
+<a id="__codelineno-0-759" name="__codelineno-0-759"></a><span class="sd">            from the source node&#39;s declared output type.</span>
+<a id="__codelineno-0-760" name="__codelineno-0-760"></a>
+<a id="__codelineno-0-761" name="__codelineno-0-761"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-762" name="__codelineno-0-762"></a><span class="sd">        Mermaid flowchart source as a string.</span>
+<a id="__codelineno-0-763" name="__codelineno-0-763"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-764" name="__codelineno-0-764"></a>    <span class="k">return</span> <span class="n">to_mermaid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="n">highlight</span><span class="p">,</span> <span class="n">show_types</span><span class="o">=</span><span class="n">show_types</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5302,9 +5302,7 @@ self-hosted server to render offline or to handle a large diagram.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-764">764</a></span>
-<span class="normal"><a href="#__codelineno-0-765">765</a></span>
-<span class="normal"><a href="#__codelineno-0-766">766</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-766">766</a></span>
 <span class="normal"><a href="#__codelineno-0-767">767</a></span>
 <span class="normal"><a href="#__codelineno-0-768">768</a></span>
 <span class="normal"><a href="#__codelineno-0-769">769</a></span>
@@ -5319,24 +5317,26 @@ self-hosted server to render offline or to handle a large diagram.</p>
 <span class="normal"><a href="#__codelineno-0-778">778</a></span>
 <span class="normal"><a href="#__codelineno-0-779">779</a></span>
 <span class="normal"><a href="#__codelineno-0-780">780</a></span>
-<span class="normal"><a href="#__codelineno-0-781">781</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-764" name="__codelineno-0-764"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_mermaid_image</span><span class="p">(</span>
-<a id="__codelineno-0-765" name="__codelineno-0-765"></a>    <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://mermaid.ink&quot;</span><span class="p">,</span> <span class="n">image_type</span><span class="p">:</span> <span class="n">ImageType</span> <span class="o">=</span> <span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span>
-<a id="__codelineno-0-766" name="__codelineno-0-766"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
-<a id="__codelineno-0-767" name="__codelineno-0-767"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Render this graph as an image through a Mermaid server.</span>
-<a id="__codelineno-0-768" name="__codelineno-0-768"></a>
-<a id="__codelineno-0-769" name="__codelineno-0-769"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-770" name="__codelineno-0-770"></a><span class="sd">        base_url: Base URL of the Mermaid rendering server; point it at a</span>
-<a id="__codelineno-0-771" name="__codelineno-0-771"></a><span class="sd">            self-hosted server to render offline or to handle a large diagram.</span>
-<a id="__codelineno-0-772" name="__codelineno-0-772"></a><span class="sd">        image_type: Image format to request.</span>
-<a id="__codelineno-0-773" name="__codelineno-0-773"></a><span class="sd">        timeout: Seconds to wait for the server before giving up.</span>
-<a id="__codelineno-0-774" name="__codelineno-0-774"></a>
-<a id="__codelineno-0-775" name="__codelineno-0-775"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-776" name="__codelineno-0-776"></a><span class="sd">        The rendered image&#39;s raw bytes.</span>
-<a id="__codelineno-0-777" name="__codelineno-0-777"></a>
-<a id="__codelineno-0-778" name="__codelineno-0-778"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-779" name="__codelineno-0-779"></a><span class="sd">        GraphRenderError: If the server cannot be reached or returns an error.</span>
-<a id="__codelineno-0-780" name="__codelineno-0-780"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-781" name="__codelineno-0-781"></a>    <span class="k">return</span> <span class="n">to_mermaid_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_mermaid</span><span class="p">(),</span> <span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span> <span class="n">image_type</span><span class="o">=</span><span class="n">image_type</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-781">781</a></span>
+<span class="normal"><a href="#__codelineno-0-782">782</a></span>
+<span class="normal"><a href="#__codelineno-0-783">783</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-766" name="__codelineno-0-766"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_mermaid_image</span><span class="p">(</span>
+<a id="__codelineno-0-767" name="__codelineno-0-767"></a>    <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://mermaid.ink&quot;</span><span class="p">,</span> <span class="n">image_type</span><span class="p">:</span> <span class="n">ImageType</span> <span class="o">=</span> <span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span>
+<a id="__codelineno-0-768" name="__codelineno-0-768"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<a id="__codelineno-0-769" name="__codelineno-0-769"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Render this graph as an image through a Mermaid server.</span>
+<a id="__codelineno-0-770" name="__codelineno-0-770"></a>
+<a id="__codelineno-0-771" name="__codelineno-0-771"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-772" name="__codelineno-0-772"></a><span class="sd">        base_url: Base URL of the Mermaid rendering server; point it at a</span>
+<a id="__codelineno-0-773" name="__codelineno-0-773"></a><span class="sd">            self-hosted server to render offline or to handle a large diagram.</span>
+<a id="__codelineno-0-774" name="__codelineno-0-774"></a><span class="sd">        image_type: Image format to request.</span>
+<a id="__codelineno-0-775" name="__codelineno-0-775"></a><span class="sd">        timeout: Seconds to wait for the server before giving up.</span>
+<a id="__codelineno-0-776" name="__codelineno-0-776"></a>
+<a id="__codelineno-0-777" name="__codelineno-0-777"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-778" name="__codelineno-0-778"></a><span class="sd">        The rendered image&#39;s raw bytes.</span>
+<a id="__codelineno-0-779" name="__codelineno-0-779"></a>
+<a id="__codelineno-0-780" name="__codelineno-0-780"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-781" name="__codelineno-0-781"></a><span class="sd">        GraphRenderError: If the server cannot be reached or returns an error.</span>
+<a id="__codelineno-0-782" name="__codelineno-0-782"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-783" name="__codelineno-0-783"></a>    <span class="k">return</span> <span class="n">to_mermaid_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_mermaid</span><span class="p">(),</span> <span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span> <span class="n">image_type</span><span class="o">=</span><span class="n">image_type</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5420,9 +5420,7 @@ self-hosted server to render offline or to handle a large diagram.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-783">783</a></span>
-<span class="normal"><a href="#__codelineno-0-784">784</a></span>
-<span class="normal"><a href="#__codelineno-0-785">785</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-785">785</a></span>
 <span class="normal"><a href="#__codelineno-0-786">786</a></span>
 <span class="normal"><a href="#__codelineno-0-787">787</a></span>
 <span class="normal"><a href="#__codelineno-0-788">788</a></span>
@@ -5437,24 +5435,26 @@ self-hosted server to render offline or to handle a large diagram.</p>
 <span class="normal"><a href="#__codelineno-0-797">797</a></span>
 <span class="normal"><a href="#__codelineno-0-798">798</a></span>
 <span class="normal"><a href="#__codelineno-0-799">799</a></span>
-<span class="normal"><a href="#__codelineno-0-800">800</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-783" name="__codelineno-0-783"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_mermaid_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://mermaid.ink&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_MermaidView</span><span class="p">:</span>
-<a id="__codelineno-0-784" name="__codelineno-0-784"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Render this graph as a PNG that displays inline in a notebook.</span>
-<a id="__codelineno-0-785" name="__codelineno-0-785"></a>
-<a id="__codelineno-0-786" name="__codelineno-0-786"></a><span class="sd">    Returns an object a notebook renders as the diagram image; elsewhere,</span>
-<a id="__codelineno-0-787" name="__codelineno-0-787"></a><span class="sd">    reach for [`to_mermaid_image`][Graph.to_mermaid_image] to get the bytes directly.</span>
-<a id="__codelineno-0-788" name="__codelineno-0-788"></a>
-<a id="__codelineno-0-789" name="__codelineno-0-789"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-790" name="__codelineno-0-790"></a><span class="sd">        base_url: Base URL of the Mermaid rendering server; point it at a</span>
-<a id="__codelineno-0-791" name="__codelineno-0-791"></a><span class="sd">            self-hosted server to render offline or to handle a large diagram.</span>
-<a id="__codelineno-0-792" name="__codelineno-0-792"></a><span class="sd">        timeout: Seconds to wait for the server before giving up.</span>
-<a id="__codelineno-0-793" name="__codelineno-0-793"></a>
-<a id="__codelineno-0-794" name="__codelineno-0-794"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-795" name="__codelineno-0-795"></a><span class="sd">        A display wrapper a notebook shows as the rendered diagram.</span>
-<a id="__codelineno-0-796" name="__codelineno-0-796"></a>
-<a id="__codelineno-0-797" name="__codelineno-0-797"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-798" name="__codelineno-0-798"></a><span class="sd">        GraphRenderError: If the server cannot be reached or returns an error.</span>
-<a id="__codelineno-0-799" name="__codelineno-0-799"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-800" name="__codelineno-0-800"></a>    <span class="k">return</span> <span class="n">_MermaidView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_mermaid_image</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">))</span>
+<span class="normal"><a href="#__codelineno-0-800">800</a></span>
+<span class="normal"><a href="#__codelineno-0-801">801</a></span>
+<span class="normal"><a href="#__codelineno-0-802">802</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-785" name="__codelineno-0-785"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_mermaid_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;https://mermaid.ink&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_MermaidView</span><span class="p">:</span>
+<a id="__codelineno-0-786" name="__codelineno-0-786"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Render this graph as a PNG that displays inline in a notebook.</span>
+<a id="__codelineno-0-787" name="__codelineno-0-787"></a>
+<a id="__codelineno-0-788" name="__codelineno-0-788"></a><span class="sd">    Returns an object a notebook renders as the diagram image; elsewhere,</span>
+<a id="__codelineno-0-789" name="__codelineno-0-789"></a><span class="sd">    reach for [`to_mermaid_image`][Graph.to_mermaid_image] to get the bytes directly.</span>
+<a id="__codelineno-0-790" name="__codelineno-0-790"></a>
+<a id="__codelineno-0-791" name="__codelineno-0-791"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-792" name="__codelineno-0-792"></a><span class="sd">        base_url: Base URL of the Mermaid rendering server; point it at a</span>
+<a id="__codelineno-0-793" name="__codelineno-0-793"></a><span class="sd">            self-hosted server to render offline or to handle a large diagram.</span>
+<a id="__codelineno-0-794" name="__codelineno-0-794"></a><span class="sd">        timeout: Seconds to wait for the server before giving up.</span>
+<a id="__codelineno-0-795" name="__codelineno-0-795"></a>
+<a id="__codelineno-0-796" name="__codelineno-0-796"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-797" name="__codelineno-0-797"></a><span class="sd">        A display wrapper a notebook shows as the rendered diagram.</span>
+<a id="__codelineno-0-798" name="__codelineno-0-798"></a>
+<a id="__codelineno-0-799" name="__codelineno-0-799"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-800" name="__codelineno-0-800"></a><span class="sd">        GraphRenderError: If the server cannot be reached or returns an error.</span>
+<a id="__codelineno-0-801" name="__codelineno-0-801"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-802" name="__codelineno-0-802"></a>    <span class="k">return</span> <span class="n">_MermaidView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_mermaid_image</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5580,9 +5580,7 @@ defaults to <a class="autorefs autorefs-internal" title="            RunOptions
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-821">821</a></span>
-<span class="normal"><a href="#__codelineno-0-822">822</a></span>
-<span class="normal"><a href="#__codelineno-0-823">823</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-823">823</a></span>
 <span class="normal"><a href="#__codelineno-0-824">824</a></span>
 <span class="normal"><a href="#__codelineno-0-825">825</a></span>
 <span class="normal"><a href="#__codelineno-0-826">826</a></span>
@@ -5600,27 +5598,29 @@ defaults to <a class="autorefs autorefs-internal" title="            RunOptions
 <span class="normal"><a href="#__codelineno-0-838">838</a></span>
 <span class="normal"><a href="#__codelineno-0-839">839</a></span>
 <span class="normal"><a href="#__codelineno-0-840">840</a></span>
-<span class="normal"><a href="#__codelineno-0-841">841</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-821" name="__codelineno-0-821"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span> <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
-<a id="__codelineno-0-822" name="__codelineno-0-822"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the graph to completion and return its terminal output.</span>
-<a id="__codelineno-0-823" name="__codelineno-0-823"></a>
-<a id="__codelineno-0-824" name="__codelineno-0-824"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-825" name="__codelineno-0-825"></a><span class="sd">        inputs: The value handed to the first node.</span>
-<a id="__codelineno-0-826" name="__codelineno-0-826"></a><span class="sd">        state: Run-scoped state shared across nodes.</span>
-<a id="__codelineno-0-827" name="__codelineno-0-827"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
-<a id="__codelineno-0-828" name="__codelineno-0-828"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs for the run;</span>
-<a id="__codelineno-0-829" name="__codelineno-0-829"></a><span class="sd">            defaults to [`RunOptions`][RunOptions]&#39;s own defaults.</span>
-<a id="__codelineno-0-830" name="__codelineno-0-830"></a>
-<a id="__codelineno-0-831" name="__codelineno-0-831"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-832" name="__codelineno-0-832"></a><span class="sd">        The value routed into the end node.</span>
-<a id="__codelineno-0-833" name="__codelineno-0-833"></a>
-<a id="__codelineno-0-834" name="__codelineno-0-834"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-835" name="__codelineno-0-835"></a><span class="sd">        GraphRuntimeError: If the run finishes without reaching the end node.</span>
-<a id="__codelineno-0-836" name="__codelineno-0-836"></a><span class="sd">        TimeoutError: If the run&#39;s timeout elapses.</span>
-<a id="__codelineno-0-837" name="__codelineno-0-837"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
-<a id="__codelineno-0-838" name="__codelineno-0-838"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-839" name="__codelineno-0-839"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
-<a id="__codelineno-0-840" name="__codelineno-0-840"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">resolved</span><span class="p">)</span>
-<a id="__codelineno-0-841" name="__codelineno-0-841"></a>    <span class="k">return</span> <span class="k">await</span> <span class="n">run</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-841">841</a></span>
+<span class="normal"><a href="#__codelineno-0-842">842</a></span>
+<span class="normal"><a href="#__codelineno-0-843">843</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-823" name="__codelineno-0-823"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span> <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
+<a id="__codelineno-0-824" name="__codelineno-0-824"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the graph to completion and return its terminal output.</span>
+<a id="__codelineno-0-825" name="__codelineno-0-825"></a>
+<a id="__codelineno-0-826" name="__codelineno-0-826"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-827" name="__codelineno-0-827"></a><span class="sd">        inputs: The value handed to the first node.</span>
+<a id="__codelineno-0-828" name="__codelineno-0-828"></a><span class="sd">        state: Run-scoped state shared across nodes.</span>
+<a id="__codelineno-0-829" name="__codelineno-0-829"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
+<a id="__codelineno-0-830" name="__codelineno-0-830"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs for the run;</span>
+<a id="__codelineno-0-831" name="__codelineno-0-831"></a><span class="sd">            defaults to [`RunOptions`][RunOptions]&#39;s own defaults.</span>
+<a id="__codelineno-0-832" name="__codelineno-0-832"></a>
+<a id="__codelineno-0-833" name="__codelineno-0-833"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-834" name="__codelineno-0-834"></a><span class="sd">        The value routed into the end node.</span>
+<a id="__codelineno-0-835" name="__codelineno-0-835"></a>
+<a id="__codelineno-0-836" name="__codelineno-0-836"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-837" name="__codelineno-0-837"></a><span class="sd">        GraphRuntimeError: If the run finishes without reaching the end node.</span>
+<a id="__codelineno-0-838" name="__codelineno-0-838"></a><span class="sd">        TimeoutError: If the run&#39;s timeout elapses.</span>
+<a id="__codelineno-0-839" name="__codelineno-0-839"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
+<a id="__codelineno-0-840" name="__codelineno-0-840"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-841" name="__codelineno-0-841"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+<a id="__codelineno-0-842" name="__codelineno-0-842"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">resolved</span><span class="p">)</span>
+<a id="__codelineno-0-843" name="__codelineno-0-843"></a>    <span class="k">return</span> <span class="k">await</span> <span class="n">run</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5749,9 +5749,7 @@ defaults to <a class="autorefs autorefs-internal" title="            RunOptions
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-843">843</a></span>
-<span class="normal"><a href="#__codelineno-0-844">844</a></span>
-<span class="normal"><a href="#__codelineno-0-845">845</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-845">845</a></span>
 <span class="normal"><a href="#__codelineno-0-846">846</a></span>
 <span class="normal"><a href="#__codelineno-0-847">847</a></span>
 <span class="normal"><a href="#__codelineno-0-848">848</a></span>
@@ -5770,28 +5768,30 @@ defaults to <a class="autorefs autorefs-internal" title="            RunOptions
 <span class="normal"><a href="#__codelineno-0-861">861</a></span>
 <span class="normal"><a href="#__codelineno-0-862">862</a></span>
 <span class="normal"><a href="#__codelineno-0-863">863</a></span>
-<span class="normal"><a href="#__codelineno-0-864">864</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-843" name="__codelineno-0-843"></a><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span> <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
-<a id="__codelineno-0-844" name="__codelineno-0-844"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the graph to completion synchronously.</span>
-<a id="__codelineno-0-845" name="__codelineno-0-845"></a>
-<a id="__codelineno-0-846" name="__codelineno-0-846"></a><span class="sd">    A blocking wrapper over [`arun`][Graph.arun] for scripts and notebooks.</span>
-<a id="__codelineno-0-847" name="__codelineno-0-847"></a><span class="sd">    Call ``arun`` directly from inside a running event loop.</span>
-<a id="__codelineno-0-848" name="__codelineno-0-848"></a>
-<a id="__codelineno-0-849" name="__codelineno-0-849"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-850" name="__codelineno-0-850"></a><span class="sd">        inputs: The value handed to the first node.</span>
-<a id="__codelineno-0-851" name="__codelineno-0-851"></a><span class="sd">        state: Run-scoped state shared across nodes.</span>
-<a id="__codelineno-0-852" name="__codelineno-0-852"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
-<a id="__codelineno-0-853" name="__codelineno-0-853"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs for the run;</span>
-<a id="__codelineno-0-854" name="__codelineno-0-854"></a><span class="sd">            defaults to [`RunOptions`][RunOptions]&#39;s own defaults.</span>
-<a id="__codelineno-0-855" name="__codelineno-0-855"></a>
-<a id="__codelineno-0-856" name="__codelineno-0-856"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-857" name="__codelineno-0-857"></a><span class="sd">        The value routed into the end node.</span>
-<a id="__codelineno-0-858" name="__codelineno-0-858"></a>
-<a id="__codelineno-0-859" name="__codelineno-0-859"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-860" name="__codelineno-0-860"></a><span class="sd">        GraphRuntimeError: If the run finishes without reaching the end node.</span>
-<a id="__codelineno-0-861" name="__codelineno-0-861"></a><span class="sd">        TimeoutError: If the run&#39;s timeout elapses.</span>
-<a id="__codelineno-0-862" name="__codelineno-0-862"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
-<a id="__codelineno-0-863" name="__codelineno-0-863"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-864" name="__codelineno-0-864"></a>    <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arun</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">))</span>
+<span class="normal"><a href="#__codelineno-0-864">864</a></span>
+<span class="normal"><a href="#__codelineno-0-865">865</a></span>
+<span class="normal"><a href="#__codelineno-0-866">866</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-845" name="__codelineno-0-845"></a><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span> <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
+<a id="__codelineno-0-846" name="__codelineno-0-846"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the graph to completion synchronously.</span>
+<a id="__codelineno-0-847" name="__codelineno-0-847"></a>
+<a id="__codelineno-0-848" name="__codelineno-0-848"></a><span class="sd">    A blocking wrapper over [`arun`][Graph.arun] for scripts and notebooks.</span>
+<a id="__codelineno-0-849" name="__codelineno-0-849"></a><span class="sd">    Call ``arun`` directly from inside a running event loop.</span>
+<a id="__codelineno-0-850" name="__codelineno-0-850"></a>
+<a id="__codelineno-0-851" name="__codelineno-0-851"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-852" name="__codelineno-0-852"></a><span class="sd">        inputs: The value handed to the first node.</span>
+<a id="__codelineno-0-853" name="__codelineno-0-853"></a><span class="sd">        state: Run-scoped state shared across nodes.</span>
+<a id="__codelineno-0-854" name="__codelineno-0-854"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
+<a id="__codelineno-0-855" name="__codelineno-0-855"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs for the run;</span>
+<a id="__codelineno-0-856" name="__codelineno-0-856"></a><span class="sd">            defaults to [`RunOptions`][RunOptions]&#39;s own defaults.</span>
+<a id="__codelineno-0-857" name="__codelineno-0-857"></a>
+<a id="__codelineno-0-858" name="__codelineno-0-858"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-859" name="__codelineno-0-859"></a><span class="sd">        The value routed into the end node.</span>
+<a id="__codelineno-0-860" name="__codelineno-0-860"></a>
+<a id="__codelineno-0-861" name="__codelineno-0-861"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-862" name="__codelineno-0-862"></a><span class="sd">        GraphRuntimeError: If the run finishes without reaching the end node.</span>
+<a id="__codelineno-0-863" name="__codelineno-0-863"></a><span class="sd">        TimeoutError: If the run&#39;s timeout elapses.</span>
+<a id="__codelineno-0-864" name="__codelineno-0-864"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
+<a id="__codelineno-0-865" name="__codelineno-0-865"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-866" name="__codelineno-0-866"></a>    <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arun</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5968,9 +5968,7 @@ stream is the observer.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-866">866</a></span>
-<span class="normal"><a href="#__codelineno-0-867">867</a></span>
-<span class="normal"><a href="#__codelineno-0-868">868</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-868">868</a></span>
 <span class="normal"><a href="#__codelineno-0-869">869</a></span>
 <span class="normal"><a href="#__codelineno-0-870">870</a></span>
 <span class="normal"><a href="#__codelineno-0-871">871</a></span>
@@ -6017,56 +6015,58 @@ stream is the observer.</p>
 <span class="normal"><a href="#__codelineno-0-912">912</a></span>
 <span class="normal"><a href="#__codelineno-0-913">913</a></span>
 <span class="normal"><a href="#__codelineno-0-914">914</a></span>
-<span class="normal"><a href="#__codelineno-0-915">915</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-866" name="__codelineno-0-866"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">astream</span><span class="p">(</span>
-<a id="__codelineno-0-867" name="__codelineno-0-867"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-868" name="__codelineno-0-868"></a>    <span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span>
-<a id="__codelineno-0-869" name="__codelineno-0-869"></a>    <span class="o">*</span><span class="p">,</span>
-<a id="__codelineno-0-870" name="__codelineno-0-870"></a>    <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span>
-<a id="__codelineno-0-871" name="__codelineno-0-871"></a>    <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span>
-<a id="__codelineno-0-872" name="__codelineno-0-872"></a>    <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-873" name="__codelineno-0-873"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GraphEvent</span><span class="p">]:</span>
-<a id="__codelineno-0-874" name="__codelineno-0-874"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the graph and yield progress events as they happen.</span>
-<a id="__codelineno-0-875" name="__codelineno-0-875"></a>
-<a id="__codelineno-0-876" name="__codelineno-0-876"></a><span class="sd">    Yields a [`NodeStarted`][openfactcheck.graph.events.NodeStarted] and a</span>
-<a id="__codelineno-0-877" name="__codelineno-0-877"></a><span class="sd">    [`NodeFinished`][openfactcheck.graph.events.NodeFinished] (or</span>
-<a id="__codelineno-0-878" name="__codelineno-0-878"></a><span class="sd">    [`NodeFailed`][openfactcheck.graph.events.NodeFailed]) per task, then a</span>
-<a id="__codelineno-0-879" name="__codelineno-0-879"></a><span class="sd">    final [`RunFinished`][openfactcheck.graph.events.RunFinished]. When</span>
-<a id="__codelineno-0-880" name="__codelineno-0-880"></a><span class="sd">    ``stream_node_data`` is set, a node&#39;s ``emit`` calls additionally appear as</span>
-<a id="__codelineno-0-881" name="__codelineno-0-881"></a><span class="sd">    [`NodeEmitted`][openfactcheck.graph.events.NodeEmitted] events between its</span>
-<a id="__codelineno-0-882" name="__codelineno-0-882"></a><span class="sd">    start and finish. Any ``on_event`` set in ``options`` is ignored; the</span>
-<a id="__codelineno-0-883" name="__codelineno-0-883"></a><span class="sd">    stream is the observer.</span>
-<a id="__codelineno-0-884" name="__codelineno-0-884"></a>
-<a id="__codelineno-0-885" name="__codelineno-0-885"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-886" name="__codelineno-0-886"></a><span class="sd">        inputs: The value handed to the first node.</span>
-<a id="__codelineno-0-887" name="__codelineno-0-887"></a><span class="sd">        state: Run-scoped state shared across nodes.</span>
-<a id="__codelineno-0-888" name="__codelineno-0-888"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
-<a id="__codelineno-0-889" name="__codelineno-0-889"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs for the run.</span>
-<a id="__codelineno-0-890" name="__codelineno-0-890"></a>
-<a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">    Yields:</span>
-<a id="__codelineno-0-892" name="__codelineno-0-892"></a><span class="sd">        Each [`GraphEvent`][openfactcheck.graph.events.GraphEvent] in turn.</span>
-<a id="__codelineno-0-893" name="__codelineno-0-893"></a>
-<a id="__codelineno-0-894" name="__codelineno-0-894"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-895" name="__codelineno-0-895"></a><span class="sd">        GraphRuntimeError: If the run finishes without reaching the end node.</span>
-<a id="__codelineno-0-896" name="__codelineno-0-896"></a><span class="sd">        TimeoutError: If the run&#39;s timeout elapses.</span>
-<a id="__codelineno-0-897" name="__codelineno-0-897"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
-<a id="__codelineno-0-898" name="__codelineno-0-898"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-899" name="__codelineno-0-899"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
-<a id="__codelineno-0-900" name="__codelineno-0-900"></a>    <span class="n">events</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="n">GraphEvent</span> <span class="o">|</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
-<a id="__codelineno-0-901" name="__codelineno-0-901"></a>    <span class="n">streaming</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">resolved</span><span class="p">,</span> <span class="n">on_event</span><span class="o">=</span><span class="n">events</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span>
-<a id="__codelineno-0-902" name="__codelineno-0-902"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">streaming</span><span class="p">)</span>
-<a id="__codelineno-0-903" name="__codelineno-0-903"></a>    <span class="n">drive</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drain_run</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">events</span><span class="p">))</span>
-<a id="__codelineno-0-904" name="__codelineno-0-904"></a>    <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-905" name="__codelineno-0-905"></a>        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<a id="__codelineno-0-906" name="__codelineno-0-906"></a>            <span class="n">event</span> <span class="o">=</span> <span class="k">await</span> <span class="n">events</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-<a id="__codelineno-0-907" name="__codelineno-0-907"></a>            <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span class="n">_STREAM_END</span><span class="p">:</span>
-<a id="__codelineno-0-908" name="__codelineno-0-908"></a>                <span class="k">break</span>
-<a id="__codelineno-0-909" name="__codelineno-0-909"></a>            <span class="k">yield</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;GraphEvent&quot;</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
-<a id="__codelineno-0-910" name="__codelineno-0-910"></a>        <span class="k">await</span> <span class="n">drive</span>
-<a id="__codelineno-0-911" name="__codelineno-0-911"></a>    <span class="k">finally</span><span class="p">:</span>
-<a id="__codelineno-0-912" name="__codelineno-0-912"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">drive</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-<a id="__codelineno-0-913" name="__codelineno-0-913"></a>            <span class="n">drive</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
-<a id="__codelineno-0-914" name="__codelineno-0-914"></a>            <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">):</span>
-<a id="__codelineno-0-915" name="__codelineno-0-915"></a>                <span class="k">await</span> <span class="n">drive</span>
+<span class="normal"><a href="#__codelineno-0-915">915</a></span>
+<span class="normal"><a href="#__codelineno-0-916">916</a></span>
+<span class="normal"><a href="#__codelineno-0-917">917</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-868" name="__codelineno-0-868"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">astream</span><span class="p">(</span>
+<a id="__codelineno-0-869" name="__codelineno-0-869"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-870" name="__codelineno-0-870"></a>    <span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span>
+<a id="__codelineno-0-871" name="__codelineno-0-871"></a>    <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-872" name="__codelineno-0-872"></a>    <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span>
+<a id="__codelineno-0-873" name="__codelineno-0-873"></a>    <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span>
+<a id="__codelineno-0-874" name="__codelineno-0-874"></a>    <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-875" name="__codelineno-0-875"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">GraphEvent</span><span class="p">]:</span>
+<a id="__codelineno-0-876" name="__codelineno-0-876"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the graph and yield progress events as they happen.</span>
+<a id="__codelineno-0-877" name="__codelineno-0-877"></a>
+<a id="__codelineno-0-878" name="__codelineno-0-878"></a><span class="sd">    Yields a [`NodeStarted`][openfactcheck.graph.events.NodeStarted] and a</span>
+<a id="__codelineno-0-879" name="__codelineno-0-879"></a><span class="sd">    [`NodeFinished`][openfactcheck.graph.events.NodeFinished] (or</span>
+<a id="__codelineno-0-880" name="__codelineno-0-880"></a><span class="sd">    [`NodeFailed`][openfactcheck.graph.events.NodeFailed]) per task, then a</span>
+<a id="__codelineno-0-881" name="__codelineno-0-881"></a><span class="sd">    final [`RunFinished`][openfactcheck.graph.events.RunFinished]. When</span>
+<a id="__codelineno-0-882" name="__codelineno-0-882"></a><span class="sd">    ``stream_node_data`` is set, a node&#39;s ``emit`` calls additionally appear as</span>
+<a id="__codelineno-0-883" name="__codelineno-0-883"></a><span class="sd">    [`NodeEmitted`][openfactcheck.graph.events.NodeEmitted] events between its</span>
+<a id="__codelineno-0-884" name="__codelineno-0-884"></a><span class="sd">    start and finish. Any ``on_event`` set in ``options`` is ignored; the</span>
+<a id="__codelineno-0-885" name="__codelineno-0-885"></a><span class="sd">    stream is the observer.</span>
+<a id="__codelineno-0-886" name="__codelineno-0-886"></a>
+<a id="__codelineno-0-887" name="__codelineno-0-887"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-888" name="__codelineno-0-888"></a><span class="sd">        inputs: The value handed to the first node.</span>
+<a id="__codelineno-0-889" name="__codelineno-0-889"></a><span class="sd">        state: Run-scoped state shared across nodes.</span>
+<a id="__codelineno-0-890" name="__codelineno-0-890"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
+<a id="__codelineno-0-891" name="__codelineno-0-891"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs for the run.</span>
+<a id="__codelineno-0-892" name="__codelineno-0-892"></a>
+<a id="__codelineno-0-893" name="__codelineno-0-893"></a><span class="sd">    Yields:</span>
+<a id="__codelineno-0-894" name="__codelineno-0-894"></a><span class="sd">        Each [`GraphEvent`][openfactcheck.graph.events.GraphEvent] in turn.</span>
+<a id="__codelineno-0-895" name="__codelineno-0-895"></a>
+<a id="__codelineno-0-896" name="__codelineno-0-896"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-897" name="__codelineno-0-897"></a><span class="sd">        GraphRuntimeError: If the run finishes without reaching the end node.</span>
+<a id="__codelineno-0-898" name="__codelineno-0-898"></a><span class="sd">        TimeoutError: If the run&#39;s timeout elapses.</span>
+<a id="__codelineno-0-899" name="__codelineno-0-899"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
+<a id="__codelineno-0-900" name="__codelineno-0-900"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-901" name="__codelineno-0-901"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+<a id="__codelineno-0-902" name="__codelineno-0-902"></a>    <span class="n">events</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="n">GraphEvent</span> <span class="o">|</span> <span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+<a id="__codelineno-0-903" name="__codelineno-0-903"></a>    <span class="n">streaming</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">resolved</span><span class="p">,</span> <span class="n">on_event</span><span class="o">=</span><span class="n">events</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span>
+<a id="__codelineno-0-904" name="__codelineno-0-904"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">streaming</span><span class="p">)</span>
+<a id="__codelineno-0-905" name="__codelineno-0-905"></a>    <span class="n">drive</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_drain_run</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">events</span><span class="p">))</span>
+<a id="__codelineno-0-906" name="__codelineno-0-906"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-907" name="__codelineno-0-907"></a>        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<a id="__codelineno-0-908" name="__codelineno-0-908"></a>            <span class="n">event</span> <span class="o">=</span> <span class="k">await</span> <span class="n">events</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<a id="__codelineno-0-909" name="__codelineno-0-909"></a>            <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span class="n">_STREAM_END</span><span class="p">:</span>
+<a id="__codelineno-0-910" name="__codelineno-0-910"></a>                <span class="k">break</span>
+<a id="__codelineno-0-911" name="__codelineno-0-911"></a>            <span class="k">yield</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;GraphEvent&quot;</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+<a id="__codelineno-0-912" name="__codelineno-0-912"></a>        <span class="k">await</span> <span class="n">drive</span>
+<a id="__codelineno-0-913" name="__codelineno-0-913"></a>    <span class="k">finally</span><span class="p">:</span>
+<a id="__codelineno-0-914" name="__codelineno-0-914"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">drive</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+<a id="__codelineno-0-915" name="__codelineno-0-915"></a>            <span class="n">drive</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+<a id="__codelineno-0-916" name="__codelineno-0-916"></a>            <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">):</span>
+<a id="__codelineno-0-917" name="__codelineno-0-917"></a>                <span class="k">await</span> <span class="n">drive</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6186,9 +6186,7 @@ stepping, since the caller drives and handles each task.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-929">929</a></span>
-<span class="normal"><a href="#__codelineno-0-930">930</a></span>
-<span class="normal"><a href="#__codelineno-0-931">931</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-931">931</a></span>
 <span class="normal"><a href="#__codelineno-0-932">932</a></span>
 <span class="normal"><a href="#__codelineno-0-933">933</a></span>
 <span class="normal"><a href="#__codelineno-0-934">934</a></span>
@@ -6215,36 +6213,38 @@ stepping, since the caller drives and handles each task.</p>
 <span class="normal"><a href="#__codelineno-0-955">955</a></span>
 <span class="normal"><a href="#__codelineno-0-956">956</a></span>
 <span class="normal"><a href="#__codelineno-0-957">957</a></span>
-<span class="normal"><a href="#__codelineno-0-958">958</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-929" name="__codelineno-0-929"></a><span class="k">def</span><span class="w"> </span><span class="nf">stepper</span><span class="p">(</span>
-<a id="__codelineno-0-930" name="__codelineno-0-930"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-931" name="__codelineno-0-931"></a>    <span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span>
-<a id="__codelineno-0-932" name="__codelineno-0-932"></a>    <span class="o">*</span><span class="p">,</span>
-<a id="__codelineno-0-933" name="__codelineno-0-933"></a>    <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span>
-<a id="__codelineno-0-934" name="__codelineno-0-934"></a>    <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span>
-<a id="__codelineno-0-935" name="__codelineno-0-935"></a>    <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-936" name="__codelineno-0-936"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphStepper</span><span class="p">[</span><span class="n">OutputT</span><span class="p">,</span> <span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">]:</span>
-<a id="__codelineno-0-937" name="__codelineno-0-937"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Drive the graph one task at a time for inspection or recovery.</span>
-<a id="__codelineno-0-938" name="__codelineno-0-938"></a>
-<a id="__codelineno-0-939" name="__codelineno-0-939"></a><span class="sd">    Returns an async-context-manager handle; see</span>
-<a id="__codelineno-0-940" name="__codelineno-0-940"></a><span class="sd">    [`GraphStepper`][GraphStepper] for the loop.</span>
-<a id="__codelineno-0-941" name="__codelineno-0-941"></a>
-<a id="__codelineno-0-942" name="__codelineno-0-942"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-943" name="__codelineno-0-943"></a><span class="sd">        inputs: The value handed to the first node.</span>
-<a id="__codelineno-0-944" name="__codelineno-0-944"></a><span class="sd">        state: Run-scoped state shared across nodes.</span>
-<a id="__codelineno-0-945" name="__codelineno-0-945"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
-<a id="__codelineno-0-946" name="__codelineno-0-946"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs; note the</span>
-<a id="__codelineno-0-947" name="__codelineno-0-947"></a><span class="sd">            whole-run timeout and ``on_error`` policy do not apply while</span>
-<a id="__codelineno-0-948" name="__codelineno-0-948"></a><span class="sd">            stepping, since the caller drives and handles each task.</span>
-<a id="__codelineno-0-949" name="__codelineno-0-949"></a>
-<a id="__codelineno-0-950" name="__codelineno-0-950"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-951" name="__codelineno-0-951"></a><span class="sd">        A [`GraphStepper`][GraphStepper] over a fresh run.</span>
-<a id="__codelineno-0-952" name="__codelineno-0-952"></a>
-<a id="__codelineno-0-953" name="__codelineno-0-953"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-954" name="__codelineno-0-954"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
-<a id="__codelineno-0-955" name="__codelineno-0-955"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-956" name="__codelineno-0-956"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
-<a id="__codelineno-0-957" name="__codelineno-0-957"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">resolved</span><span class="p">)</span>
-<a id="__codelineno-0-958" name="__codelineno-0-958"></a>    <span class="k">return</span> <span class="n">GraphStepper</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-958">958</a></span>
+<span class="normal"><a href="#__codelineno-0-959">959</a></span>
+<span class="normal"><a href="#__codelineno-0-960">960</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-931" name="__codelineno-0-931"></a><span class="k">def</span><span class="w"> </span><span class="nf">stepper</span><span class="p">(</span>
+<a id="__codelineno-0-932" name="__codelineno-0-932"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-933" name="__codelineno-0-933"></a>    <span class="n">inputs</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span>
+<a id="__codelineno-0-934" name="__codelineno-0-934"></a>    <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-935" name="__codelineno-0-935"></a>    <span class="n">state</span><span class="p">:</span> <span class="n">StateT</span><span class="p">,</span>
+<a id="__codelineno-0-936" name="__codelineno-0-936"></a>    <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span>
+<a id="__codelineno-0-937" name="__codelineno-0-937"></a>    <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-938" name="__codelineno-0-938"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphStepper</span><span class="p">[</span><span class="n">OutputT</span><span class="p">,</span> <span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">]:</span>
+<a id="__codelineno-0-939" name="__codelineno-0-939"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Drive the graph one task at a time for inspection or recovery.</span>
+<a id="__codelineno-0-940" name="__codelineno-0-940"></a>
+<a id="__codelineno-0-941" name="__codelineno-0-941"></a><span class="sd">    Returns an async-context-manager handle; see</span>
+<a id="__codelineno-0-942" name="__codelineno-0-942"></a><span class="sd">    [`GraphStepper`][GraphStepper] for the loop.</span>
+<a id="__codelineno-0-943" name="__codelineno-0-943"></a>
+<a id="__codelineno-0-944" name="__codelineno-0-944"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-945" name="__codelineno-0-945"></a><span class="sd">        inputs: The value handed to the first node.</span>
+<a id="__codelineno-0-946" name="__codelineno-0-946"></a><span class="sd">        state: Run-scoped state shared across nodes.</span>
+<a id="__codelineno-0-947" name="__codelineno-0-947"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
+<a id="__codelineno-0-948" name="__codelineno-0-948"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs; note the</span>
+<a id="__codelineno-0-949" name="__codelineno-0-949"></a><span class="sd">            whole-run timeout and ``on_error`` policy do not apply while</span>
+<a id="__codelineno-0-950" name="__codelineno-0-950"></a><span class="sd">            stepping, since the caller drives and handles each task.</span>
+<a id="__codelineno-0-951" name="__codelineno-0-951"></a>
+<a id="__codelineno-0-952" name="__codelineno-0-952"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-953" name="__codelineno-0-953"></a><span class="sd">        A [`GraphStepper`][GraphStepper] over a fresh run.</span>
+<a id="__codelineno-0-954" name="__codelineno-0-954"></a>
+<a id="__codelineno-0-955" name="__codelineno-0-955"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-956" name="__codelineno-0-956"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
+<a id="__codelineno-0-957" name="__codelineno-0-957"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-958" name="__codelineno-0-958"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+<a id="__codelineno-0-959" name="__codelineno-0-959"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">resolved</span><span class="p">)</span>
+<a id="__codelineno-0-960" name="__codelineno-0-960"></a>    <span class="k">return</span> <span class="n">GraphStepper</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6371,83 +6371,83 @@ resumed run.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-960">960</a></span>
-<span class="normal"><a href="#__codelineno-0-961">961</a></span>
-<span class="normal"><a href="#__codelineno-0-962">962</a></span>
-<span class="normal"><a href="#__codelineno-0-963">963</a></span>
-<span class="normal"><a href="#__codelineno-0-964">964</a></span>
-<span class="normal"><a href="#__codelineno-0-965">965</a></span>
-<span class="normal"><a href="#__codelineno-0-966">966</a></span>
-<span class="normal"><a href="#__codelineno-0-967">967</a></span>
-<span class="normal"><a href="#__codelineno-0-968">968</a></span>
-<span class="normal"><a href="#__codelineno-0-969">969</a></span>
-<span class="normal"><a href="#__codelineno-0-970">970</a></span>
-<span class="normal"><a href="#__codelineno-0-971">971</a></span>
-<span class="normal"><a href="#__codelineno-0-972">972</a></span>
-<span class="normal"><a href="#__codelineno-0-973">973</a></span>
-<span class="normal"><a href="#__codelineno-0-974">974</a></span>
-<span class="normal"><a href="#__codelineno-0-975">975</a></span>
-<span class="normal"><a href="#__codelineno-0-976">976</a></span>
-<span class="normal"><a href="#__codelineno-0-977">977</a></span>
-<span class="normal"><a href="#__codelineno-0-978">978</a></span>
-<span class="normal"><a href="#__codelineno-0-979">979</a></span>
-<span class="normal"><a href="#__codelineno-0-980">980</a></span>
-<span class="normal"><a href="#__codelineno-0-981">981</a></span>
-<span class="normal"><a href="#__codelineno-0-982">982</a></span>
-<span class="normal"><a href="#__codelineno-0-983">983</a></span>
-<span class="normal"><a href="#__codelineno-0-984">984</a></span>
-<span class="normal"><a href="#__codelineno-0-985">985</a></span>
-<span class="normal"><a href="#__codelineno-0-986">986</a></span>
-<span class="normal"><a href="#__codelineno-0-987">987</a></span>
-<span class="normal"><a href="#__codelineno-0-988">988</a></span>
-<span class="normal"><a href="#__codelineno-0-989">989</a></span>
-<span class="normal"><a href="#__codelineno-0-990">990</a></span>
-<span class="normal"><a href="#__codelineno-0-991">991</a></span>
-<span class="normal"><a href="#__codelineno-0-992">992</a></span>
-<span class="normal"><a href="#__codelineno-0-993">993</a></span>
-<span class="normal"><a href="#__codelineno-0-994">994</a></span>
-<span class="normal"><a href="#__codelineno-0-995">995</a></span>
-<span class="normal"><a href="#__codelineno-0-996">996</a></span>
-<span class="normal"><a href="#__codelineno-0-997">997</a></span>
-<span class="normal"><a href="#__codelineno-0-998">998</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-960" name="__codelineno-0-960"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aresume</span><span class="p">(</span>
-<a id="__codelineno-0-961" name="__codelineno-0-961"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">store</span><span class="p">:</span> <span class="n">StateStore</span><span class="p">,</span> <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-962" name="__codelineno-0-962"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
-<a id="__codelineno-0-963" name="__codelineno-0-963"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a snapshotted run from its latest snapshot and finish it.</span>
-<a id="__codelineno-0-964" name="__codelineno-0-964"></a>
-<a id="__codelineno-0-965" name="__codelineno-0-965"></a><span class="sd">    Loads the snapshot, restores the run&#39;s state, and re-runs the tasks that</span>
-<a id="__codelineno-0-966" name="__codelineno-0-966"></a><span class="sd">    were still pending. Pending tasks run again, so steps should be safe to</span>
-<a id="__codelineno-0-967" name="__codelineno-0-967"></a><span class="sd">    re-run. The run&#39;s state and each pending node&#39;s input are restored to the</span>
-<a id="__codelineno-0-968" name="__codelineno-0-968"></a><span class="sd">    types the graph declares, so resumed steps receive the same typed values</span>
-<a id="__codelineno-0-969" name="__codelineno-0-969"></a><span class="sd">    a fresh run would. Dependencies are not persisted and are supplied here;</span>
-<a id="__codelineno-0-970" name="__codelineno-0-970"></a><span class="sd">    the run continues to snapshot under the same id and store.</span>
-<a id="__codelineno-0-971" name="__codelineno-0-971"></a>
-<a id="__codelineno-0-972" name="__codelineno-0-972"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-973" name="__codelineno-0-973"></a><span class="sd">        run_id: The id the run was snapshotted under.</span>
-<a id="__codelineno-0-974" name="__codelineno-0-974"></a><span class="sd">        store: The store holding the run&#39;s snapshots.</span>
-<a id="__codelineno-0-975" name="__codelineno-0-975"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
-<a id="__codelineno-0-976" name="__codelineno-0-976"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs for the</span>
-<a id="__codelineno-0-977" name="__codelineno-0-977"></a><span class="sd">            resumed run.</span>
-<a id="__codelineno-0-978" name="__codelineno-0-978"></a>
-<a id="__codelineno-0-979" name="__codelineno-0-979"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-980" name="__codelineno-0-980"></a><span class="sd">        The value routed into the end node.</span>
-<a id="__codelineno-0-981" name="__codelineno-0-981"></a>
-<a id="__codelineno-0-982" name="__codelineno-0-982"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-983" name="__codelineno-0-983"></a><span class="sd">        GraphRuntimeError: If no snapshot exists for ``run_id`` or the run</span>
-<a id="__codelineno-0-984" name="__codelineno-0-984"></a><span class="sd">            finishes without reaching the end node.</span>
-<a id="__codelineno-0-985" name="__codelineno-0-985"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
-<a id="__codelineno-0-986" name="__codelineno-0-986"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-987" name="__codelineno-0-987"></a>    <span class="n">snapshot</span> <span class="o">=</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">run_id</span><span class="p">)</span>
-<a id="__codelineno-0-988" name="__codelineno-0-988"></a>    <span class="k">if</span> <span class="n">snapshot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-989" name="__codelineno-0-989"></a>        <span class="k">raise</span> <span class="n">GraphRuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no snapshot found for run </span><span class="si">{</span><span class="n">run_id</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-990" name="__codelineno-0-990"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">),</span> <span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">,</span> <span class="n">run_id</span><span class="o">=</span><span class="n">run_id</span><span class="p">)</span>
-<a id="__codelineno-0-991" name="__codelineno-0-991"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span>
-<a id="__codelineno-0-992" name="__codelineno-0-992"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span>
-<a id="__codelineno-0-993" name="__codelineno-0-993"></a>        <span class="n">state</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;StateT&quot;</span><span class="p">,</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">state</span><span class="p">),</span>
-<a id="__codelineno-0-994" name="__codelineno-0-994"></a>        <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span>
-<a id="__codelineno-0-995" name="__codelineno-0-995"></a>        <span class="n">options</span><span class="o">=</span><span class="n">resolved</span><span class="p">,</span>
-<a id="__codelineno-0-996" name="__codelineno-0-996"></a>    <span class="p">)</span>
-<a id="__codelineno-0-997" name="__codelineno-0-997"></a>    <span class="n">run</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
-<a id="__codelineno-0-998" name="__codelineno-0-998"></a>    <span class="k">return</span> <span class="k">await</span> <span class="n">run</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-962"> 962</a></span>
+<span class="normal"><a href="#__codelineno-0-963"> 963</a></span>
+<span class="normal"><a href="#__codelineno-0-964"> 964</a></span>
+<span class="normal"><a href="#__codelineno-0-965"> 965</a></span>
+<span class="normal"><a href="#__codelineno-0-966"> 966</a></span>
+<span class="normal"><a href="#__codelineno-0-967"> 967</a></span>
+<span class="normal"><a href="#__codelineno-0-968"> 968</a></span>
+<span class="normal"><a href="#__codelineno-0-969"> 969</a></span>
+<span class="normal"><a href="#__codelineno-0-970"> 970</a></span>
+<span class="normal"><a href="#__codelineno-0-971"> 971</a></span>
+<span class="normal"><a href="#__codelineno-0-972"> 972</a></span>
+<span class="normal"><a href="#__codelineno-0-973"> 973</a></span>
+<span class="normal"><a href="#__codelineno-0-974"> 974</a></span>
+<span class="normal"><a href="#__codelineno-0-975"> 975</a></span>
+<span class="normal"><a href="#__codelineno-0-976"> 976</a></span>
+<span class="normal"><a href="#__codelineno-0-977"> 977</a></span>
+<span class="normal"><a href="#__codelineno-0-978"> 978</a></span>
+<span class="normal"><a href="#__codelineno-0-979"> 979</a></span>
+<span class="normal"><a href="#__codelineno-0-980"> 980</a></span>
+<span class="normal"><a href="#__codelineno-0-981"> 981</a></span>
+<span class="normal"><a href="#__codelineno-0-982"> 982</a></span>
+<span class="normal"><a href="#__codelineno-0-983"> 983</a></span>
+<span class="normal"><a href="#__codelineno-0-984"> 984</a></span>
+<span class="normal"><a href="#__codelineno-0-985"> 985</a></span>
+<span class="normal"><a href="#__codelineno-0-986"> 986</a></span>
+<span class="normal"><a href="#__codelineno-0-987"> 987</a></span>
+<span class="normal"><a href="#__codelineno-0-988"> 988</a></span>
+<span class="normal"><a href="#__codelineno-0-989"> 989</a></span>
+<span class="normal"><a href="#__codelineno-0-990"> 990</a></span>
+<span class="normal"><a href="#__codelineno-0-991"> 991</a></span>
+<span class="normal"><a href="#__codelineno-0-992"> 992</a></span>
+<span class="normal"><a href="#__codelineno-0-993"> 993</a></span>
+<span class="normal"><a href="#__codelineno-0-994"> 994</a></span>
+<span class="normal"><a href="#__codelineno-0-995"> 995</a></span>
+<span class="normal"><a href="#__codelineno-0-996"> 996</a></span>
+<span class="normal"><a href="#__codelineno-0-997"> 997</a></span>
+<span class="normal"><a href="#__codelineno-0-998"> 998</a></span>
+<span class="normal"><a href="#__codelineno-0-999"> 999</a></span>
+<span class="normal"><a href="#__codelineno-0-1000">1000</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-962" name="__codelineno-0-962"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aresume</span><span class="p">(</span>
+<a id="__codelineno-0-963" name="__codelineno-0-963"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">store</span><span class="p">:</span> <span class="n">StateStore</span><span class="p">,</span> <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-964" name="__codelineno-0-964"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
+<a id="__codelineno-0-965" name="__codelineno-0-965"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a snapshotted run from its latest snapshot and finish it.</span>
+<a id="__codelineno-0-966" name="__codelineno-0-966"></a>
+<a id="__codelineno-0-967" name="__codelineno-0-967"></a><span class="sd">    Loads the snapshot, restores the run&#39;s state, and re-runs the tasks that</span>
+<a id="__codelineno-0-968" name="__codelineno-0-968"></a><span class="sd">    were still pending. Pending tasks run again, so steps should be safe to</span>
+<a id="__codelineno-0-969" name="__codelineno-0-969"></a><span class="sd">    re-run. The run&#39;s state and each pending node&#39;s input are restored to the</span>
+<a id="__codelineno-0-970" name="__codelineno-0-970"></a><span class="sd">    types the graph declares, so resumed steps receive the same typed values</span>
+<a id="__codelineno-0-971" name="__codelineno-0-971"></a><span class="sd">    a fresh run would. Dependencies are not persisted and are supplied here;</span>
+<a id="__codelineno-0-972" name="__codelineno-0-972"></a><span class="sd">    the run continues to snapshot under the same id and store.</span>
+<a id="__codelineno-0-973" name="__codelineno-0-973"></a>
+<a id="__codelineno-0-974" name="__codelineno-0-974"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-975" name="__codelineno-0-975"></a><span class="sd">        run_id: The id the run was snapshotted under.</span>
+<a id="__codelineno-0-976" name="__codelineno-0-976"></a><span class="sd">        store: The store holding the run&#39;s snapshots.</span>
+<a id="__codelineno-0-977" name="__codelineno-0-977"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
+<a id="__codelineno-0-978" name="__codelineno-0-978"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs for the</span>
+<a id="__codelineno-0-979" name="__codelineno-0-979"></a><span class="sd">            resumed run.</span>
+<a id="__codelineno-0-980" name="__codelineno-0-980"></a>
+<a id="__codelineno-0-981" name="__codelineno-0-981"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-982" name="__codelineno-0-982"></a><span class="sd">        The value routed into the end node.</span>
+<a id="__codelineno-0-983" name="__codelineno-0-983"></a>
+<a id="__codelineno-0-984" name="__codelineno-0-984"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-985" name="__codelineno-0-985"></a><span class="sd">        GraphRuntimeError: If no snapshot exists for ``run_id`` or the run</span>
+<a id="__codelineno-0-986" name="__codelineno-0-986"></a><span class="sd">            finishes without reaching the end node.</span>
+<a id="__codelineno-0-987" name="__codelineno-0-987"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
+<a id="__codelineno-0-988" name="__codelineno-0-988"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-989" name="__codelineno-0-989"></a>    <span class="n">snapshot</span> <span class="o">=</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">run_id</span><span class="p">)</span>
+<a id="__codelineno-0-990" name="__codelineno-0-990"></a>    <span class="k">if</span> <span class="n">snapshot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-991" name="__codelineno-0-991"></a>        <span class="k">raise</span> <span class="n">GraphRuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no snapshot found for run </span><span class="si">{</span><span class="n">run_id</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-992" name="__codelineno-0-992"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">),</span> <span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">,</span> <span class="n">run_id</span><span class="o">=</span><span class="n">run_id</span><span class="p">)</span>
+<a id="__codelineno-0-993" name="__codelineno-0-993"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span>
+<a id="__codelineno-0-994" name="__codelineno-0-994"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span>
+<a id="__codelineno-0-995" name="__codelineno-0-995"></a>        <span class="n">state</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;StateT&quot;</span><span class="p">,</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">state</span><span class="p">),</span>
+<a id="__codelineno-0-996" name="__codelineno-0-996"></a>        <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span>
+<a id="__codelineno-0-997" name="__codelineno-0-997"></a>        <span class="n">options</span><span class="o">=</span><span class="n">resolved</span><span class="p">,</span>
+<a id="__codelineno-0-998" name="__codelineno-0-998"></a>    <span class="p">)</span>
+<a id="__codelineno-0-999" name="__codelineno-0-999"></a>    <span class="n">run</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-0-1000" name="__codelineno-0-1000"></a>    <span class="k">return</span> <span class="k">await</span> <span class="n">run</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6569,9 +6569,7 @@ resumed run.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1000">1000</a></span>
-<span class="normal"><a href="#__codelineno-0-1001">1001</a></span>
-<span class="normal"><a href="#__codelineno-0-1002">1002</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1002">1002</a></span>
 <span class="normal"><a href="#__codelineno-0-1003">1003</a></span>
 <span class="normal"><a href="#__codelineno-0-1004">1004</a></span>
 <span class="normal"><a href="#__codelineno-0-1005">1005</a></span>
@@ -6588,26 +6586,28 @@ resumed run.</p>
 <span class="normal"><a href="#__codelineno-0-1016">1016</a></span>
 <span class="normal"><a href="#__codelineno-0-1017">1017</a></span>
 <span class="normal"><a href="#__codelineno-0-1018">1018</a></span>
-<span class="normal"><a href="#__codelineno-0-1019">1019</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1000" name="__codelineno-0-1000"></a><span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">store</span><span class="p">:</span> <span class="n">StateStore</span><span class="p">,</span> <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
-<a id="__codelineno-0-1001" name="__codelineno-0-1001"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a snapshotted run synchronously.</span>
-<a id="__codelineno-0-1002" name="__codelineno-0-1002"></a>
-<a id="__codelineno-0-1003" name="__codelineno-0-1003"></a><span class="sd">    A blocking wrapper over [`aresume`][Graph.aresume] for scripts and notebooks.</span>
+<span class="normal"><a href="#__codelineno-0-1019">1019</a></span>
+<span class="normal"><a href="#__codelineno-0-1020">1020</a></span>
+<span class="normal"><a href="#__codelineno-0-1021">1021</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1002" name="__codelineno-0-1002"></a><span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">store</span><span class="p">:</span> <span class="n">StateStore</span><span class="p">,</span> <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
+<a id="__codelineno-0-1003" name="__codelineno-0-1003"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a snapshotted run synchronously.</span>
 <a id="__codelineno-0-1004" name="__codelineno-0-1004"></a>
-<a id="__codelineno-0-1005" name="__codelineno-0-1005"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-1006" name="__codelineno-0-1006"></a><span class="sd">        run_id: The id the run was snapshotted under.</span>
-<a id="__codelineno-0-1007" name="__codelineno-0-1007"></a><span class="sd">        store: The store holding the run&#39;s snapshots.</span>
-<a id="__codelineno-0-1008" name="__codelineno-0-1008"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
-<a id="__codelineno-0-1009" name="__codelineno-0-1009"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs.</span>
-<a id="__codelineno-0-1010" name="__codelineno-0-1010"></a>
-<a id="__codelineno-0-1011" name="__codelineno-0-1011"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-1012" name="__codelineno-0-1012"></a><span class="sd">        The value routed into the end node.</span>
-<a id="__codelineno-0-1013" name="__codelineno-0-1013"></a>
-<a id="__codelineno-0-1014" name="__codelineno-0-1014"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-1015" name="__codelineno-0-1015"></a><span class="sd">        GraphRuntimeError: If no snapshot exists for ``run_id`` or the run</span>
-<a id="__codelineno-0-1016" name="__codelineno-0-1016"></a><span class="sd">            finishes without reaching the end node.</span>
-<a id="__codelineno-0-1017" name="__codelineno-0-1017"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
-<a id="__codelineno-0-1018" name="__codelineno-0-1018"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-1019" name="__codelineno-0-1019"></a>    <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aresume</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">))</span>
+<a id="__codelineno-0-1005" name="__codelineno-0-1005"></a><span class="sd">    A blocking wrapper over [`aresume`][Graph.aresume] for scripts and notebooks.</span>
+<a id="__codelineno-0-1006" name="__codelineno-0-1006"></a>
+<a id="__codelineno-0-1007" name="__codelineno-0-1007"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-1008" name="__codelineno-0-1008"></a><span class="sd">        run_id: The id the run was snapshotted under.</span>
+<a id="__codelineno-0-1009" name="__codelineno-0-1009"></a><span class="sd">        store: The store holding the run&#39;s snapshots.</span>
+<a id="__codelineno-0-1010" name="__codelineno-0-1010"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
+<a id="__codelineno-0-1011" name="__codelineno-0-1011"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs.</span>
+<a id="__codelineno-0-1012" name="__codelineno-0-1012"></a>
+<a id="__codelineno-0-1013" name="__codelineno-0-1013"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-1014" name="__codelineno-0-1014"></a><span class="sd">        The value routed into the end node.</span>
+<a id="__codelineno-0-1015" name="__codelineno-0-1015"></a>
+<a id="__codelineno-0-1016" name="__codelineno-0-1016"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-1017" name="__codelineno-0-1017"></a><span class="sd">        GraphRuntimeError: If no snapshot exists for ``run_id`` or the run</span>
+<a id="__codelineno-0-1018" name="__codelineno-0-1018"></a><span class="sd">            finishes without reaching the end node.</span>
+<a id="__codelineno-0-1019" name="__codelineno-0-1019"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
+<a id="__codelineno-0-1020" name="__codelineno-0-1020"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-1021" name="__codelineno-0-1021"></a>    <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aresume</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6744,9 +6744,7 @@ resumed run.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1021">1021</a></span>
-<span class="normal"><a href="#__codelineno-0-1022">1022</a></span>
-<span class="normal"><a href="#__codelineno-0-1023">1023</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1023">1023</a></span>
 <span class="normal"><a href="#__codelineno-0-1024">1024</a></span>
 <span class="normal"><a href="#__codelineno-0-1025">1025</a></span>
 <span class="normal"><a href="#__codelineno-0-1026">1026</a></span>
@@ -6784,47 +6782,49 @@ resumed run.</p>
 <span class="normal"><a href="#__codelineno-0-1058">1058</a></span>
 <span class="normal"><a href="#__codelineno-0-1059">1059</a></span>
 <span class="normal"><a href="#__codelineno-0-1060">1060</a></span>
-<span class="normal"><a href="#__codelineno-0-1061">1061</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1021" name="__codelineno-0-1021"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aresume_with</span><span class="p">(</span>
-<a id="__codelineno-0-1022" name="__codelineno-0-1022"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1023" name="__codelineno-0-1023"></a>    <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-1024" name="__codelineno-0-1024"></a>    <span class="o">*</span><span class="p">,</span>
-<a id="__codelineno-0-1025" name="__codelineno-0-1025"></a>    <span class="n">store</span><span class="p">:</span> <span class="n">StateStore</span><span class="p">,</span>
-<a id="__codelineno-0-1026" name="__codelineno-0-1026"></a>    <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span>
-<a id="__codelineno-0-1027" name="__codelineno-0-1027"></a>    <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
-<a id="__codelineno-0-1028" name="__codelineno-0-1028"></a>    <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-1029" name="__codelineno-0-1029"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
-<a id="__codelineno-0-1030" name="__codelineno-0-1030"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a paused run, injecting ``value`` as the pause node&#39;s output.</span>
-<a id="__codelineno-0-1031" name="__codelineno-0-1031"></a>
-<a id="__codelineno-0-1032" name="__codelineno-0-1032"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-1033" name="__codelineno-0-1033"></a><span class="sd">        run_id: The id the paused run was snapshotted under.</span>
-<a id="__codelineno-0-1034" name="__codelineno-0-1034"></a><span class="sd">        store: The store holding the run&#39;s snapshots.</span>
-<a id="__codelineno-0-1035" name="__codelineno-0-1035"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
-<a id="__codelineno-0-1036" name="__codelineno-0-1036"></a><span class="sd">        value: The answer to inject; becomes the pause node&#39;s output.</span>
-<a id="__codelineno-0-1037" name="__codelineno-0-1037"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs.</span>
-<a id="__codelineno-0-1038" name="__codelineno-0-1038"></a>
-<a id="__codelineno-0-1039" name="__codelineno-0-1039"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-1040" name="__codelineno-0-1040"></a><span class="sd">        The value routed into the end node.</span>
-<a id="__codelineno-0-1041" name="__codelineno-0-1041"></a>
-<a id="__codelineno-0-1042" name="__codelineno-0-1042"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-1043" name="__codelineno-0-1043"></a><span class="sd">        GraphRuntimeError: If no snapshot exists for ``run_id``, the snapshot</span>
-<a id="__codelineno-0-1044" name="__codelineno-0-1044"></a><span class="sd">            is not paused, or the run finishes without reaching the end node.</span>
-<a id="__codelineno-0-1045" name="__codelineno-0-1045"></a><span class="sd">        GraphPaused: If the run reaches another pause node.</span>
-<a id="__codelineno-0-1046" name="__codelineno-0-1046"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
-<a id="__codelineno-0-1047" name="__codelineno-0-1047"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-1048" name="__codelineno-0-1048"></a>    <span class="n">snapshot</span> <span class="o">=</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">run_id</span><span class="p">)</span>
-<a id="__codelineno-0-1049" name="__codelineno-0-1049"></a>    <span class="k">if</span> <span class="n">snapshot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-1050" name="__codelineno-0-1050"></a>        <span class="k">raise</span> <span class="n">GraphRuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no snapshot found for run </span><span class="si">{</span><span class="n">run_id</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-1051" name="__codelineno-0-1051"></a>    <span class="k">if</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">paused</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-1052" name="__codelineno-0-1052"></a>        <span class="k">raise</span> <span class="n">GraphRuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;run </span><span class="si">{</span><span class="n">run_id</span><span class="si">!r}</span><span class="s2"> is not paused&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-1053" name="__codelineno-0-1053"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">),</span> <span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">,</span> <span class="n">run_id</span><span class="o">=</span><span class="n">run_id</span><span class="p">)</span>
-<a id="__codelineno-0-1054" name="__codelineno-0-1054"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span>
-<a id="__codelineno-0-1055" name="__codelineno-0-1055"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span>
-<a id="__codelineno-0-1056" name="__codelineno-0-1056"></a>        <span class="n">state</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;StateT&quot;</span><span class="p">,</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">state</span><span class="p">),</span>
-<a id="__codelineno-0-1057" name="__codelineno-0-1057"></a>        <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span>
-<a id="__codelineno-0-1058" name="__codelineno-0-1058"></a>        <span class="n">options</span><span class="o">=</span><span class="n">resolved</span><span class="p">,</span>
-<a id="__codelineno-0-1059" name="__codelineno-0-1059"></a>    <span class="p">)</span>
-<a id="__codelineno-0-1060" name="__codelineno-0-1060"></a>    <span class="n">run</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
-<a id="__codelineno-0-1061" name="__codelineno-0-1061"></a>    <span class="k">return</span> <span class="k">await</span> <span class="n">run</span><span class="o">.</span><span class="n">resume_with</span><span class="p">(</span><span class="n">snapshot</span><span class="o">.</span><span class="n">paused</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+<span class="normal"><a href="#__codelineno-0-1061">1061</a></span>
+<span class="normal"><a href="#__codelineno-0-1062">1062</a></span>
+<span class="normal"><a href="#__codelineno-0-1063">1063</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1023" name="__codelineno-0-1023"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aresume_with</span><span class="p">(</span>
+<a id="__codelineno-0-1024" name="__codelineno-0-1024"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-1025" name="__codelineno-0-1025"></a>    <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-1026" name="__codelineno-0-1026"></a>    <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-1027" name="__codelineno-0-1027"></a>    <span class="n">store</span><span class="p">:</span> <span class="n">StateStore</span><span class="p">,</span>
+<a id="__codelineno-0-1028" name="__codelineno-0-1028"></a>    <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span>
+<a id="__codelineno-0-1029" name="__codelineno-0-1029"></a>    <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
+<a id="__codelineno-0-1030" name="__codelineno-0-1030"></a>    <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-1031" name="__codelineno-0-1031"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
+<a id="__codelineno-0-1032" name="__codelineno-0-1032"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a paused run, injecting ``value`` as the pause node&#39;s output.</span>
+<a id="__codelineno-0-1033" name="__codelineno-0-1033"></a>
+<a id="__codelineno-0-1034" name="__codelineno-0-1034"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-1035" name="__codelineno-0-1035"></a><span class="sd">        run_id: The id the paused run was snapshotted under.</span>
+<a id="__codelineno-0-1036" name="__codelineno-0-1036"></a><span class="sd">        store: The store holding the run&#39;s snapshots.</span>
+<a id="__codelineno-0-1037" name="__codelineno-0-1037"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
+<a id="__codelineno-0-1038" name="__codelineno-0-1038"></a><span class="sd">        value: The answer to inject; becomes the pause node&#39;s output.</span>
+<a id="__codelineno-0-1039" name="__codelineno-0-1039"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs.</span>
+<a id="__codelineno-0-1040" name="__codelineno-0-1040"></a>
+<a id="__codelineno-0-1041" name="__codelineno-0-1041"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-1042" name="__codelineno-0-1042"></a><span class="sd">        The value routed into the end node.</span>
+<a id="__codelineno-0-1043" name="__codelineno-0-1043"></a>
+<a id="__codelineno-0-1044" name="__codelineno-0-1044"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-1045" name="__codelineno-0-1045"></a><span class="sd">        GraphRuntimeError: If no snapshot exists for ``run_id``, the snapshot</span>
+<a id="__codelineno-0-1046" name="__codelineno-0-1046"></a><span class="sd">            is not paused, or the run finishes without reaching the end node.</span>
+<a id="__codelineno-0-1047" name="__codelineno-0-1047"></a><span class="sd">        GraphPaused: If the run reaches another pause node.</span>
+<a id="__codelineno-0-1048" name="__codelineno-0-1048"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
+<a id="__codelineno-0-1049" name="__codelineno-0-1049"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-1050" name="__codelineno-0-1050"></a>    <span class="n">snapshot</span> <span class="o">=</span> <span class="k">await</span> <span class="n">store</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">run_id</span><span class="p">)</span>
+<a id="__codelineno-0-1051" name="__codelineno-0-1051"></a>    <span class="k">if</span> <span class="n">snapshot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-1052" name="__codelineno-0-1052"></a>        <span class="k">raise</span> <span class="n">GraphRuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no snapshot found for run </span><span class="si">{</span><span class="n">run_id</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-1053" name="__codelineno-0-1053"></a>    <span class="k">if</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">paused</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-1054" name="__codelineno-0-1054"></a>        <span class="k">raise</span> <span class="n">GraphRuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;run </span><span class="si">{</span><span class="n">run_id</span><span class="si">!r}</span><span class="s2"> is not paused&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-1055" name="__codelineno-0-1055"></a>    <span class="n">resolved</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">(</span><span class="n">options</span><span class="p">),</span> <span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">,</span> <span class="n">run_id</span><span class="o">=</span><span class="n">run_id</span><span class="p">)</span>
+<a id="__codelineno-0-1056" name="__codelineno-0-1056"></a>    <span class="n">run</span><span class="p">:</span> <span class="n">_GraphRun</span><span class="p">[</span><span class="n">StateT</span><span class="p">,</span> <span class="n">DepsT</span><span class="p">,</span> <span class="n">OutputT</span><span class="p">]</span> <span class="o">=</span> <span class="n">_GraphRun</span><span class="p">(</span>
+<a id="__codelineno-0-1057" name="__codelineno-0-1057"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_spec</span><span class="p">,</span>
+<a id="__codelineno-0-1058" name="__codelineno-0-1058"></a>        <span class="n">state</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;StateT&quot;</span><span class="p">,</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">state</span><span class="p">),</span>
+<a id="__codelineno-0-1059" name="__codelineno-0-1059"></a>        <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span>
+<a id="__codelineno-0-1060" name="__codelineno-0-1060"></a>        <span class="n">options</span><span class="o">=</span><span class="n">resolved</span><span class="p">,</span>
+<a id="__codelineno-0-1061" name="__codelineno-0-1061"></a>    <span class="p">)</span>
+<a id="__codelineno-0-1062" name="__codelineno-0-1062"></a>    <span class="n">run</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+<a id="__codelineno-0-1063" name="__codelineno-0-1063"></a>    <span class="k">return</span> <span class="k">await</span> <span class="n">run</span><span class="o">.</span><span class="n">resume_with</span><span class="p">(</span><span class="n">snapshot</span><span class="o">.</span><span class="n">paused</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6963,9 +6963,7 @@ resumed run.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/graph/graph.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1063">1063</a></span>
-<span class="normal"><a href="#__codelineno-0-1064">1064</a></span>
-<span class="normal"><a href="#__codelineno-0-1065">1065</a></span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1065">1065</a></span>
 <span class="normal"><a href="#__codelineno-0-1066">1066</a></span>
 <span class="normal"><a href="#__codelineno-0-1067">1067</a></span>
 <span class="normal"><a href="#__codelineno-0-1068">1068</a></span>
@@ -6992,36 +6990,38 @@ resumed run.</p>
 <span class="normal"><a href="#__codelineno-0-1089">1089</a></span>
 <span class="normal"><a href="#__codelineno-0-1090">1090</a></span>
 <span class="normal"><a href="#__codelineno-0-1091">1091</a></span>
-<span class="normal"><a href="#__codelineno-0-1092">1092</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1063" name="__codelineno-0-1063"></a><span class="k">def</span><span class="w"> </span><span class="nf">resume_with</span><span class="p">(</span>
-<a id="__codelineno-0-1064" name="__codelineno-0-1064"></a>    <span class="bp">self</span><span class="p">,</span>
-<a id="__codelineno-0-1065" name="__codelineno-0-1065"></a>    <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<a id="__codelineno-0-1066" name="__codelineno-0-1066"></a>    <span class="o">*</span><span class="p">,</span>
-<a id="__codelineno-0-1067" name="__codelineno-0-1067"></a>    <span class="n">store</span><span class="p">:</span> <span class="n">StateStore</span><span class="p">,</span>
-<a id="__codelineno-0-1068" name="__codelineno-0-1068"></a>    <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span>
-<a id="__codelineno-0-1069" name="__codelineno-0-1069"></a>    <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
-<a id="__codelineno-0-1070" name="__codelineno-0-1070"></a>    <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<a id="__codelineno-0-1071" name="__codelineno-0-1071"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
-<a id="__codelineno-0-1072" name="__codelineno-0-1072"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a paused run synchronously, injecting ``value`` as the pause node&#39;s output.</span>
-<a id="__codelineno-0-1073" name="__codelineno-0-1073"></a>
-<a id="__codelineno-0-1074" name="__codelineno-0-1074"></a><span class="sd">    A blocking wrapper over [`aresume_with`][Graph.aresume_with].</span>
+<span class="normal"><a href="#__codelineno-0-1092">1092</a></span>
+<span class="normal"><a href="#__codelineno-0-1093">1093</a></span>
+<span class="normal"><a href="#__codelineno-0-1094">1094</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-1065" name="__codelineno-0-1065"></a><span class="k">def</span><span class="w"> </span><span class="nf">resume_with</span><span class="p">(</span>
+<a id="__codelineno-0-1066" name="__codelineno-0-1066"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-1067" name="__codelineno-0-1067"></a>    <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-1068" name="__codelineno-0-1068"></a>    <span class="o">*</span><span class="p">,</span>
+<a id="__codelineno-0-1069" name="__codelineno-0-1069"></a>    <span class="n">store</span><span class="p">:</span> <span class="n">StateStore</span><span class="p">,</span>
+<a id="__codelineno-0-1070" name="__codelineno-0-1070"></a>    <span class="n">deps</span><span class="p">:</span> <span class="n">DepsT</span><span class="p">,</span>
+<a id="__codelineno-0-1071" name="__codelineno-0-1071"></a>    <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
+<a id="__codelineno-0-1072" name="__codelineno-0-1072"></a>    <span class="n">options</span><span class="p">:</span> <span class="n">RunOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-1073" name="__codelineno-0-1073"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputT</span><span class="p">:</span>
+<a id="__codelineno-0-1074" name="__codelineno-0-1074"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a paused run synchronously, injecting ``value`` as the pause node&#39;s output.</span>
 <a id="__codelineno-0-1075" name="__codelineno-0-1075"></a>
-<a id="__codelineno-0-1076" name="__codelineno-0-1076"></a><span class="sd">    Args:</span>
-<a id="__codelineno-0-1077" name="__codelineno-0-1077"></a><span class="sd">        run_id: The id the paused run was snapshotted under.</span>
-<a id="__codelineno-0-1078" name="__codelineno-0-1078"></a><span class="sd">        store: The store holding the run&#39;s snapshots.</span>
-<a id="__codelineno-0-1079" name="__codelineno-0-1079"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
-<a id="__codelineno-0-1080" name="__codelineno-0-1080"></a><span class="sd">        value: The answer to inject; becomes the pause node&#39;s output.</span>
-<a id="__codelineno-0-1081" name="__codelineno-0-1081"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs.</span>
-<a id="__codelineno-0-1082" name="__codelineno-0-1082"></a>
-<a id="__codelineno-0-1083" name="__codelineno-0-1083"></a><span class="sd">    Returns:</span>
-<a id="__codelineno-0-1084" name="__codelineno-0-1084"></a><span class="sd">        The value routed into the end node.</span>
-<a id="__codelineno-0-1085" name="__codelineno-0-1085"></a>
-<a id="__codelineno-0-1086" name="__codelineno-0-1086"></a><span class="sd">    Raises:</span>
-<a id="__codelineno-0-1087" name="__codelineno-0-1087"></a><span class="sd">        GraphRuntimeError: If no snapshot exists for ``run_id``, the snapshot</span>
-<a id="__codelineno-0-1088" name="__codelineno-0-1088"></a><span class="sd">            is not paused, or the run finishes without reaching the end node.</span>
-<a id="__codelineno-0-1089" name="__codelineno-0-1089"></a><span class="sd">        GraphPaused: If the run reaches another pause node.</span>
-<a id="__codelineno-0-1090" name="__codelineno-0-1090"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
-<a id="__codelineno-0-1091" name="__codelineno-0-1091"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-1092" name="__codelineno-0-1092"></a>    <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aresume_with</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">))</span>
+<a id="__codelineno-0-1076" name="__codelineno-0-1076"></a><span class="sd">    A blocking wrapper over [`aresume_with`][Graph.aresume_with].</span>
+<a id="__codelineno-0-1077" name="__codelineno-0-1077"></a>
+<a id="__codelineno-0-1078" name="__codelineno-0-1078"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-1079" name="__codelineno-0-1079"></a><span class="sd">        run_id: The id the paused run was snapshotted under.</span>
+<a id="__codelineno-0-1080" name="__codelineno-0-1080"></a><span class="sd">        store: The store holding the run&#39;s snapshots.</span>
+<a id="__codelineno-0-1081" name="__codelineno-0-1081"></a><span class="sd">        deps: Run-scoped dependencies injected into nodes.</span>
+<a id="__codelineno-0-1082" name="__codelineno-0-1082"></a><span class="sd">        value: The answer to inject; becomes the pause node&#39;s output.</span>
+<a id="__codelineno-0-1083" name="__codelineno-0-1083"></a><span class="sd">        options: Concurrency, timeout, and error-handling knobs.</span>
+<a id="__codelineno-0-1084" name="__codelineno-0-1084"></a>
+<a id="__codelineno-0-1085" name="__codelineno-0-1085"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-1086" name="__codelineno-0-1086"></a><span class="sd">        The value routed into the end node.</span>
+<a id="__codelineno-0-1087" name="__codelineno-0-1087"></a>
+<a id="__codelineno-0-1088" name="__codelineno-0-1088"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-1089" name="__codelineno-0-1089"></a><span class="sd">        GraphRuntimeError: If no snapshot exists for ``run_id``, the snapshot</span>
+<a id="__codelineno-0-1090" name="__codelineno-0-1090"></a><span class="sd">            is not paused, or the run finishes without reaching the end node.</span>
+<a id="__codelineno-0-1091" name="__codelineno-0-1091"></a><span class="sd">        GraphPaused: If the run reaches another pause node.</span>
+<a id="__codelineno-0-1092" name="__codelineno-0-1092"></a><span class="sd">        ValueError: If the configured concurrency is less than one.</span>
+<a id="__codelineno-0-1093" name="__codelineno-0-1093"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-1094" name="__codelineno-0-1094"></a>    <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aresume_with</span><span class="p">(</span><span class="n">run_id</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="n">store</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="n">deps</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
