@@ -1,16 +1,14 @@
 """Public API for the components layer.
 
 A component is a callable implementing one of the category contracts:
-``ClaimProcessor``, ``Retriever``, ``Verifier``, and ``Aggregator`` (plus the
-optional ``QueryGenerator`` and ``Reviser``). Any implementation of a contract is
-interchangeable with any other. The contracts are defined in terms of the data
-types in this layer (``Claim``, ``Evidence``, ``Verdict``, and so on). Import
-both from ``openfactcheck.components``; concrete implementations live in
-subpackages.
+``ClaimProcessor``, ``QueryGenerator``, ``Retriever``, and ``Verifier`` (plus the
+optional ``Reviser``). Any implementation of a contract is interchangeable with
+any other. The contracts are defined in terms of the data types in this layer
+(``Claim``, ``Evidence``, ``Verdict``, and so on). Import both from
+``openfactcheck.components``; concrete implementations live in subpackages.
 """
 
 from openfactcheck.components.protocols import (
-    Aggregator,
     ClaimProcessor,
     QueryGenerator,
     Retriever,
@@ -19,7 +17,6 @@ from openfactcheck.components.protocols import (
 )
 from openfactcheck.components.provenance import Provenance
 from openfactcheck.components.types import (
-    Assessment,
     Claim,
     Evidence,
     Input,
@@ -33,7 +30,6 @@ from openfactcheck.components.types import (
 
 # Component category contracts
 __all__ = [
-    "Aggregator",
     "ClaimProcessor",
     "QueryGenerator",
     "Retriever",
@@ -43,7 +39,6 @@ __all__ = [
 
 # Data types: the fact-checking vocabulary and assembled result
 __all__ += [
-    "Assessment",
     "Claim",
     "Evidence",
     "Input",

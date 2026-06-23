@@ -34,7 +34,7 @@ from __future__ import annotations
 import inspect
 from collections import deque
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, get_args, get_type_hints, overload
+from typing import TYPE_CHECKING, Any, Generic, get_args, get_type_hints, overload
 
 from openfactcheck.graph._typevars import DepsT, InputT, OutputT, StateT
 from openfactcheck.graph.decision import Branch, Decision
@@ -252,6 +252,7 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
         self._joins: dict[str, AnyJoin] = {}
         self._decisions: dict[str, AnyDecision] = {}
         self._pauses: dict[str, AnyPause] = {}
+        self._subgraphs: dict[str, GraphSpec] = {}
         self._edges: list[Edge] = []
         self._branches: list[Branch] = []
         self.start_node: StartNode[InputT] = StartNode()
@@ -388,6 +389,7 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
         if self._id_taken(node.id):
             raise GraphBuildError(f"duplicate node id {node.id!r}")
         self._steps[node.id] = node
+        self._subgraphs[node_id] = graph.spec
         return node
 
     def collect_node[ItemT](self, item_type: type[ItemT], *, node_id: str) -> Join[ItemT, list[ItemT]]:
@@ -654,6 +656,7 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
             state_type=self._state_type,
             input_type=self._input_type,
             output_type=self._output_type,
+            subgraphs=self._subgraphs,
         )
         return Graph(spec, name=self._name)
 
@@ -791,3 +794,11 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
                 input_type = args[0]
             break
         return input_type, output_type
+
+
+type AnyGraphBuilder = GraphBuilder[Any, Any, Any, Any]
+"""A graph builder with its type parameters left open.
+
+For helpers that register a node onto any builder without reading the run's state or dependencies; the
+registered node is still typed on the value it carries, so edges stay type-checked.
+"""

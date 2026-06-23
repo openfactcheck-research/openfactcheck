@@ -14,10 +14,10 @@ from openfactcheck.prompts import PromptTemplate
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
-class GeneratedQueries(BaseModel):
+class FactoolQueryGeneratorModel(BaseModel):
     """Factool's structured query-generation result.
 
-    The query generator maps this onto a [`Query`][openfactcheck.components.types.Query]. It
+    The query generator maps this onto a [`Query`][Query]. It
     is also the value handed to a call's ``on_partial`` hook, the query list
     growing as the model writes it.
     """
@@ -45,7 +45,7 @@ class FactoolQueryGenerator:
         self,
         claim: Claim,
         *,
-        on_partial: Callable[[GeneratedQueries], None] | None = None,
+        on_partial: Callable[[FactoolQueryGeneratorModel], None] | None = None,
     ) -> Query:
         """Generate search queries for ``claim``.
 
@@ -60,18 +60,18 @@ class FactoolQueryGenerator:
         """
         messages = self.prompt.to_messages(input=claim.text)
         result = (
-            await self.client.acompletion_as(messages, GeneratedQueries)
+            await self.client.acompletion_as(messages, FactoolQueryGeneratorModel)
             if on_partial is None
             else await self._stream(messages, on_partial)
         )
         return Query(claim=claim, questions=result.queries)
 
     async def _stream(
-        self, messages: list[Message], on_partial: Callable[[GeneratedQueries], None]
-    ) -> GeneratedQueries:
+        self, messages: list[Message], on_partial: Callable[[FactoolQueryGeneratorModel], None]
+    ) -> FactoolQueryGeneratorModel:
         """Stream the query generation, forwarding each partial result to ``on_partial``."""
-        result: GeneratedQueries | None = None
-        async for partial in self.client.astream_as(messages, GeneratedQueries):
+        result: FactoolQueryGeneratorModel | None = None
+        async for partial in self.client.astream_as(messages, FactoolQueryGeneratorModel):
             result = partial
             on_partial(partial)
         if result is None:  # pragma: no cover - astream_as yields the final value or raises.

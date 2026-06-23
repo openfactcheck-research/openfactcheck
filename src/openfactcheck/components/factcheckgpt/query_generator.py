@@ -14,10 +14,10 @@ from openfactcheck.prompts import PromptTemplate
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
-class GeneratedQueries(BaseModel):
-    """FactcheckGPT's structured query-generation result.
+class FactcheckGPTQueryGeneratorModel(BaseModel):
+    """FactcheckGPT's structured query-generator result.
 
-    The query generator maps this onto a [`Query`][openfactcheck.components.types.Query].
+    The query generator maps this onto a [`Query`][Query].
     It is also the value handed to a call's ``on_partial`` hook, the query list
     growing as the model writes it.
     """
@@ -45,7 +45,7 @@ class FactcheckGPTQueryGenerator:
         self,
         claim: Claim,
         *,
-        on_partial: Callable[[GeneratedQueries], None] | None = None,
+        on_partial: Callable[[FactcheckGPTQueryGeneratorModel], None] | None = None,
     ) -> Query:
         """Generate search queries for ``claim``.
 
@@ -60,18 +60,18 @@ class FactcheckGPTQueryGenerator:
         """
         messages = self.prompt.to_messages(input=claim.text)
         result = (
-            await self.client.acompletion_as(messages, GeneratedQueries)
+            await self.client.acompletion_as(messages, FactcheckGPTQueryGeneratorModel)
             if on_partial is None
             else await self._stream(messages, on_partial)
         )
         return Query(claim=claim, questions=result.queries)
 
     async def _stream(
-        self, messages: list[Message], on_partial: Callable[[GeneratedQueries], None]
-    ) -> GeneratedQueries:
+        self, messages: list[Message], on_partial: Callable[[FactcheckGPTQueryGeneratorModel], None]
+    ) -> FactcheckGPTQueryGeneratorModel:
         """Stream the query generation, forwarding each partial result to ``on_partial``."""
-        result: GeneratedQueries | None = None
-        async for partial in self.client.astream_as(messages, GeneratedQueries):
+        result: FactcheckGPTQueryGeneratorModel | None = None
+        async for partial in self.client.astream_as(messages, FactcheckGPTQueryGeneratorModel):
             result = partial
             on_partial(partial)
         if result is None:  # pragma: no cover - astream_as yields the final value or raises.

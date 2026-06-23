@@ -17,11 +17,11 @@ DEFAULT_NUM_ROUNDS = 3
 """Default number of times the questions are sampled before taking their union."""
 
 
-class GeneratedQuestions(BaseModel):
+class RARRQueryGeneratorModel(BaseModel):
     """RARR's structured comprehensive-question-generation result.
 
     The query generator unions these across sampling rounds and maps them onto a
-    [`Query`][openfactcheck.components.types.Query]. It is also the value handed
+    [`Query`][Query]. It is also the value handed
     to a call's ``on_partial`` hook, the question list growing as the model writes it.
     """
 
@@ -53,7 +53,7 @@ class RARRQueryGenerator:
         self,
         claim: Claim,
         *,
-        on_partial: Callable[[GeneratedQuestions], None] | None = None,
+        on_partial: Callable[[RARRQueryGeneratorModel], None] | None = None,
     ) -> Query:
         """Generate verification questions for ``claim``.
 
@@ -70,7 +70,7 @@ class RARRQueryGenerator:
         seen: dict[str, None] = {}
         for _ in range(self.num_rounds):
             result = (
-                await self.client.acompletion_as(messages, GeneratedQuestions)
+                await self.client.acompletion_as(messages, RARRQueryGeneratorModel)
                 if on_partial is None
                 else await self._stream(messages, on_partial)
             )
@@ -80,11 +80,11 @@ class RARRQueryGenerator:
         return Query(claim=claim, questions=list(seen))
 
     async def _stream(
-        self, messages: list[Message], on_partial: Callable[[GeneratedQuestions], None]
-    ) -> GeneratedQuestions:
+        self, messages: list[Message], on_partial: Callable[[RARRQueryGeneratorModel], None]
+    ) -> RARRQueryGeneratorModel:
         """Stream one sampling round, forwarding each partial result to ``on_partial``."""
-        result: GeneratedQuestions | None = None
-        async for partial in self.client.astream_as(messages, GeneratedQuestions):
+        result: RARRQueryGeneratorModel | None = None
+        async for partial in self.client.astream_as(messages, RARRQueryGeneratorModel):
             result = partial
             on_partial(partial)
         if result is None:  # pragma: no cover - astream_as yields the final value or raises.

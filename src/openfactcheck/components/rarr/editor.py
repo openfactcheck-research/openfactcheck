@@ -20,7 +20,7 @@ DEFAULT_MAX_EDIT_RATIO = 0.5
 """Default cap on a single edit's edit distance as a fraction of the passage length, from the paper."""
 
 
-class Edit(BaseModel):
+class RARREditorModel(BaseModel):
     """RARR's structured edit result.
 
     The editor returns the `fix` when it is within the size limits. It is also the
@@ -60,7 +60,7 @@ class RARREditor:
         question: str,
         source: Source,
         *,
-        on_partial: Callable[[Edit], None] | None = None,
+        on_partial: Callable[[RARREditorModel], None] | None = None,
     ) -> str:
         """Edit ``passage`` to agree with ``source`` on the answer to ``question``.
 
@@ -77,7 +77,7 @@ class RARREditor:
         """
         messages = self.prompt.to_messages(claim=passage, query=question, evidence=source.content)
         result = (
-            await self.client.acompletion_as(messages, Edit)
+            await self.client.acompletion_as(messages, RARREditorModel)
             if on_partial is None
             else await self._stream(messages, on_partial)
         )
@@ -105,10 +105,10 @@ class RARREditor:
             previous = current
         return previous[-1]
 
-    async def _stream(self, messages: list[Message], on_partial: Callable[[Edit], None]) -> Edit:
+    async def _stream(self, messages: list[Message], on_partial: Callable[[RARREditorModel], None]) -> RARREditorModel:
         """Stream the edit, forwarding each partial result to ``on_partial``."""
-        result: Edit | None = None
-        async for partial in self.client.astream_as(messages, Edit):
+        result: RARREditorModel | None = None
+        async for partial in self.client.astream_as(messages, RARREditorModel):
             result = partial
             on_partial(partial)
         if result is None:  # pragma: no cover - astream_as yields the final value or raises.

@@ -3,23 +3,28 @@
 A port of the FactcheckGPT pipeline from Wang et al. (2024). The components
 mirror the paper's stages: decompose the response into atomic checkworthy
 claims, generate search queries, retrieve web evidence, verify each claim
-against that evidence (with a correction when it is wrong), aggregate to a
-response-level judgment, and revise the response to fix its errors.
+against that evidence (with a correction when it is wrong), and revise the
+response to fix its errors.
 
 The LLM components run on an injected chat client;
-[`PROVENANCE`][openfactcheck.components.factcheckgpt.PROVENANCE] records the
+[`PROVENANCE`][PROVENANCE] records the
 recommended default model along with the source paper, repository, pinned
 commit, and license. Import from ``openfactcheck.components.factcheckgpt``.
 """
 
 from typing import TYPE_CHECKING
 
-from openfactcheck.components.factcheckgpt.aggregator import FactcheckGPTAggregator
-from openfactcheck.components.factcheckgpt.claim_processor import ClaimExtraction, FactcheckGPTClaimProcessor
-from openfactcheck.components.factcheckgpt.query_generator import FactcheckGPTQueryGenerator, GeneratedQueries
+from openfactcheck.components.factcheckgpt.claim_processor import (
+    FactcheckGPTClaimProcessor,
+    FactcheckGPTClaimProcessorModel,
+)
+from openfactcheck.components.factcheckgpt.query_generator import (
+    FactcheckGPTQueryGenerator,
+    FactcheckGPTQueryGeneratorModel,
+)
 from openfactcheck.components.factcheckgpt.retriever import FactcheckGPTRetriever
-from openfactcheck.components.factcheckgpt.reviser import FactcheckGPTReviser, Revision
-from openfactcheck.components.factcheckgpt.verifier import FactcheckGPTVerifier, Verification
+from openfactcheck.components.factcheckgpt.reviser import FactcheckGPTReviser, FactcheckGPTReviserModel
+from openfactcheck.components.factcheckgpt.verifier import FactcheckGPTVerifier, FactcheckGPTVerifierModel
 from openfactcheck.components.provenance import Provenance
 
 _CITATION = """\
@@ -49,7 +54,6 @@ PROVENANCE = Provenance(
 
 # Components
 __all__ = [
-    "FactcheckGPTAggregator",
     "FactcheckGPTClaimProcessor",
     "FactcheckGPTQueryGenerator",
     "FactcheckGPTRetriever",
@@ -59,10 +63,10 @@ __all__ = [
 
 # Structured outputs (the value each component's ``on_partial`` hook streams)
 __all__ += [
-    "ClaimExtraction",
-    "GeneratedQueries",
-    "Revision",
-    "Verification",
+    "FactcheckGPTClaimProcessorModel",
+    "FactcheckGPTQueryGeneratorModel",
+    "FactcheckGPTReviserModel",
+    "FactcheckGPTVerifierModel",
 ]
 
 # Provenance
@@ -73,7 +77,6 @@ __all__ += [
 
 if TYPE_CHECKING:
     from openfactcheck.components.protocols import (
-        Aggregator,
         ClaimProcessor,
         QueryGenerator,
         Retriever,
@@ -87,5 +90,4 @@ if TYPE_CHECKING:
     _generator: type[QueryGenerator] = FactcheckGPTQueryGenerator
     _retriever: type[Retriever] = FactcheckGPTRetriever
     _verifier: type[Verifier] = FactcheckGPTVerifier
-    _aggregator: type[Aggregator] = FactcheckGPTAggregator
     _reviser: type[Reviser] = FactcheckGPTReviser

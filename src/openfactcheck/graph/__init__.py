@@ -35,7 +35,7 @@ Example:
     ```
 """
 
-from openfactcheck.graph.builder import EdgePathBuilder, GraphBuilder
+from openfactcheck.graph.builder import AnyGraphBuilder, EdgePathBuilder, GraphBuilder
 from openfactcheck.graph.decision import Branch, Decision
 from openfactcheck.graph.errors import (
     GraphBuildError,
@@ -92,6 +92,7 @@ from openfactcheck.graph.step import Edge, EdgeKind, EndNode, StartNode, Step, S
 # Builder and graph
 __all__ = [
     "DEFAULT_CONCURRENCY",
+    "AnyGraphBuilder",
     "EdgePathBuilder",
     "ErrorPolicy",
     "Graph",

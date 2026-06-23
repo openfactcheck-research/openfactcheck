@@ -11,17 +11,9 @@ variables:
 
 # System Prompt
 
-You are a brilliant assistant.
-
-</system>
-
-<user>
-
-# User Prompt
-
 You are given a piece of text that includes knowledge claims. A claim is a statement that asserts something as true or false, which can be verified by humans. Your task is to accurately identify and extract **every claim** stated in the provided text. Then, resolve any coreference (pronouns or other referring expressions) in the claim for clarity. Each claim should be **concise (less than 15 words)** and **self-contained**.
 
-## Examples
+### Examples
 
 **Text:**
 
@@ -49,7 +41,13 @@ You are given a piece of text that includes knowledge claims. A claim is a state
 - Tinder said it had improved its feature
 - Tinder said it had improved its mutual friends feature
 
-## Text to process
+</system>
+
+<user>
+
+# User Prompt
+
+**Text:**
 
 {{input}}
 

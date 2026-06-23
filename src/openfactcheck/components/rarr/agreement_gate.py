@@ -22,10 +22,10 @@ _LABELS: dict[str, Literal["supported", "refuted", "not_enough_evidence"]] = {
 """Maps RARR's three agreement outcomes onto the canonical verdict labels."""
 
 
-class Agreement(BaseModel):
+class RARRAgreementGateModel(BaseModel):
     """RARR's structured agreement-gate result.
 
-    The gate maps this onto a [`Verdict`][openfactcheck.components.types.Verdict],
+    The gate maps this onto a [`Verdict`][Verdict],
     where ``disagrees`` opens the gate for editing. It is also the value handed to
     a call's ``on_partial`` hook, filling in as the model writes it.
     """
@@ -57,7 +57,7 @@ class RARRAgreementGate:
         question: str,
         source: Source,
         *,
-        on_partial: Callable[[Agreement], None] | None = None,
+        on_partial: Callable[[RARRAgreementGateModel], None] | None = None,
     ) -> Verdict:
         """Check whether ``passage`` agrees with ``source`` on the answer to ``question``.
 
@@ -76,7 +76,7 @@ class RARRAgreementGate:
         """
         messages = self.prompt.to_messages(claim=passage, query=question, evidence=source.content)
         result = (
-            await self.client.acompletion_as(messages, Agreement)
+            await self.client.acompletion_as(messages, RARRAgreementGateModel)
             if on_partial is None
             else await self._stream(messages, on_partial)
         )
@@ -88,10 +88,12 @@ class RARRAgreementGate:
             reasoning=result.reasoning,
         )
 
-    async def _stream(self, messages: list[Message], on_partial: Callable[[Agreement], None]) -> Agreement:
+    async def _stream(
+        self, messages: list[Message], on_partial: Callable[[RARRAgreementGateModel], None]
+    ) -> RARRAgreementGateModel:
         """Stream the agreement check, forwarding each partial result to ``on_partial``."""
-        result: Agreement | None = None
-        async for partial in self.client.astream_as(messages, Agreement):
+        result: RARRAgreementGateModel | None = None
+        async for partial in self.client.astream_as(messages, RARRAgreementGateModel):
             result = partial
             on_partial(partial)
         if result is None:  # pragma: no cover - astream_as yields the final value or raises.

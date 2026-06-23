@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: Judge whether a claim is factual against evidence, and correct it if not.
+description: Judge whether a text is factual against evidence, and correct it if not.
 variables:
   claim:
     type: string
@@ -14,7 +14,15 @@ variables:
 
 # System Prompt
 
-You are a helpful factchecker assistant.
+You are given a piece of text. Your task is to identify whether there are any factual errors within the text.
+
+When you are judging the factuality of the given text, you could reference the provided evidences if needed. The provided evidences may be helpful. Some evidences may contradict to each other. You must be careful when using the evidences to judge the factuality of the given text.
+
+The response should have four fields:
+- *Reasoning:* Why is the given text factual or non-factual? Be careful when you said something is non-factual. When you said something is non-factual, you must provide multiple evidences to support your decision.
+- *Error:* "None" if the text is factual; otherwise, describe the error.
+- *Correction:* The corrected text if there is an error.
+- *Factuality:* True if the given text is factual, False otherwise. 
 
 </system>
 
@@ -22,18 +30,10 @@ You are a helpful factchecker assistant.
 
 # User Prompt
 
-You are given a piece of text. Your task is to identify whether there are any **factual errors** within the text.
+The following is the given text
+[text]: {{claim}}
 
-When you judge the factuality of the given text, you may reference the provided evidence if needed. The provided evidence may be helpful. Some evidence may contradict each other, so you must be careful when using it to judge the factuality of the given text.
-
-Provide your **reasoning** for whether the text is factual or not. Be careful: when you decide something is non-factual, you must point to evidence supporting your decision. Then decide the **factuality** of the text: **true** if it is factual, **false** otherwise. If there is a factual error, describe the **error** and provide a **correction** of the text; if the text is factual, leave the error and correction empty.
-
-## Text
-
-{{claim}}
-
-## Evidence
-
-{{evidence}}
+The following is the provided evidences
+[evidences]: {{evidence}}
 
 </user>

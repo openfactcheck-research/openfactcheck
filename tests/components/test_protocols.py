@@ -2,9 +2,8 @@
 
 import pytest
 
-from openfactcheck.components import Aggregator, ClaimProcessor, QueryGenerator, Retriever, Verifier
+from openfactcheck.components import ClaimProcessor, QueryGenerator, Retriever, Verifier
 from openfactcheck.components.types import (
-    Assessment,
     Claim,
     Evidence,
     Input,
@@ -80,28 +79,10 @@ async def test_Verifier_accepts_conforming_implementation() -> None:
     assert result.confidence == 0.9
 
 
-@pytest.mark.asyncio(loop_scope="function")
-async def test_Aggregator_accepts_conforming_implementation() -> None:
-    """A class with matching async __call__ satisfies the Aggregator Protocol."""
-
-    class DummyAggregator:
-        async def __call__(self, verdicts: list[Verdict]) -> Assessment:
-            label = "supported" if verdicts else "not_enough_evidence"
-            return Assessment(label=label)
-
-    aggregator: Aggregator = DummyAggregator()
-
-    assert isinstance(aggregator, Aggregator)
-    claim = Claim(text="c")
-    verdict = Verdict(claim=claim, label="supported", confidence=1.0, reasoning="")
-    result = await aggregator([verdict])
-    assert result.label == "supported"
-
-
 @pytest.mark.parametrize(
     "protocol",
-    [ClaimProcessor, QueryGenerator, Retriever, Verifier, Aggregator],
-    ids=["ClaimProcessor", "QueryGenerator", "Retriever", "Verifier", "Aggregator"],
+    [ClaimProcessor, QueryGenerator, Retriever, Verifier],
+    ids=["ClaimProcessor", "QueryGenerator", "Retriever", "Verifier"],
 )
 def test_contracts_reject_class_without_call(protocol: type) -> None:
     """A class without __call__ does not satisfy any component Protocol."""

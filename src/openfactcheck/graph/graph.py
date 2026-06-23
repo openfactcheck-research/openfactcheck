@@ -119,6 +119,8 @@ class GraphSpec:
     state_type: object | None
     input_type: object | None
     output_type: object | None
+    subgraphs: dict[str, GraphSpec]
+    """Inner specs of subgraph nodes, keyed by node id, used to render them expanded."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -741,6 +743,11 @@ class Graph(Generic[InputT, OutputT, StateT, DepsT]):
         self._spec = spec
         self.name = name
 
+    @property
+    def spec(self) -> GraphSpec:
+        """The validated definition this graph runs."""
+        return self._spec
+
     def to_mermaid(
         self,
         *,
@@ -748,6 +755,7 @@ class Graph(Generic[InputT, OutputT, StateT, DepsT]):
         title: str | None = None,
         highlight: Iterable[str] | None = None,
         show_types: bool = False,
+        expand_subgraphs: bool = False,
     ) -> str:
         """Render this graph as Mermaid flowchart source.
 
@@ -757,11 +765,20 @@ class Graph(Generic[InputT, OutputT, StateT, DepsT]):
             highlight: Node ids to draw with a highlight style.
             show_types: Label each edge with the type of data it carries, read
                 from the source node's declared output type.
+            expand_subgraphs: Draw each subgraph node as a nested cluster showing
+                its inner nodes, rather than as a single opaque node.
 
         Returns:
             Mermaid flowchart source as a string.
         """
-        return to_mermaid(self._spec, direction=direction, title=title, highlight=highlight, show_types=show_types)
+        return to_mermaid(
+            self._spec,
+            direction=direction,
+            title=title,
+            highlight=highlight,
+            show_types=show_types,
+            expand_subgraphs=expand_subgraphs,
+        )
 
     def to_mermaid_image(
         self, *, base_url: str = "https://mermaid.ink", image_type: ImageType = "png", timeout: float = 30.0

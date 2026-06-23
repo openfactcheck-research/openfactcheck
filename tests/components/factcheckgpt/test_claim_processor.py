@@ -27,17 +27,21 @@ def test_FactcheckGPTClaimProcessor_satisfies_protocol() -> None:
 
 
 @pytest.mark.asyncio(loop_scope="function")
-async def test_FactcheckGPTClaimProcessor_returns_extracted_claims() -> None:
-    processor = FactcheckGPTClaimProcessor(client=_FakeClient(SimpleNamespace(claims=["a", "b"])))
+async def test_FactcheckGPTClaimProcessor_keeps_only_checkworthy_claims() -> None:
+    result_obj = SimpleNamespace(
+        claims=["Apple was founded in 1976.", "I think Apple is great."],
+        checkworthy=["Yes", "No"],
+    )
+    processor = FactcheckGPTClaimProcessor(client=_FakeClient(result_obj))
 
     result = await processor(Input(content="some text"))
 
-    assert result == [Claim(text="a"), Claim(text="b")]
+    assert result == [Claim(text="Apple was founded in 1976.")]
 
 
 @pytest.mark.asyncio(loop_scope="function")
 async def test_FactcheckGPTClaimProcessor_no_claims_returns_empty() -> None:
-    processor = FactcheckGPTClaimProcessor(client=_FakeClient(SimpleNamespace(claims=[])))
+    processor = FactcheckGPTClaimProcessor(client=_FakeClient(SimpleNamespace(claims=[], checkworthy=[])))
 
     result = await processor(Input(content="some text"))
 
@@ -46,11 +50,14 @@ async def test_FactcheckGPTClaimProcessor_no_claims_returns_empty() -> None:
 
 @pytest.mark.asyncio(loop_scope="function")
 async def test_FactcheckGPTClaimProcessor_streams_partials_via_on_partial() -> None:
-    partials = [SimpleNamespace(claims=["a"]), SimpleNamespace(claims=["a", "b"])]
+    partials = [
+        SimpleNamespace(claims=["a"], checkworthy=["Yes"]),
+        SimpleNamespace(claims=["a", "b"], checkworthy=["Yes", "No"]),
+    ]
     processor = FactcheckGPTClaimProcessor(client=_FakeClient(None, stream=partials))
     seen: list[SimpleNamespace] = []
 
     result = await processor(Input(content="some text"), on_partial=seen.append)
 
     assert [partial.claims for partial in seen] == [["a"], ["a", "b"]]
-    assert result == [Claim(text="a"), Claim(text="b")]
+    assert result == [Claim(text="a")]

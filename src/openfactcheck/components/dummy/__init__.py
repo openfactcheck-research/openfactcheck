@@ -8,7 +8,6 @@ fixtures.
 
 from typing import TYPE_CHECKING
 
-from openfactcheck.components.dummy.aggregator import DummyAggregator
 from openfactcheck.components.dummy.claim_processor import DummyClaimProcessor
 from openfactcheck.components.dummy.query_generator import DummyQueryGenerator
 from openfactcheck.components.dummy.retriever import DummyRetriever
@@ -16,7 +15,6 @@ from openfactcheck.components.dummy.verifier import DummyVerifier
 
 # Dummy components
 __all__ = [
-    "DummyAggregator",
     "DummyClaimProcessor",
     "DummyQueryGenerator",
     "DummyRetriever",
@@ -26,7 +24,6 @@ __all__ = [
 
 if TYPE_CHECKING:
     from openfactcheck.components.protocols import (
-        Aggregator,
         ClaimProcessor,
         QueryGenerator,
         Retriever,
@@ -39,4 +36,3 @@ if TYPE_CHECKING:
     _generator: type[QueryGenerator] = DummyQueryGenerator
     _retriever: type[Retriever] = DummyRetriever
     _verifier: type[Verifier] = DummyVerifier
-    _aggregator: type[Aggregator] = DummyAggregator

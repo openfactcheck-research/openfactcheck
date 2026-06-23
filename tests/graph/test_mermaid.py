@@ -1,6 +1,39 @@
 """Tests for rendering a graph as Mermaid flowchart source."""
 
-from openfactcheck.graph import GraphBuilder, StepContext
+from openfactcheck.graph import Graph, GraphBuilder, StepContext
+
+
+def _graph_with_subgraph() -> Graph[str, str, None, None]:
+    """An outer graph whose middle node is a subgraph embedding a small inner graph."""
+    inner = GraphBuilder(input_type=str, output_type=str, name="inner")
+
+    @inner.step_node
+    async def first(ctx: StepContext[str]) -> str:
+        return ctx.inputs
+
+    @inner.step_node
+    async def second(ctx: StepContext[str]) -> str:
+        return ctx.inputs.upper()
+
+    inner.add(
+        inner.edge_from(inner.start_node).to(first),
+        inner.edge_from(first).to(second),
+        inner.edge_from(second).to(inner.end_node),
+    )
+
+    g = GraphBuilder(input_type=str, output_type=str, name="outer")
+
+    @g.step_node
+    async def pre(ctx: StepContext[str]) -> str:
+        return ctx.inputs
+
+    sub = g.subgraph_node(inner.build(), node_id="sub")
+    g.add(
+        g.edge_from(g.start_node).to(pre),
+        g.edge_from(pre).to(sub),
+        g.edge_from(sub).to(g.end_node),
+    )
+    return g.build()
 
 
 def test_Graph_mermaid_renders_shapes_and_fanout_fanin_labels() -> None:
@@ -148,3 +181,68 @@ def test_Graph_mermaid_renders_decision_and_pause() -> None:
     assert 'review[/"review"/]' in diagram
     assert "route -.-> handle" in diagram
     assert "route -.-> review" in diagram
+
+
+def test_Graph_mermaid_collapses_subgraph_by_default() -> None:
+    diagram = _graph_with_subgraph().to_mermaid()
+
+    # The subgraph node is one opaque box; its inner nodes are not drawn.
+    assert 'sub["sub"]' in diagram
+    assert "subgraph " not in diagram
+    assert "sub/" not in diagram
+    assert "pre --> sub" in diagram
+    assert "sub --> __end__" in diagram
+
+
+def test_Graph_mermaid_expands_subgraph() -> None:
+    diagram = _graph_with_subgraph().to_mermaid(expand_subgraphs=True)
+    lines = diagram.splitlines()
+
+    # The subgraph node becomes a cluster of its inner nodes.
+    assert 'subgraph sub["sub"]' in diagram
+    assert "    end" in lines
+    # Inner ids are namespaced by the subgraph id; the visible label keeps the node's own id.
+    assert 'sub/first["first"]' in diagram
+    assert 'sub/second["second"]' in diagram
+    assert "sub/first --> sub/second" in diagram
+    # The subgraph's own start and end are hidden.
+    assert "sub/__start__" not in diagram
+    assert "sub/__end__" not in diagram
+    # Edges attach to the inner nodes the flow enters and leaves, not the cluster border.
+    assert "pre --> sub/first" in diagram
+    assert "sub/second --> __end__" in diagram
+    # A straight-line inner graph needs no ranking link: its exit is already its deepest node.
+    assert "~~~" not in diagram
+    # Only the outer start and end take the boundary style.
+    assert "class __start__,__end__ boundary;" in diagram
+
+
+def test_Graph_mermaid_expand_pins_successor_below_cyclic_subgraph() -> None:
+    inner = GraphBuilder(input_type=str, output_type=str, name="loop")
+
+    @inner.step_node
+    async def seed(ctx: StepContext[str]) -> str:
+        return ctx.inputs
+
+    @inner.step_node
+    async def fix(ctx: StepContext[str]) -> str:
+        return ctx.inputs
+
+    more = inner.decision_node(str, node_id="more")
+    inner.add(
+        inner.edge_from(inner.start_node).to(seed),
+        inner.edge_from(seed).to(more),
+        more.when(lambda value: len(value) > 0, fix, max_iterations=3),
+        inner.edge_from(fix).to(more),
+        more.otherwise(inner.end_node),
+    )
+    g = GraphBuilder(input_type=str, output_type=str, name="outer")
+    loop = g.subgraph_node(inner.build(), node_id="loop")
+    g.add(g.edge_from(g.start_node).to(loop), g.edge_from(loop).to(g.end_node))
+
+    diagram = g.build().to_mermaid(expand_subgraphs=True)
+
+    # The exit attaches to the decision node it leaves from.
+    assert "loop/more --> __end__" in diagram
+    # The loop body sits below the exit, so an invisible link pins the successor below the whole cluster.
+    assert "loop/fix ~~~ __end__" in diagram

@@ -157,6 +157,12 @@ nav:
           - Dummy: reference/components/dummy.md
           - Factool: reference/components/factool.md
           - RARR: reference/components/rarr.md
+          - Nodes:
+              - reference/components/nodes/index.md
+              - Dummy: reference/components/nodes/dummy.md
+              - Factool: reference/components/nodes/factool.md
+              - FactcheckGPT: reference/components/nodes/factcheckgpt.md
+              - RARR: reference/components/nodes/rarr.md
       - Integrations:
           - reference/integrations/index.md
           - Serper: reference/integrations/serper.md

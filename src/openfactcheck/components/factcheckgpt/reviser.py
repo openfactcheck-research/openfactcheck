@@ -14,12 +14,12 @@ from openfactcheck.prompts import PromptTemplate
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
-class Revision(BaseModel):
+class FactcheckGPTReviserModel(BaseModel):
     """FactcheckGPT's structured response-revision result.
 
-    The reviser returns the [`revised`][openfactcheck.components.factcheckgpt.Revision.revised]
-    text. It is also the value handed to a call's ``on_partial`` hook, the text
-    filling in as the model writes it.
+    The reviser returns the [`revised`][FactcheckGPTReviserModel.revised] text. It is also
+    the value handed to a call's ``on_partial`` hook, the text filling in as the
+    model writes it.
     """
 
     revised: str
@@ -27,10 +27,10 @@ class Revision(BaseModel):
 
 @dataclass(frozen=True, slots=True)
 class FactcheckGPTReviser:
-    """Rewrite the input to correct its factual errors, following FactcheckGPT's method.
+    """Revise the input to correct its factual errors, following FactcheckGPT's method.
 
     Builds the list of factually true claims from the verdicts (each claim's
-    correction when it has one, otherwise the claim itself) and rewrites the
+    correction when it has one, otherwise the claim itself) and revises the
     original text against that list, preserving its wording and style.
     """
 
@@ -45,23 +45,23 @@ class FactcheckGPTReviser:
         text: Input,
         verdicts: list[Verdict],
         *,
-        on_partial: Callable[[Revision], None] | None = None,
+        on_partial: Callable[[FactcheckGPTReviserModel], None] | None = None,
     ) -> str:
-        """Rewrite ``text`` to fix the errors recorded in ``verdicts``.
+        """Revise ``text`` to fix the errors recorded in ``verdicts``.
 
         Args:
             text: The original input that was checked.
             verdicts: Per-claim verdicts, carrying the corrections to apply.
             on_partial: Called with the revision as it streams in, each call
-                carrying more of the rewritten text. Omit it for a single
+                carrying more of the revised text. Omit it for a single
                 non-streaming call. The returned text is the same either way.
 
         Returns:
-            The input rewritten so its claims read as factually correct.
+            The input revised so its claims read as factually correct.
         """
         messages = self.prompt.to_messages(response=text.content, claims=self._true_claims(verdicts))
         result = (
-            await self.client.acompletion_as(messages, Revision)
+            await self.client.acompletion_as(messages, FactcheckGPTReviserModel)
             if on_partial is None
             else await self._stream(messages, on_partial)
         )
@@ -72,10 +72,12 @@ class FactcheckGPTReviser:
         """List each claim in its corrected form, one per line, for the prompt."""
         return "\n".join(f"- {verdict.correction or verdict.claim.text}" for verdict in verdicts)
 
-    async def _stream(self, messages: list[Message], on_partial: Callable[[Revision], None]) -> Revision:
+    async def _stream(
+        self, messages: list[Message], on_partial: Callable[[FactcheckGPTReviserModel], None]
+    ) -> FactcheckGPTReviserModel:
         """Stream the revision, forwarding each partial result to ``on_partial``."""
-        result: Revision | None = None
-        async for partial in self.client.astream_as(messages, Revision):
+        result: FactcheckGPTReviserModel | None = None
+        async for partial in self.client.astream_as(messages, FactcheckGPTReviserModel):
             result = partial
             on_partial(partial)
         if result is None:  # pragma: no cover - astream_as yields the final value or raises.

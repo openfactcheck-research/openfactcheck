@@ -15,7 +15,7 @@ selector are specific to RARR's shape and do not implement the shared component
 protocols.
 
 The LLM components run on an injected chat client;
-[`PROVENANCE`][openfactcheck.components.rarr.PROVENANCE] records the recommended
+[`PROVENANCE`][PROVENANCE] records the recommended
 default model along with the source paper, repository, pinned commit, and
 license. Import from ``openfactcheck.components.rarr``.
 """
@@ -23,13 +23,12 @@ license. Import from ``openfactcheck.components.rarr``.
 from typing import TYPE_CHECKING
 
 from openfactcheck.components.provenance import Provenance
-from openfactcheck.components.rarr.aggregator import RARRAggregator
-from openfactcheck.components.rarr.agreement_gate import Agreement, RARRAgreementGate
+from openfactcheck.components.rarr.agreement_gate import RARRAgreementGate, RARRAgreementGateModel
 from openfactcheck.components.rarr.claim_processor import RARRClaimProcessor
-from openfactcheck.components.rarr.editor import Edit, RARREditor
+from openfactcheck.components.rarr.editor import RARREditor, RARREditorModel
 from openfactcheck.components.rarr.errors import RARRConfigError, RARRError
 from openfactcheck.components.rarr.evidence_selector import RARREvidenceSelector
-from openfactcheck.components.rarr.query_generator import GeneratedQuestions, RARRQueryGenerator
+from openfactcheck.components.rarr.query_generator import RARRQueryGenerator, RARRQueryGeneratorModel
 from openfactcheck.components.rarr.retriever import QuestionedSource, RARRRetriever
 
 _CITATION = """\
@@ -58,7 +57,6 @@ PROVENANCE = Provenance(
 
 # Components
 __all__ = [
-    "RARRAggregator",
     "RARRAgreementGate",
     "RARRClaimProcessor",
     "RARREditor",
@@ -69,9 +67,9 @@ __all__ = [
 
 # Structured outputs (the value each LLM component's ``on_partial`` hook streams)
 __all__ += [
-    "Agreement",
-    "Edit",
-    "GeneratedQuestions",
+    "RARRAgreementGateModel",
+    "RARREditorModel",
+    "RARRQueryGeneratorModel",
 ]
 
 # Types
@@ -92,7 +90,7 @@ __all__ += [
 
 
 if TYPE_CHECKING:
-    from openfactcheck.components.protocols import Aggregator, ClaimProcessor, QueryGenerator
+    from openfactcheck.components.protocols import ClaimProcessor, QueryGenerator
 
     # Type-only conformance: each RARR component that implements a shared category
     # protocol must satisfy it, so pyright fails the gate the moment one drifts.
@@ -100,4 +98,3 @@ if TYPE_CHECKING:
     # bind to no protocol. Absent at runtime.
     _processor: type[ClaimProcessor] = RARRClaimProcessor
     _generator: type[QueryGenerator] = RARRQueryGenerator
-    _aggregator: type[Aggregator] = RARRAggregator

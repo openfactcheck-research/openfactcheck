@@ -108,15 +108,6 @@ class Verdict(BaseModel):
     """A corrected version of the claim, or ``None`` when there is nothing to correct."""
 
 
-class Assessment(BaseModel):
-    """The overall judgment for a fact-checked input."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
-
-    label: str
-    """Overall outcome label, named by the aggregation strategy."""
-
-
 class Report(BaseModel):
     """The complete result of fact-checking an input."""
 
@@ -128,11 +119,8 @@ class Report(BaseModel):
     verdicts: list[Verdict]
     """The verdict for each extracted claim, each carrying its claim and the evidence behind it."""
 
-    assessment: Assessment
-    """The overall judgment across all claims."""
-
     revision: str | None = None
-    """The input rewritten to correct its factual errors, or ``None`` when no revision was produced."""
+    """The input revised to correct its factual errors, or ``None`` when no revision was produced."""
 
     attribution: list[Source] | None = None
     """Sources cited as the attribution report for the result, or ``None`` when the pipeline produces none."""

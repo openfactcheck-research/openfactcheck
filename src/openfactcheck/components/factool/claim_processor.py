@@ -14,11 +14,11 @@ from openfactcheck.prompts import PromptTemplate
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
-class ClaimExtraction(BaseModel):
+class FactoolClaimProcessorModel(BaseModel):
     """Factool's structured claim-extraction result.
 
     The claim processor maps this onto a list of
-    [`Claim`][openfactcheck.components.types.Claim]. It is also the value handed to a call's
+    [`Claim`][Claim]. It is also the value handed to a call's
     ``on_partial`` hook, the claim list growing as the model writes it.
     """
 
@@ -45,7 +45,7 @@ class FactoolClaimProcessor:
         self,
         text: Input,
         *,
-        on_partial: Callable[[ClaimExtraction], None] | None = None,
+        on_partial: Callable[[FactoolClaimProcessorModel], None] | None = None,
     ) -> list[Claim]:
         """Extract atomic claims from ``text``.
 
@@ -60,16 +60,18 @@ class FactoolClaimProcessor:
         """
         messages = self.prompt.to_messages(input=text.content)
         result = (
-            await self.client.acompletion_as(messages, ClaimExtraction)
+            await self.client.acompletion_as(messages, FactoolClaimProcessorModel)
             if on_partial is None
             else await self._stream(messages, on_partial)
         )
         return [Claim(text=claim) for claim in result.claims]
 
-    async def _stream(self, messages: list[Message], on_partial: Callable[[ClaimExtraction], None]) -> ClaimExtraction:
+    async def _stream(
+        self, messages: list[Message], on_partial: Callable[[FactoolClaimProcessorModel], None]
+    ) -> FactoolClaimProcessorModel:
         """Stream the extraction, forwarding each partial result to ``on_partial``."""
-        result: ClaimExtraction | None = None
-        async for partial in self.client.astream_as(messages, ClaimExtraction):
+        result: FactoolClaimProcessorModel | None = None
+        async for partial in self.client.astream_as(messages, FactoolClaimProcessorModel):
             result = partial
             on_partial(partial)
         if result is None:  # pragma: no cover - astream_as yields the final value or raises.

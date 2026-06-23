@@ -2,22 +2,21 @@
 
 A port of the knowledge-based QA factuality pipeline from FacTool (Chern et al.,
 2023). The components mirror the paper's stages: extract atomic claims, generate
-skeptical search queries, retrieve web evidence, verify each claim against that
-evidence, and aggregate to a response-level judgment.
+skeptical search queries, retrieve web evidence, and verify each claim against
+that evidence.
 
 The LLM components run on an injected chat client;
-[`PROVENANCE`][openfactcheck.components.factool.PROVENANCE] records the
+[`PROVENANCE`][PROVENANCE] records the
 recommended default model along with the source paper, repository, pinned
 commit, and license. Import from ``openfactcheck.components.factool``.
 """
 
 from typing import TYPE_CHECKING
 
-from openfactcheck.components.factool.aggregator import FactoolAggregator
-from openfactcheck.components.factool.claim_processor import ClaimExtraction, FactoolClaimProcessor
-from openfactcheck.components.factool.query_generator import FactoolQueryGenerator, GeneratedQueries
+from openfactcheck.components.factool.claim_processor import FactoolClaimProcessor, FactoolClaimProcessorModel
+from openfactcheck.components.factool.query_generator import FactoolQueryGenerator, FactoolQueryGeneratorModel
 from openfactcheck.components.factool.retriever import FactoolRetriever
-from openfactcheck.components.factool.verifier import FactoolVerifier, Verification
+from openfactcheck.components.factool.verifier import FactoolVerifier, FactoolVerifierModel
 from openfactcheck.components.provenance import Provenance
 
 _CITATION = """\
@@ -51,7 +50,6 @@ PROVENANCE = Provenance(
 
 # Components
 __all__ = [
-    "FactoolAggregator",
     "FactoolClaimProcessor",
     "FactoolQueryGenerator",
     "FactoolRetriever",
@@ -60,9 +58,9 @@ __all__ = [
 
 # Structured outputs (the value each component's ``on_partial`` hook streams)
 __all__ += [
-    "ClaimExtraction",
-    "GeneratedQueries",
-    "Verification",
+    "FactoolClaimProcessorModel",
+    "FactoolQueryGeneratorModel",
+    "FactoolVerifierModel",
 ]
 
 # Provenance
@@ -73,7 +71,6 @@ __all__ += [
 
 if TYPE_CHECKING:
     from openfactcheck.components.protocols import (
-        Aggregator,
         ClaimProcessor,
         QueryGenerator,
         Retriever,
@@ -86,4 +83,3 @@ if TYPE_CHECKING:
     _generator: type[QueryGenerator] = FactoolQueryGenerator
     _retriever: type[Retriever] = FactoolRetriever
     _verifier: type[Verifier] = FactoolVerifier
-    _aggregator: type[Aggregator] = FactoolAggregator

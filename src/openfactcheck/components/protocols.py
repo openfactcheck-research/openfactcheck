@@ -9,7 +9,7 @@ interchangeable with any other implementation of the same category.
 from collections.abc import Callable
 from typing import Protocol, runtime_checkable
 
-from openfactcheck.components.types import Assessment, Claim, Evidence, Input, Query, Verdict
+from openfactcheck.components.types import Claim, Evidence, Input, Query, Verdict
 
 
 @runtime_checkable
@@ -42,7 +42,7 @@ class QueryGenerator(Protocol):
     """Generate search queries for a claim.
 
     Produces the search questions a [`Retriever`][Retriever] runs to gather
-    evidence. One claim yields one [`Query`][openfactcheck.components.types.Query] holding
+    evidence. One claim yields one [`Query`][Query] holding
     any number of questions.
     """
 
@@ -66,7 +66,7 @@ class QueryGenerator(Protocol):
 class Retriever(Protocol):
     """Fetch evidence for a claim's queries.
 
-    A [`Query`][openfactcheck.components.types.Query] carries both the claim and the
+    A [`Query`][Query] carries both the claim and the
     search questions generated for it. Evidence is a set of sources bearing on
     the claim's truthfulness: web pages, documents, vector-store results. A
     retriever that finds nothing should return
@@ -111,33 +111,11 @@ class Verifier(Protocol):
 
 
 @runtime_checkable
-class Aggregator(Protocol):
-    """Combine per-claim verdicts into one overall judgment.
-
-    Strategy is implementation-defined (majority vote, weighted average,
-    worst-case, and so on). The pipeline assembles the full result around
-    the returned judgment.
-    """
-
-    async def __call__(self, verdicts: list[Verdict]) -> Assessment:
-        """Aggregate per-claim verdicts into one overall judgment.
-
-        Args:
-            verdicts: Per-claim verdicts produced earlier in the pipeline;
-                may be empty when the input yielded no claims.
-
-        Returns:
-            The overall judgment, with a strategy-defined label.
-        """
-        ...
-
-
-@runtime_checkable
 class Reviser(Protocol):
-    """Rewrite input text to correct the factual errors its verdicts found.
+    """Revise input text to correct the factual errors its verdicts found.
 
     An optional final stage: most pipelines stop at the
-    [`Verdict`][openfactcheck.components.types.Verdict] for each claim. A reviser
+    [`Verdict`][Verdict] for each claim. A reviser
     weaves the per-claim corrections back into the original text, producing a
     revised version that preserves the wording and style of what was checked.
     """
@@ -145,7 +123,7 @@ class Reviser(Protocol):
     async def __call__(
         self, text: Input, verdicts: list[Verdict], *, on_partial: Callable[[object], None] | None = None
     ) -> str:
-        """Rewrite ``text`` to fix the errors recorded in ``verdicts``.
+        """Revise ``text`` to fix the errors recorded in ``verdicts``.
 
         Args:
             text: The original input that was checked.
@@ -156,7 +134,7 @@ class Reviser(Protocol):
                 ignore it.
 
         Returns:
-            The input rewritten so its claims read as factually correct, with
+            The input revised so its claims read as factually correct, with
             the original style preserved.
         """
         ...

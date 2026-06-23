@@ -14,10 +14,10 @@ from openfactcheck.prompts import PromptTemplate
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
-class Verification(BaseModel):
+class FactcheckGPTVerifierModel(BaseModel):
     """FactcheckGPT's structured per-claim verification result.
 
-    The verifier maps this onto a [`Verdict`][openfactcheck.components.types.Verdict].
+    The verifier maps this onto a [`Verdict`][Verdict].
     It is also the value handed to a verifier call's ``on_partial`` hook, filling
     in field by field as the model writes it.
     """
@@ -48,7 +48,7 @@ class FactcheckGPTVerifier:
         claim: Claim,
         evidence: Evidence,
         *,
-        on_partial: Callable[[Verification], None] | None = None,
+        on_partial: Callable[[FactcheckGPTVerifierModel], None] | None = None,
     ) -> Verdict:
         """Verify ``claim`` against ``evidence``.
 
@@ -65,7 +65,7 @@ class FactcheckGPTVerifier:
         """
         messages = self.prompt.to_messages(claim=claim.text, evidence=self._format_evidence(evidence))
         result = (
-            await self.client.acompletion_as(messages, Verification)
+            await self.client.acompletion_as(messages, FactcheckGPTVerifierModel)
             if on_partial is None
             else await self._stream(messages, on_partial)
         )
@@ -78,10 +78,12 @@ class FactcheckGPTVerifier:
             correction=self._clean(result.correction),
         )
 
-    async def _stream(self, messages: list[Message], on_partial: Callable[[Verification], None]) -> Verification:
+    async def _stream(
+        self, messages: list[Message], on_partial: Callable[[FactcheckGPTVerifierModel], None]
+    ) -> FactcheckGPTVerifierModel:
         """Stream the verification, forwarding each partial result to ``on_partial``."""
-        result: Verification | None = None
-        async for partial in self.client.astream_as(messages, Verification):
+        result: FactcheckGPTVerifierModel | None = None
+        async for partial in self.client.astream_as(messages, FactcheckGPTVerifierModel):
             result = partial
             on_partial(partial)
         if result is None:  # pragma: no cover - astream_as yields the final value or raises.

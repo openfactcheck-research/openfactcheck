@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -14,15 +15,17 @@ from openfactcheck.prompts import PromptTemplate
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 
 
-class ClaimExtraction(BaseModel):
-    """FactcheckGPT's structured claim-decomposition result.
+class FactcheckGPTClaimProcessorModel(BaseModel):
+    """FactcheckGPT's structured claim-processor result.
 
-    The claim processor maps this onto a list of
-    [`Claim`][openfactcheck.components.types.Claim]. It is also the value handed
-    to a call's ``on_partial`` hook, the claim list growing as the model writes it.
+    The atomic claims the text decomposes into, with a parallel list marking
+    whether each is checkworthy; the claim processor keeps only the checkworthy
+    ones, mapping them onto [`Claim`][Claim]. It is also the value handed to a
+    call's ``on_partial`` hook, the lists growing as the model writes them.
     """
 
     claims: list[str]
+    checkworthy: list[Literal["Yes", "No"]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,7 +49,7 @@ class FactcheckGPTClaimProcessor:
         self,
         text: Input,
         *,
-        on_partial: Callable[[ClaimExtraction], None] | None = None,
+        on_partial: Callable[[FactcheckGPTClaimProcessorModel], None] | None = None,
     ) -> list[Claim]:
         """Decompose ``text`` into atomic, checkworthy claims.
 
@@ -61,16 +64,20 @@ class FactcheckGPTClaimProcessor:
         """
         messages = self.prompt.to_messages(input=text.content)
         result = (
-            await self.client.acompletion_as(messages, ClaimExtraction)
+            await self.client.acompletion_as(messages, FactcheckGPTClaimProcessorModel)
             if on_partial is None
             else await self._stream(messages, on_partial)
         )
-        return [Claim(text=claim) for claim in result.claims]
+        return [
+            Claim(text=claim) for claim, label in zip(result.claims, result.checkworthy, strict=False) if label == "Yes"
+        ]
 
-    async def _stream(self, messages: list[Message], on_partial: Callable[[ClaimExtraction], None]) -> ClaimExtraction:
+    async def _stream(
+        self, messages: list[Message], on_partial: Callable[[FactcheckGPTClaimProcessorModel], None]
+    ) -> FactcheckGPTClaimProcessorModel:
         """Stream the extraction, forwarding each partial result to ``on_partial``."""
-        result: ClaimExtraction | None = None
-        async for partial in self.client.astream_as(messages, ClaimExtraction):
+        result: FactcheckGPTClaimProcessorModel | None = None
+        async for partial in self.client.astream_as(messages, FactcheckGPTClaimProcessorModel):
             result = partial
             on_partial(partial)
         if result is None:  # pragma: no cover - astream_as yields the final value or raises.

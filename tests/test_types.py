@@ -4,7 +4,6 @@ import pytest
 from pydantic import ValidationError
 
 from openfactcheck.components.types import (
-    Assessment,
     Claim,
     Evidence,
     Input,
@@ -111,9 +110,7 @@ def test_report() -> None:
     result = Report(
         input=Input(content="The earth is flat"),
         verdicts=[verdict],
-        assessment=Assessment(label="refuted"),
     )
-    assert result.assessment.label == "refuted"
     assert len(result.verdicts) == 1
     assert result.verdicts[0].label == "refuted"
     assert result.verdicts[0].evidence is not None
@@ -126,10 +123,8 @@ def test_report_empty() -> None:
     result = Report(
         input=Input(content=""),
         verdicts=[],
-        assessment=Assessment(label="not_enough_evidence"),
     )
     assert result.verdicts == []
-    assert result.assessment.label == "not_enough_evidence"
 
 
 def test_report_carries_revision_and_attribution() -> None:
@@ -138,7 +133,6 @@ def test_report_carries_revision_and_attribution() -> None:
     result = Report(
         input=Input(content="The sky is green"),
         verdicts=[],
-        assessment=Assessment(label="revised"),
         revision="The sky is blue",
         attribution=sources,
     )
@@ -156,7 +150,6 @@ def test_serialization_round_trip() -> None:
     result = Report(
         input=Input(content="Water is wet"),
         verdicts=[verdict],
-        assessment=Assessment(label="supported"),
     )
 
     data = result.model_dump()
@@ -164,11 +157,6 @@ def test_serialization_round_trip() -> None:
     assert restored.verdicts[0].label == "supported"
     assert restored.verdicts[0].evidence is not None
     assert restored.verdicts[0].evidence.sources[0].content == "Scientific consensus"
-
-
-def test_assessment() -> None:
-    overall = Assessment(label="supported")
-    assert overall.label == "supported"
 
 
 def test_frozen_model_rejects_mutation() -> None:

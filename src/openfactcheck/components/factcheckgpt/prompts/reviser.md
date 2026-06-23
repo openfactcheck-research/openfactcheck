@@ -1,6 +1,6 @@
 ---
 name: reviser
-description: Rewrite a document to fix its factual errors, preserving style.
+description: Revise a document to fix its factual errors, preserving style.
 variables:
   response:
     type: string
@@ -14,7 +14,7 @@ variables:
 
 # System Prompt
 
-You are a helpful factchecker assistant.
+Given a document containing factual errors, please correct the errors in the document depending on a corresponding list of factually true claims. Note that preserve the linguistic features and style of the original document, just correct factual errors.
 
 </system>
 
@@ -22,14 +22,10 @@ You are a helpful factchecker assistant.
 
 # User Prompt
 
-Given a document containing factual errors, correct the errors in the document depending on a corresponding list of factually true claims. Preserve the linguistic features and style of the original document; only correct the factual errors.
+document: {{response}}
 
-## Document
+true claims: {{claims}}
 
-{{response}}
-
-## True claims
-
-{{claims}}
+revised document:
 
 </user>
