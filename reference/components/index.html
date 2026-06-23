@@ -1914,6 +1914,8 @@
       
         
       
+        
+      
     
     
     
@@ -2106,6 +2108,203 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="nodes/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nodes
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2_8_7" id="__nav_2_8_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_8_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_8_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Nodes
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="nodes/dummy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dummy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="nodes/factool/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Factool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="nodes/factcheckgpt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FactcheckGPT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="nodes/rarr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RARR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -3200,12 +3399,11 @@
 
         <p>Public API for the components layer.</p>
 <p>A component is a callable implementing one of the category contracts:
-<code>ClaimProcessor</code>, <code>Retriever</code>, <code>Verifier</code>, and <code>Aggregator</code> (plus the
-optional <code>QueryGenerator</code> and <code>Reviser</code>). Any implementation of a contract is
-interchangeable with any other. The contracts are defined in terms of the data
-types in this layer (<code>Claim</code>, <code>Evidence</code>, <code>Verdict</code>, and so on). Import
-both from <code>openfactcheck.components</code>; concrete implementations live in
-subpackages.</p>
+<code>ClaimProcessor</code>, <code>QueryGenerator</code>, <code>Retriever</code>, and <code>Verifier</code> (plus the
+optional <code>Reviser</code>). Any implementation of a contract is interchangeable with
+any other. The contracts are defined in terms of the data types in this layer
+(<code>Claim</code>, <code>Evidence</code>, <code>Verdict</code>, and so on). Import both from
+<code>openfactcheck.components</code>; concrete implementations live in subpackages.</p>
 
 
 
@@ -3239,6 +3437,7 @@ subpackages.</p>
 <li><a href="provenance/">Provenance</a> — shared metadata describing where a ported component comes from.</li>
 <li><a href="dummy/">Dummy</a> — placeholder components that run a pipeline with no external dependencies.</li>
 <li><a href="factool/">Factool</a> — a port of the Factool knowledge-QA factuality pipeline.</li>
+<li><a href="nodes/">Nodes</a> — components prebuilt as graph nodes, for composing pipelines on the graph.</li>
 </ul>
 
 

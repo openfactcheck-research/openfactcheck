@@ -2,278 +2,298 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://docs.openfactcheck.com/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/types/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/errors/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/auth/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/auth/cognito/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/auth/dev/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/auth/protocol/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/models/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/models/project/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/models/user/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/models/workspace/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/constants/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/protocols/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/dynamodb/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/dynamodb/base/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/dynamodb/projects/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/dynamodb/workspaces/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/sqlite/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/sqlite/projects/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/api/repositories/sqlite/workspaces/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/client/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/config/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/errors/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/requests/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/responses/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/backends/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/backends/anthropic/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/backends/base/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/backends/openai/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/backends/openrouter/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/providers/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/providers/anthropic/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/providers/base/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/providers/openai/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/chat/providers/openrouter/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/components/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/components/dummy/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/components/factool/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/components/protocols/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/components/provenance/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/components/rarr/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.openfactcheck.com/reference/components/nodes/</loc>
+         <lastmod>2026-06-23</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.openfactcheck.com/reference/components/nodes/dummy/</loc>
+         <lastmod>2026-06-23</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.openfactcheck.com/reference/components/nodes/factcheckgpt/</loc>
+         <lastmod>2026-06-23</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.openfactcheck.com/reference/components/nodes/factool/</loc>
+         <lastmod>2026-06-23</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.openfactcheck.com/reference/components/nodes/rarr/</loc>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/builder/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/decision/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/errors/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/events/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/forks/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/graph/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/join/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/mermaid/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/pause/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/persistence/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/graph/step/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/integrations/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/integrations/serper/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/messages/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/prompts/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/prompts/errors/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/prompts/prompt/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/prompts/template/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/prompts/variables/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/prompts/codecs/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/prompts/codecs/markdown/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/prompts/codecs/protocol/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
     <url>
          <loc>https://docs.openfactcheck.com/reference/rest/</loc>
-         <lastmod>2026-06-20</lastmod>
+         <lastmod>2026-06-23</lastmod>
     </url>
 </urlset>
