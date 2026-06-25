@@ -3,6 +3,8 @@
 import subprocess
 import sys
 
+import pytest
+
 from openfactcheck.components.registry import (
     get_component,
     get_pipeline,
@@ -57,3 +59,24 @@ def test_import_openfactcheck_loads_no_namespaces() -> None:
     result = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, check=False)
 
     assert result.returncode == 0, result.stderr
+
+
+def test_nodes_getattr_unknown_namespace_raises_attribute_error() -> None:
+    """Accessing a node namespace that does not exist raises AttributeError."""
+    from openfactcheck.components import nodes
+
+    with pytest.raises(AttributeError, match="no attribute 'nope'"):
+        _ = nodes.nope
+
+
+def test_nodes_getattr_reraises_inner_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A failed import inside a node module surfaces, instead of being masked as a missing namespace."""
+    from openfactcheck.components import nodes
+
+    def _broken_import(_target: str) -> object:
+        raise ModuleNotFoundError("No module named 'missing_dep'", name="missing_dep")
+
+    monkeypatch.setattr(nodes.importlib, "import_module", _broken_import)
+
+    with pytest.raises(ModuleNotFoundError, match="missing_dep"):
+        _ = nodes.unimported_namespace

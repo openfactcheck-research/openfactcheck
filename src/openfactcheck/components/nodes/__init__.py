@@ -36,5 +36,7 @@ def __getattr__(name: str) -> ModuleType:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
     try:
         return importlib.import_module(f"{__name__}.{name}")
-    except ModuleNotFoundError:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None
+    except ModuleNotFoundError as exc:
+        if exc.name == f"{__name__}.{name}":
+            raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None
+        raise
