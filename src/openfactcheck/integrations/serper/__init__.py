@@ -20,6 +20,7 @@ from openfactcheck.integrations.serper.client import (
     DEFAULT_TIMEOUT,
     SerperClient,
 )
+from openfactcheck.integrations.serper.config import SerperSpec
 from openfactcheck.integrations.serper.errors import SerperConfigError, SerperError, SerperRequestError
 from openfactcheck.integrations.serper.params import SearchParams, SerperTimeRange
 from openfactcheck.integrations.serper.responses import (
@@ -45,6 +46,7 @@ __all__ += [
     "DEFAULT_SEARCH_BASE_URL",
     "DEFAULT_TIMEOUT",
     "SearchParams",
+    "SerperSpec",
     "SerperTimeRange",
 ]
 

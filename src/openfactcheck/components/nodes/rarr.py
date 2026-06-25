@@ -16,6 +16,7 @@ from typing import Any
 
 from openfactcheck.chat import ChatClient
 from openfactcheck.components.rarr import (
+    PROVENANCE,
     RARRAgreementGate,
     RARRClaimProcessor,
     RARREditor,
@@ -23,8 +24,9 @@ from openfactcheck.components.rarr import (
     RARRRetriever,
 )
 from openfactcheck.components.rarr.retriever import QuestionedSource
+from openfactcheck.components.registry import Pipeline
 from openfactcheck.components.types import Claim, Input, Query, Verdict
-from openfactcheck.graph import AnyGraphBuilder, GraphBuilder, Step, StepContext
+from openfactcheck.graph import AnyGraphBuilder, Graph, GraphBuilder, Step, StepContext
 from openfactcheck.integrations.serper import SerperClient
 
 DEFAULT_MAX_REVISION_STEPS = 200
@@ -161,3 +163,36 @@ def retriever_verifier_loop(
         inner.edge_from(reviser).to(more_pending),
     )
     return g.subgraph_node(inner.build(), node_id=node_id)
+
+
+def build_graph(*, chat: ChatClient, serper: SerperClient | None = None) -> Graph[Input, ResearchResult, None, None]:
+    """Wire RARR's research-and-revise pipeline into a runnable graph.
+
+    Treats the input as one passage, generates verification questions, then runs the retrieve-and-revise
+    cycle, returning the revised passage and its agreement checks.
+
+    Args:
+        chat: Chat client backing the query generator, agreement gate, and editor.
+        serper: Web-search client for retrieval. Defaults to a client that reads its key from the
+            environment.
+
+    Returns:
+        A graph from input text to the research result.
+    """
+    g: GraphBuilder[Input, ResearchResult, None, None] = GraphBuilder(
+        input_type=Input, output_type=ResearchResult, name="rarr"
+    )
+    cp = claim_processor(g)
+    qg = query_generator(g, chat)
+    loop = retriever_verifier_loop(g, chat, serper)
+    g.add(
+        g.edge_from(g.start_node).to(cp),
+        g.edge_from(cp).to(qg),
+        g.edge_from(qg).to(loop),
+        g.edge_from(loop).to(g.end_node),
+    )
+    return g.build()
+
+
+PIPELINE = Pipeline(build_graph, PROVENANCE.default_model)
+"""The RARR pipeline, discovered through the ``openfactcheck.pipelines`` entry point."""

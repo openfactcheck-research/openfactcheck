@@ -1,15 +1,18 @@
-"""Configuration — pydantic-settings with layered priority.
+"""The top-level configuration for a fact-checking run.
 
-Resolution order (highest wins)::
+[`OpenFactCheckConfig`][OpenFactCheckConfig] holds global defaults (model, Serper credentials, runtime) and a
+`pipeline` to run. It reads from several sources in priority order::
 
     1. Constructor arguments
     2. Environment variables (``OPENFACTCHECK_`` prefix)
     3. ``.env`` file
     4. Config file (``openfactcheck.json`` or ``openfactcheck.yaml``)
     5. Field defaults
+
+Every field is a flat scalar, so any of them can come from the environment, the ``.env`` file, or a config
+file.
 """
 
-from pathlib import Path
 from typing import Literal
 
 from pydantic import AliasChoices, Field, SecretStr
@@ -21,28 +24,39 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
+from openfactcheck.config.runtime import RuntimeSpec
+
+type PipelineName = str
+"""The name of a registered prebuilt pipeline, validated against the registry when the run is built."""
+
 
 class OpenFactCheckConfig(BaseSettings):
     """OpenFactCheck configuration.
 
-    Reads from multiple sources automatically in priority order::
+    Reads from several sources automatically in priority order::
 
-        # Just works — env vars + .env + config files + defaults
+        # Just works: env vars + .env + config files + defaults
         config = OpenFactCheckConfig()
 
         # Programmatic overrides beat everything
         config = OpenFactCheckConfig(model="anthropic/claude-sonnet-4-6")
 
-    Supported config files (looked up in working directory):
+    Supported config files (looked up in the working directory):
 
     - ``openfactcheck.json``
     - ``openfactcheck.yaml`` / ``openfactcheck.yml``
 
-    Environment variables use the ``OPENFACTCHECK_`` prefix::
+    Environment variables use the ``OPENFACTCHECK_`` prefix:
 
-        OPENFACTCHECK_MODEL=gpt-4o-mini
-        OPENFACTCHECK_VERBOSITY=debug
-        SERPER_API_KEY=...
+    ```bash
+    OPENFACTCHECK_MODEL=anthropic/claude-sonnet-4-6
+    OPENFACTCHECK_VERBOSITY=debug
+    OPENFACTCHECK_PIPELINE=factool
+    SERPER_API_KEY=...
+    ```
+
+    The `pipeline` names a prebuilt pipeline, resolved against the registry when the run is built. Build a
+    custom pipeline in code and pass it as ``OpenFactCheck(graph=...)``.
     """
 
     model_config = SettingsConfigDict(
@@ -56,14 +70,23 @@ class OpenFactCheckConfig(BaseSettings):
         case_sensitive=False,
     )
 
-    model: str = "gpt-4o"
+    model: str | None = None
+    """Global default model as ``"provider/model"``. Unset lets each component use its own default."""
+
     verbosity: Literal["debug", "info", "warning", "error", "critical"] = "warning"
-    prompts_dir: Path | None = None
+    """Log level for a run."""
 
     serper_api_key: SecretStr = Field(
         default=SecretStr(""),
         validation_alias=AliasChoices("SERPER_API_KEY", "OPENFACTCHECK_SERPER_API_KEY"),
     )
+    """Global Serper API key for web retrieval."""
+
+    runtime: RuntimeSpec = RuntimeSpec()
+    """Global runtime defaults applied to the pipeline's model calls."""
+
+    pipeline: PipelineName | None = None
+    """The prebuilt pipeline to run, by name. Build a custom pipeline in code and pass ``OpenFactCheck(graph=...)``."""
 
     @classmethod
     def settings_customise_sources(
