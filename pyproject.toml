@@ -41,6 +41,19 @@ rarr = [
 ]
 
 ###############################################################################
+# Plug-in Entry Points
+###############################################################################
+[project.entry-points."openfactcheck.components"]
+dummy = "openfactcheck.components.dummy:COMPONENTS"
+factool = "openfactcheck.components.factool:COMPONENTS"
+factcheckgpt = "openfactcheck.components.factcheckgpt:COMPONENTS"
+
+[project.entry-points."openfactcheck.pipelines"]
+factool = "openfactcheck.components.nodes.factool:PIPELINE"
+factcheckgpt = "openfactcheck.components.nodes.factcheckgpt:PIPELINE"
+rarr = "openfactcheck.components.nodes.rarr:PIPELINE"
+
+###############################################################################
 # Build System
 ###############################################################################
 [build-system]
@@ -61,6 +74,7 @@ artifacts = ["src/openfactcheck/**/prompts/*.md"]
 ###############################################################################
 [tool.pytest.ini_options]
 pythonpath = "src"
+testpaths = ["tests"]
 
 ###############################################################################
 # Type Checking

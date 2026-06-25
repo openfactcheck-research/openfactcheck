@@ -12,6 +12,7 @@ recommended default model along with the source paper, repository, pinned
 commit, and license. Import from ``openfactcheck.components.factcheckgpt``.
 """
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from openfactcheck.components.factcheckgpt.claim_processor import (
@@ -26,6 +27,7 @@ from openfactcheck.components.factcheckgpt.retriever import FactcheckGPTRetrieve
 from openfactcheck.components.factcheckgpt.reviser import FactcheckGPTReviser, FactcheckGPTReviserModel
 from openfactcheck.components.factcheckgpt.verifier import FactcheckGPTVerifier, FactcheckGPTVerifierModel
 from openfactcheck.components.provenance import Provenance
+from openfactcheck.components.registry import Component
 
 _CITATION = """\
 @inproceedings{wang-etal-2024-factcheck-bench,
@@ -91,3 +93,17 @@ if TYPE_CHECKING:
     _retriever: type[Retriever] = FactcheckGPTRetriever
     _verifier: type[Verifier] = FactcheckGPTVerifier
     _reviser: type[Reviser] = FactcheckGPTReviser
+
+
+COMPONENTS: Mapping[str, Component] = {
+    "claim_processor": Component(
+        factory=FactcheckGPTClaimProcessor, role="claim_processor", default_model=PROVENANCE.default_model
+    ),
+    "query_generator": Component(
+        factory=FactcheckGPTQueryGenerator, role="query_generator", default_model=PROVENANCE.default_model
+    ),
+    "retriever": Component(factory=FactcheckGPTRetriever, role="retriever"),
+    "verifier": Component(factory=FactcheckGPTVerifier, role="verifier", default_model=PROVENANCE.default_model),
+    "reviser": Component(factory=FactcheckGPTReviser, role="reviser", default_model=PROVENANCE.default_model),
+}
+"""The FactcheckGPT components, discovered through the ``openfactcheck.components`` entry point."""

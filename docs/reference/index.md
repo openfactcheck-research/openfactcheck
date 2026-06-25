@@ -2,6 +2,8 @@
 
 Generated API reference for OpenFactCheck's public modules.
 
+- [OpenFactCheck](openfactcheck.md) — the top-level entry point that configures a run and executes it.
+- [Configuration](config.md) — the settings that drive a run: model, pipeline, runtime, and Serper key.
 - [REST API](rest/index.md) — the HTTP API, rendered from the live OpenAPI spec.
 - [Types](types.md) — the core fact-checking data vocabulary: claims, evidence, verdicts, results.
 - [Messages](messages/index.md) — chat message types shared across the layers.

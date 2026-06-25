@@ -6,12 +6,14 @@ external dependencies, which makes them handy as placeholders and as test
 fixtures.
 """
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from openfactcheck.components.dummy.claim_processor import DummyClaimProcessor
 from openfactcheck.components.dummy.query_generator import DummyQueryGenerator
 from openfactcheck.components.dummy.retriever import DummyRetriever
 from openfactcheck.components.dummy.verifier import DummyVerifier
+from openfactcheck.components.registry import Component
 
 # Dummy components
 __all__ = [
@@ -36,3 +38,12 @@ if TYPE_CHECKING:
     _generator: type[QueryGenerator] = DummyQueryGenerator
     _retriever: type[Retriever] = DummyRetriever
     _verifier: type[Verifier] = DummyVerifier
+
+
+COMPONENTS: Mapping[str, Component] = {
+    "claim_processor": Component(factory=DummyClaimProcessor, role="claim_processor"),
+    "query_generator": Component(factory=DummyQueryGenerator, role="query_generator"),
+    "retriever": Component(factory=DummyRetriever, role="retriever"),
+    "verifier": Component(factory=DummyVerifier, role="verifier"),
+}
+"""The dummy components, discovered through the ``openfactcheck.components`` entry point."""

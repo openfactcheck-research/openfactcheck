@@ -24,9 +24,8 @@ def test_OpenFactCheckConfig_defaults() -> None:
     """Uses field defaults when no source provides a value."""
     config = OpenFactCheckConfig()
 
-    assert config.model == "gpt-4o"
+    assert config.model is None
     assert config.verbosity == "warning"
-    assert config.prompts_dir is None
     assert config.serper_api_key.get_secret_value() == ""
 
 
@@ -38,14 +37,14 @@ def test_OpenFactCheckConfig_defaults() -> None:
         pytest.param({"init", "env"}, "from-dotenv", id="no-env-dotenv-wins"),
         pytest.param({"init", "env", "dotenv"}, "from-json", id="no-dotenv-json-wins"),
         pytest.param({"init", "env", "dotenv", "json"}, "from-yaml", id="no-json-yaml-wins"),
-        pytest.param({"init", "env", "dotenv", "json", "yaml"}, "gpt-4o", id="no-sources-default-wins"),
+        pytest.param({"init", "env", "dotenv", "json", "yaml"}, None, id="no-sources-default-wins"),
     ],
 )
 def test_OpenFactCheckConfig_resolution_order(
     isolated_config_env: Path,
     monkeypatch: pytest.MonkeyPatch,
     disabled_sources: set[str],
-    expected_model: str,
+    expected_model: str | None,
 ) -> None:
     """Full resolution chain: init > env > .env > json > yaml > default.
 
@@ -89,3 +88,12 @@ def test_OpenFactCheckConfig_verbosity_rejects_invalid() -> None:
     """Verbosity validation rejects values outside the allowed literal set."""
     with pytest.raises(ValidationError):
         OpenFactCheckConfig(verbosity="trace")  # type: ignore[arg-type]
+
+
+def test_OpenFactCheckConfig_pipeline_name(isolated_config_env: Path) -> None:
+    """A string `pipeline` names a prebuilt pipeline."""
+    (isolated_config_env / "openfactcheck.yaml").write_text("pipeline: factool\n")
+
+    config = OpenFactCheckConfig()
+
+    assert config.pipeline == "factool"

@@ -105,6 +105,8 @@ nav:
   - Home: index.md
   - Reference:
       - reference/index.md
+      - reference/openfactcheck.md
+      - Configuration: reference/config.md
       - REST API: reference/rest/index.md
       - Types: reference/types.md
       - Messages: reference/messages/index.md

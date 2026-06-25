@@ -1,9 +1,10 @@
-"""Prebuilt graph nodes that lift components onto the graph layer.
+"""Prebuilt graph nodes that wire components onto the graph layer.
 
 A node factory wraps a component as a graph [`Step`][openfactcheck.graph.Step], so a pipeline is composed by
 wiring nodes with the graph API rather than hand-writing step functions. Each namespace builds its components
-as nodes: the paper namespaces (`factool`, `factcheckgpt`, `rarr`) lift that paper's port, and `dummy` lifts
-the deterministic placeholders for a no-dependency skeleton. Mix nodes from different namespaces in one graph.
+as nodes (`nodes.factool`, `nodes.factcheckgpt`, `nodes.rarr`), and `nodes.dummy` wires the deterministic
+placeholders. A namespace is imported lazily on first access, so reaching one namespace's nodes never loads
+the others. Mix nodes from different namespaces in one graph.
 
 Example:
     ```python
@@ -25,11 +26,17 @@ Example:
     ```
 """
 
-from openfactcheck.components.nodes import dummy, factcheckgpt, factool, rarr
+import importlib
+from types import ModuleType
 
-__all__ = [
-    "dummy",
-    "factcheckgpt",
-    "factool",
-    "rarr",
-]
+
+def __getattr__(name: str) -> ModuleType:
+    """Import a namespace's node module (for example ``nodes.factool``) lazily on first access."""
+    if name.startswith("_"):
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    try:
+        return importlib.import_module(f"{__name__}.{name}")
+    except ModuleNotFoundError as exc:
+        if exc.name == f"{__name__}.{name}":
+            raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None
+        raise

@@ -15,12 +15,14 @@ from openfactcheck.components.factcheckgpt import (
     FactcheckGPTRetriever,
     FactcheckGPTVerifier,
 )
+from openfactcheck.components.registry import Pipeline
 from openfactcheck.components.types import Claim, Evidence, Input, Query, Verdict
-from openfactcheck.graph import AnyGraphBuilder, Step, StepContext
+from openfactcheck.graph import AnyGraphBuilder, Graph, GraphBuilder, Step, StepContext
 from openfactcheck.integrations.serper import SerperClient
 
 __all__ = [
     "PROVENANCE",
+    "build_graph",
     "claim_processor",
     "query_generator",
     "retriever",
@@ -130,3 +132,38 @@ def verifier(
         return await component(ctx.inputs.claim, ctx.inputs, on_partial=ctx.emit if ctx.streaming else None)
 
     return step
+
+
+def build_graph(*, chat: ChatClient, serper: SerperClient | None = None) -> Graph[Input, list[Verdict], None, None]:
+    """Wire FactcheckGPT's pipeline into a runnable graph.
+
+    Extracts claims, then for each claim in parallel generates a query, retrieves evidence, and verifies,
+    collecting the per-claim verdicts at the end. The reviser is not part of the graph; the facade applies it.
+
+    Args:
+        chat: Chat client backing the claim processor, query generator, and verifier.
+        serper: Web-search client for the retriever. Defaults to a client that reads its key from the
+            environment.
+
+    Returns:
+        A graph from input text to the list of per-claim verdicts.
+    """
+    g: GraphBuilder[Input, list[Verdict], None, None] = GraphBuilder(
+        input_type=Input, output_type=list[Verdict], name="factcheckgpt"
+    )
+    cp = claim_processor(g, chat)
+    qg = query_generator(g, chat)
+    rt = retriever(g, serper)
+    vf = verifier(g, chat)
+    g.add(
+        g.edge_from(g.start_node).to(cp),
+        g.edge_from(cp).map().to(qg),
+        g.edge_from(qg).to(rt),
+        g.edge_from(rt).to(vf),
+        g.edge_from(vf).collect().to(g.end_node),
+    )
+    return g.build()
+
+
+PIPELINE = Pipeline(build_graph, PROVENANCE.default_model)
+"""The FactcheckGPT pipeline, discovered through the ``openfactcheck.pipelines`` entry point."""

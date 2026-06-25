@@ -11,6 +11,7 @@ recommended default model along with the source paper, repository, pinned
 commit, and license. Import from ``openfactcheck.components.factool``.
 """
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from openfactcheck.components.factool.claim_processor import FactoolClaimProcessor, FactoolClaimProcessorModel
@@ -18,6 +19,7 @@ from openfactcheck.components.factool.query_generator import FactoolQueryGenerat
 from openfactcheck.components.factool.retriever import FactoolRetriever
 from openfactcheck.components.factool.verifier import FactoolVerifier, FactoolVerifierModel
 from openfactcheck.components.provenance import Provenance
+from openfactcheck.components.registry import Component
 
 _CITATION = """\
 @article{chern2023factoolfactualitydetectiongenerative,
@@ -83,3 +85,16 @@ if TYPE_CHECKING:
     _generator: type[QueryGenerator] = FactoolQueryGenerator
     _retriever: type[Retriever] = FactoolRetriever
     _verifier: type[Verifier] = FactoolVerifier
+
+
+COMPONENTS: Mapping[str, Component] = {
+    "claim_processor": Component(
+        factory=FactoolClaimProcessor, role="claim_processor", default_model=PROVENANCE.default_model
+    ),
+    "query_generator": Component(
+        factory=FactoolQueryGenerator, role="query_generator", default_model=PROVENANCE.default_model
+    ),
+    "retriever": Component(factory=FactoolRetriever, role="retriever"),
+    "verifier": Component(factory=FactoolVerifier, role="verifier", default_model=PROVENANCE.default_model),
+}
+"""The Factool components, discovered through the ``openfactcheck.components`` entry point."""
