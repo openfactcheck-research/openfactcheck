@@ -114,6 +114,9 @@ wheels = [
 dynamodb = [
     { name = "mypy-boto3-dynamodb" },
 ]
+kms = [
+    { name = "mypy-boto3-kms" },
+]
 
 [[package]]
 name = "botocore"
@@ -1230,6 +1233,15 @@ wheels = [
 ]
 
 [[package]]
+name = "mypy-boto3-kms"
+version = "1.43.12"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/56/a5/a63234e7787019443c52f720afea57cf1a1d22a6e8e077b3c6a3916fdd98/mypy_boto3_kms-1.43.12.tar.gz", hash = "sha256:a4d23f018422a79bc4a886676f63eba548a98b06f5dcd0395e424d7c472eb340", size = 30688, upload-time = "2026-05-20T20:01:23.801Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/36/17/9d36757acee0987ef78220d1868f1ceb0cf458928444f5a81e98a4de3b44/mypy_boto3_kms-1.43.12-py3-none-any.whl", hash = "sha256:4a74f7b4aa9fcce9a1021ad2586059f2374a4b89baa251e57e6acc16282fd782", size = 39009, upload-time = "2026-05-20T20:01:20.104Z" },
+]
+
+[[package]]
 name = "narwhals"
 version = "2.22.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1520,6 +1532,7 @@ dependencies = [
 [package.optional-dependencies]
 api = [
     { name = "aiosqlite" },
+    { name = "cryptography" },
     { name = "fastapi" },
     { name = "mangum" },
     { name = "pyjwt", extra = ["crypto"] },
@@ -1535,7 +1548,7 @@ rarr = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "boto3-stubs", extra = ["dynamodb"] },
+    { name = "boto3-stubs", extra = ["dynamodb", "kms"] },
     { name = "httpx" },
     { name = "moto", extra = ["dynamodb"] },
     { name = "openfactcheck", extra = ["api", "cloud"] },
@@ -1559,6 +1572,7 @@ requires-dist = [
     { name = "aiosqlite", marker = "extra == 'api'", specifier = ">=0.22" },
     { name = "anthropic", specifier = ">=0.109" },
     { name = "boto3", marker = "extra == 'cloud'", specifier = ">=1.43" },
+    { name = "cryptography", marker = "extra == 'api'", specifier = ">=48.0.1" },
     { name = "fastapi", marker = "extra == 'api'", specifier = ">=0.137.1" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "mangum", marker = "extra == 'api'", specifier = ">=0.21" },
@@ -1575,7 +1589,7 @@ provides-extras = ["api", "cloud", "rarr"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "boto3-stubs", extras = ["dynamodb"], specifier = ">=1.43" },
+    { name = "boto3-stubs", extras = ["dynamodb", "kms"], specifier = ">=1.43" },
     { name = "httpx", specifier = ">=0.28" },
     { name = "moto", extras = ["dynamodb"], specifier = ">=5.2" },
     { name = "openfactcheck", extras = ["api", "cloud"] },

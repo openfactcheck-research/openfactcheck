@@ -8,6 +8,9 @@ MAX_PROJECTS_PER_USER = 50
 MAX_WORKSPACES_PER_PROJECT = 5
 """Upper limit on the number of workspaces a single project may contain."""
 
+MAX_SECRETS_PER_USER = 20
+"""Upper limit on the number of secrets a single user may store."""
+
 MAX_CONTENT_BYTES = 350_000
 """Upper limit on the serialized size of a workspace's content blob."""
 

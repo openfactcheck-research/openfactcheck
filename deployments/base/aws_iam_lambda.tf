@@ -61,8 +61,29 @@ resource "aws_iam_role_policy" "lambda_api_dynamodb" {
         ]
         Resource = [
           aws_dynamodb_table.openfactcheck.arn,
-          "${aws_dynamodb_table.openfactcheck.arn}/index/*"
+          "${aws_dynamodb_table.openfactcheck.arn}/index/*",
+          aws_dynamodb_table.openfactcheck_users.arn,
+          "${aws_dynamodb_table.openfactcheck_users.arn}/index/*"
         ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_api_kms" {
+  name = "kms-secrets"
+  role = aws_iam_role.lambda_api.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt"
+        ]
+        Resource = aws_kms_key.users.arn
       }
     ]
   })

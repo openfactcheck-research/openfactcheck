@@ -28,16 +28,18 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      OPENFACTCHECK_MODE                 = "cloud"
-      OPENFACTCHECK_DYNAMODB_TABLE_NAME  = aws_dynamodb_table.openfactcheck.name
-      OPENFACTCHECK_DYNAMODB_REGION      = var.aws_region
-      OPENFACTCHECK_COGNITO_REGION       = var.aws_region
-      OPENFACTCHECK_COGNITO_USER_POOL_ID = aws_cognito_user_pool.openfactcheck.id
-      OPENFACTCHECK_COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.openfactcheck_client.id
-      OPENFACTCHECK_CORS_ORIGINS         = jsonencode(local.cors_origins)
-      OPENFACTCHECK_STATE_MACHINE_ARN     = aws_sfn_state_machine.pipeline.arn
-      OPENFACTCHECK_DEBUG                = "false"
-      OPENFACTCHECK_AUTH_BYPASS          = "false"
+      OPENFACTCHECK_MODE                      = "cloud"
+      OPENFACTCHECK_DYNAMODB_TABLE_NAME       = aws_dynamodb_table.openfactcheck.name
+      OPENFACTCHECK_DYNAMODB_USERS_TABLE_NAME = aws_dynamodb_table.openfactcheck_users.name
+      OPENFACTCHECK_SECRETS_KMS_KEY_ID        = aws_kms_key.users.arn
+      OPENFACTCHECK_DYNAMODB_REGION           = var.aws_region
+      OPENFACTCHECK_COGNITO_REGION            = var.aws_region
+      OPENFACTCHECK_COGNITO_USER_POOL_ID      = aws_cognito_user_pool.openfactcheck.id
+      OPENFACTCHECK_COGNITO_CLIENT_ID         = aws_cognito_user_pool_client.openfactcheck_client.id
+      OPENFACTCHECK_CORS_ORIGINS              = jsonencode(local.cors_origins)
+      OPENFACTCHECK_STATE_MACHINE_ARN         = aws_sfn_state_machine.pipeline.arn
+      OPENFACTCHECK_DEBUG                     = "false"
+      OPENFACTCHECK_AUTH_BYPASS               = "false"
     }
   }
 

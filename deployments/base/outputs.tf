@@ -22,6 +22,16 @@ output "dynamodb_table_name" {
   value       = aws_dynamodb_table.openfactcheck.name
 }
 
+output "dynamodb_users_table_name" {
+  description = "DynamoDB users table name (settings and secrets)"
+  value       = aws_dynamodb_table.openfactcheck_users.name
+}
+
+output "users_kms_key_arn" {
+  description = "KMS key ARN for user secrets encryption"
+  value       = aws_kms_key.users.arn
+}
+
 output "ecr_repository_url" {
   description = "ECR repository URL for the API container image"
   value       = data.aws_ecr_repository.api.repository_url

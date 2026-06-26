@@ -28,7 +28,12 @@ class APIConfig(BaseSettings):
     mode: Literal["local", "cloud"] = "local"
     sqlite_path: str = "~/.openfactcheck/data.db"
     dynamodb_table_name: str = "openfactcheck"
+    dynamodb_users_table_name: str = "openfactcheck-users"  # Dedicated table for user settings and secrets.
     dynamodb_region: str = "us-east-1"
 
     # Run
     state_machine_arn: str = ""
+
+    # Secrets encryption
+    secrets_kms_key_id: str = ""  # KMS key id or ARN, used in "cloud" mode.
+    secrets_key_path: str = "~/.openfactcheck/secrets.key"  # Local key file, used in "local" mode.
