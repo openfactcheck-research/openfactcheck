@@ -16,9 +16,9 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "anthropic>=0.109",
+    "anthropic>=0.112.0",
     "httpx>=0.28.1",
-    "openai>=2.41",
+    "openai>=2.44.0",
     "pydantic>=2.13",
     "pydantic-settings[yaml]>=2.14",
     "typing-extensions>=4.15.0",
@@ -26,7 +26,7 @@ dependencies = [
 
 [project.optional-dependencies]
 api = [
-    "fastapi>=0.137.1",
+    "fastapi>=0.138.1",
     "uvicorn[standard]>=0.49",
     "pyjwt[crypto]>=2.13",
     "sqlalchemy[asyncio]>=2.0",
