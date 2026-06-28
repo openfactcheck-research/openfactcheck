@@ -3,7 +3,7 @@
 import pytest
 
 from openfactcheck.chat.backends.openai.params import config_to_kwargs, response_format_kwargs, to_strict_schema
-from openfactcheck.chat.config import AnthropicConfig, OpenAIConfig
+from openfactcheck.chat.config import AnthropicConfig, OpenAIConfig, OpenRouterConfig
 from openfactcheck.chat.errors import UnsupportedFeatureError
 from openfactcheck.chat.requests import ResponseFormat
 
@@ -34,12 +34,23 @@ def test_config_to_kwargs_all_fields() -> None:
 
     assert kwargs["model"] == "gpt-4o"
     assert kwargs["temperature"] == 0.3
-    assert kwargs["max_tokens"] == 100
+    assert kwargs["max_completion_tokens"] == 100
+    assert "max_tokens" not in kwargs
     assert kwargs["top_p"] == 0.9
     assert kwargs["seed"] == 42
     assert kwargs["frequency_penalty"] == 0.5
     assert kwargs["presence_penalty"] == 0.2
     assert kwargs["reasoning_effort"] == "medium"
+
+
+def test_config_to_kwargs_openrouter_uses_max_completion_tokens() -> None:
+    """OpenRouter also uses ``max_completion_tokens`` (the legacy name is deprecated)."""
+    config = OpenRouterConfig(model="openai/gpt-4o", max_output_tokens=100)
+
+    kwargs = config_to_kwargs(config)
+
+    assert kwargs["max_completion_tokens"] == 100
+    assert "max_tokens" not in kwargs
 
 
 def test_config_to_kwargs_rejects_anthropic() -> None:

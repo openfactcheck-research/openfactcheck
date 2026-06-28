@@ -2,6 +2,8 @@
 
 import asyncio
 import json
+import os
+import sys
 from datetime import UTC, datetime
 from typing import Annotated
 
@@ -9,9 +11,12 @@ from fastapi import APIRouter, Depends, Path, status
 from pydantic import BaseModel
 
 from openfactcheck.api.config import APIConfig
+from openfactcheck.api.crypto.protocols import SecretCipher
 from openfactcheck.api.dependencies import (
+    get_cipher,
     get_config,
     get_current_user,
+    get_secret_repo,
     get_workspace_repo,
 )
 from openfactcheck.api.errors import (
@@ -31,7 +36,7 @@ from openfactcheck.api.repositories.constants import (
     MAX_CONTENT_BYTES,
     MAX_PIPELINE_BYTES,
 )
-from openfactcheck.api.repositories.protocols import WorkspaceRepository
+from openfactcheck.api.repositories.protocols import SecretRepository, WorkspaceRepository
 from openfactcheck.api.schemas.workspaces import (
     CreateWorkspaceRequest,
     ReorderWorkspacesRequest,
@@ -223,28 +228,75 @@ async def _start_sfn(
     await asyncio.to_thread(_start)
 
 
-async def _run_local(
+_RUN_TIMEOUT_SECONDS = 300
+
+
+async def _decrypt_secrets(secret_repo: SecretRepository, cipher: SecretCipher, user_id: str) -> dict[str, str]:
+    """Decrypt the user's stored secrets into an environment-variable map."""
+    secrets: dict[str, str] = {}
+    for secret in await secret_repo.list(user_id):
+        ciphertext = await secret_repo.get_ciphertext(user_id, secret.name)
+        if ciphertext is not None:
+            secrets[secret.name] = await cipher.decrypt(ciphertext)
+    return secrets
+
+
+def _result_to_run(stdout: bytes, stderr: bytes) -> WorkspaceRun:
+    """Build a run record from the engine subprocess output."""
+    completed = datetime.now(UTC)
+    try:
+        data = json.loads(stdout)
+    except (json.JSONDecodeError, ValueError):
+        message = stderr.decode(errors="replace").strip() or "Pipeline execution failed"
+        return WorkspaceRun(status=WorkspaceRunStatus.FAILED, error=message, completed_at=completed)
+    output = str(data.get("output", ""))
+    if data.get("success"):
+        return WorkspaceRun(status=WorkspaceRunStatus.COMPLETED, output=output, completed_at=completed)
+    return WorkspaceRun(
+        status=WorkspaceRunStatus.FAILED,
+        output=output,
+        error=str(data.get("error") or "Pipeline execution failed"),
+        completed_at=completed,
+    )
+
+
+async def _run_local(  # noqa: PLR0913 - distinct collaborators, each needed for the isolated run.
     repo: WorkspaceRepository,
+    secret_repo: SecretRepository,
+    cipher: SecretCipher,
     user_id: str,
     project_id: str,
     workspace_id: str,
     pipeline: dict[str, object],
 ) -> None:
-    """Local mode: run pipeline in-process and update workspace run state."""
-    from openfactcheck.engine import (  # noqa: PLC0415 - lazy import to avoid engine dependency at module level.
-        execute_pipeline,
-    )
+    """Local mode: run the pipeline in an isolated subprocess and store the result.
 
-    result = await execute_pipeline(pipeline)
-    now = datetime.now(UTC)
-    if result.success:
-        run = WorkspaceRun(status=WorkspaceRunStatus.COMPLETED, output=result.output or "", completed_at=now)
-    else:
+    The subprocess environment is the base environment plus this user's
+    decrypted secrets, so one run's API keys never leak into another's.
+    """
+    secrets = await _decrypt_secrets(secret_repo, cipher, user_id)
+    proc = await asyncio.create_subprocess_exec(
+        sys.executable,
+        "-m",
+        "openfactcheck.engine",
+        stdin=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        env={**os.environ, **secrets},
+    )
+    try:
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(json.dumps(pipeline).encode()),
+            timeout=_RUN_TIMEOUT_SECONDS,
+        )
+        run = _result_to_run(stdout, stderr)
+    except TimeoutError:
+        proc.kill()
+        await proc.wait()
         run = WorkspaceRun(
             status=WorkspaceRunStatus.FAILED,
-            output=result.output or "",
-            error=result.error or "",
-            completed_at=now,
+            error="Pipeline run timed out",
+            completed_at=datetime.now(UTC),
         )
     await repo.set_run(user_id, project_id, workspace_id, run)
 
@@ -256,6 +308,8 @@ async def run_pipeline(  # noqa: PLR0913 - FastAPI DI requires all params as fun
     body: RunRequest,
     user: Annotated[AuthUser, Depends(get_current_user)],
     repo: Annotated[WorkspaceRepository, Depends(get_workspace_repo)],
+    secret_repo: Annotated[SecretRepository, Depends(get_secret_repo)],
+    cipher: Annotated[SecretCipher, Depends(get_cipher)],
     config: Annotated[APIConfig, Depends(get_config)],
 ) -> RunResponse:
     """Run a pipeline. Sets workspace run to running and starts execution."""
@@ -281,9 +335,11 @@ async def run_pipeline(  # noqa: PLR0913 - FastAPI DI requires all params as fun
             await repo.set_run(user.sub, project_id, workspace_id, run)
             raise
     else:
-        run = WorkspaceRun(status=WorkspaceRunStatus.RUNNING)
+        run = WorkspaceRun(status=WorkspaceRunStatus.RUNNING, started_at=datetime.now(UTC))
         await repo.set_run(user.sub, project_id, workspace_id, run)
-        task = asyncio.create_task(_run_local(repo, user.sub, project_id, workspace_id, body.pipeline))
+        task = asyncio.create_task(
+            _run_local(repo, secret_repo, cipher, user.sub, project_id, workspace_id, body.pipeline),
+        )
         _background_tasks.add(task)
         task.add_done_callback(_background_tasks.discard)
 
