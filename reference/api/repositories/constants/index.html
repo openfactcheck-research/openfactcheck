@@ -3096,6 +3096,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_SECRETS_PER_USER
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.api.repositories.constants.MAX_CONTENT_BYTES" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3541,6 +3552,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_SECRETS_PER_USER
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.api.repositories.constants.MAX_CONTENT_BYTES" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3675,6 +3697,30 @@
 
 
 
+<h2 id="openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">MAX_SECRETS_PER_USER</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">MAX_SECRETS_PER_USER</span> <span class="o">=</span> <span class="mi">20</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Upper limit on the number of secrets a single user may store.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h2 id="openfactcheck.api.repositories.constants.MAX_CONTENT_BYTES" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">MAX_CONTENT_BYTES</span>
 
@@ -3740,11 +3786,11 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/openfactcheck/api/repositories/constants.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-18">18</a></span>
-<span class="normal"><a href="#__codelineno-0-19">19</a></span>
-<span class="normal"><a href="#__codelineno-0-20">20</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a URL-safe 12-character identifier.&quot;&quot;&quot;</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20"></a>    <span class="k">return</span> <span class="n">token_urlsafe</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>  <span class="c1"># 9 bytes → 12 base64 chars</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-21">21</a></span>
+<span class="normal"><a href="#__codelineno-0-22">22</a></span>
+<span class="normal"><a href="#__codelineno-0-23">23</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a URL-safe 12-character identifier.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23"></a>    <span class="k">return</span> <span class="n">token_urlsafe</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>  <span class="c1"># 9 bytes → 12 base64 chars</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

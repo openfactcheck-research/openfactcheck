@@ -995,6 +995,291 @@
           }
         }
       }
+    },
+    "/api/v1/secrets/": {
+      "get": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "List Secrets",
+        "description": "List the user's stored secrets, without their values.",
+        "operationId": "list_secrets_api_v1_secrets__get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SecretResponse"
+                  },
+                  "title": "Response List Secrets Api V1 Secrets  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/secrets/{name}": {
+      "put": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "Set Secret",
+        "description": "Set or replace a secret's value. The value is encrypted and never returned.",
+        "operationId": "set_secret_api_v1_secrets__name__put",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSecretRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecretResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "Delete Secret",
+        "description": "Delete a secret.",
+        "operationId": "delete_secret_api_v1_secrets__name__delete",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/preferences/": {
+      "get": {
+        "tags": [
+          "preferences"
+        ],
+        "summary": "Get Preferences",
+        "description": "Return the current user's preferences.",
+        "operationId": "get_preferences_api_v1_preferences__get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "preferences"
+        ],
+        "summary": "Update Preferences",
+        "description": "Replace the current user's preferences.",
+        "operationId": "update_preferences_api_v1_preferences__put",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePreferencesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1129,6 +1414,21 @@
           }
         ]
       },
+      "PreferencesResponse": {
+        "properties": {
+          "tour_completed": {
+            "type": "boolean",
+            "title": "Tour Completed",
+            "description": "Whether the user has finished the welcome tour."
+          }
+        },
+        "type": "object",
+        "required": [
+          "tour_completed"
+        ],
+        "title": "PreferencesResponse",
+        "description": "A user's preferences returned in API responses."
+      },
       "ProjectResponse": {
         "properties": {
           "id": {
@@ -1229,6 +1529,71 @@
         ],
         "title": "RunResponse",
         "description": "Run state returned to the frontend."
+      },
+      "SecretResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Identifier for the secret, for example ``\"openai\"``."
+          },
+          "hint": {
+            "type": "string",
+            "title": "Hint",
+            "description": "Trailing characters of the value, shown so the user can recognize the stored key."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Timestamp the secret was first set."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Timestamp of the most recent change."
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "hint",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SecretResponse",
+        "description": "A stored secret returned in API responses, without its value."
+      },
+      "SetSecretRequest": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Value",
+            "description": "The raw secret value. Stored encrypted and never returned.\n\n1 to 4096 characters."
+          }
+        },
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "title": "SetSecretRequest",
+        "description": "Input payload for setting or replacing a secret's value."
+      },
+      "UpdatePreferencesRequest": {
+        "properties": {
+          "tour_completed": {
+            "type": "boolean",
+            "title": "Tour Completed",
+            "description": "Whether the user has finished the welcome tour.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "UpdatePreferencesRequest",
+        "description": "Input payload for replacing a user's preferences."
       },
       "UpdateProjectRequest": {
         "properties": {
