@@ -45,3 +45,25 @@ class WorkspaceRow(Base):
     run_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime)
     updated_at: Mapped[datetime] = mapped_column(DateTime)
+
+
+class SecretRow(Base):
+    """ORM model for the ``secrets`` table."""
+
+    __tablename__ = "secrets"
+
+    user_id: Mapped[str] = mapped_column(String(255), primary_key=True)
+    name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    ciphertext: Mapped[str] = mapped_column(Text)
+    hint: Mapped[str] = mapped_column(String(8), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime)
+    updated_at: Mapped[datetime] = mapped_column(DateTime)
+
+
+class PreferencesRow(Base):
+    """ORM model for the ``preferences`` table."""
+
+    __tablename__ = "preferences"
+
+    user_id: Mapped[str] = mapped_column(String(255), primary_key=True)
+    tour_completed: Mapped[bool] = mapped_column(Boolean, default=False)

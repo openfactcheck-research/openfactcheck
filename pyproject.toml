@@ -32,6 +32,7 @@ api = [
     "sqlalchemy[asyncio]>=2.0",
     "aiosqlite>=0.22",
     "mangum>=0.21",
+    "cryptography>=48.0.1",
 ]
 cloud = [
     "boto3>=1.43",
@@ -88,6 +89,11 @@ venv = ".venv"
 
 [[tool.pyright.executionEnvironments]]
 root = "src/openfactcheck/api/repositories/dynamodb"
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+
+[[tool.pyright.executionEnvironments]]
+root = "src/openfactcheck/api/crypto"
 reportUnknownMemberType = false
 reportUnknownVariableType = false
 
@@ -289,7 +295,7 @@ dev = [
     "pytest-asyncio>=1.4",
     "pytest-mock>=3.15",
     "httpx>=0.28",
-    "boto3-stubs[dynamodb]>=1.43",
+    "boto3-stubs[dynamodb,kms]>=1.43",
     "moto[dynamodb]>=5.2",
     "ruff>=0.15",
 ]

@@ -3,9 +3,11 @@
 from typing import Protocol
 
 from openfactcheck.api.models import (
+    Preferences,
     Project,
     ProjectCreate,
     ProjectUpdate,
+    Secret,
     Workspace,
     WorkspaceCreate,
     WorkspaceRun,
@@ -101,4 +103,41 @@ class WorkspaceRepository(Protocol):
 
     async def set_run(self, user_id: str, project_id: str, workspace_id: str, run: WorkspaceRun) -> None:
         """Replace the workspace's latest run state with the given run."""
+        ...
+
+
+class SecretRepository(Protocol):
+    """Data access interface for a user's encrypted secrets."""
+
+    async def list(self, user_id: str) -> list[Secret]:
+        """List the user's secrets (masked, no values), ordered by name."""
+        ...
+
+    async def set(self, user_id: str, name: str, ciphertext: str, hint: str) -> Secret | None:
+        """Create or replace a secret's encrypted value.
+
+        Returns ``None`` if storing a new secret would exceed
+        [`MAX_SECRETS_PER_USER`][openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER];
+        replacing an existing secret is always allowed.
+        """
+        ...
+
+    async def get_ciphertext(self, user_id: str, name: str) -> str | None:
+        """Return the stored ciphertext for a secret, or ``None`` if it is not set."""
+        ...
+
+    async def delete(self, user_id: str, name: str) -> bool:
+        """Delete a secret. Returns ``False`` if it does not exist."""
+        ...
+
+
+class PreferencesRepository(Protocol):
+    """Data access interface for a user's preferences."""
+
+    async def get(self, user_id: str) -> Preferences:
+        """Return the user's preferences, or an all-default record if none are stored."""
+        ...
+
+    async def set(self, user_id: str, preferences: Preferences) -> Preferences:
+        """Replace the user's preferences with the given record."""
         ...

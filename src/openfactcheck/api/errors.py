@@ -11,6 +11,7 @@ class ErrorCode(StrEnum):
     VALIDATION_ERROR = "VALIDATION_ERROR"
     PROJECT_LIMIT_REACHED = "PROJECT_LIMIT_REACHED"
     WORKSPACE_LIMIT_REACHED = "WORKSPACE_LIMIT_REACHED"
+    SECRET_LIMIT_REACHED = "SECRET_LIMIT_REACHED"  # noqa: S105 - error code, not a credential.
     UNAUTHORIZED = "UNAUTHORIZED"
     FORBIDDEN = "FORBIDDEN"
     EXECUTION_TIMEOUT = "EXECUTION_TIMEOUT"
@@ -76,6 +77,14 @@ class WorkspaceLimitError(AppError):
     def __init__(self, detail: str = "Workspace limit reached") -> None:
         """Create the error, optionally with a custom detail message."""
         super().__init__(detail, ErrorCode.WORKSPACE_LIMIT_REACHED, status=422)
+
+
+class SecretLimitError(AppError):
+    """Raised when a user has reached their maximum secret count (HTTP 422)."""
+
+    def __init__(self, detail: str = "Secret limit reached") -> None:
+        """Create the error, optionally with a custom detail message."""
+        super().__init__(detail, ErrorCode.SECRET_LIMIT_REACHED, status=422)
 
 
 class AuthError(AppError):
