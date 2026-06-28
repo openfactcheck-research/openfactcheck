@@ -36,7 +36,7 @@ class Block:
 
     """
 
-    __slots__ = ("_fields", "_inputs", "_next_data", "id", "type")
+    __slots__ = ("_extra", "_fields", "_inputs", "_next_data", "id", "type")
 
     def __init__(self, data: dict[str, Any]) -> None:
         self.type: str = str(data.get("type", ""))
@@ -44,6 +44,7 @@ class Block:
         self._fields: dict[str, str] = _parse_fields(data)
         self._inputs: dict[str, dict[str, Any]] = _parse_inputs(data)
         self._next_data: dict[str, Any] | None = _parse_next(data)
+        self._extra: dict[str, Any] = _parse_extra(data)
 
     def get_field(self, name: str, default: str = "") -> str:
         """Read a static field value from the block.
@@ -52,6 +53,15 @@ class Block:
         (e.g. the text content in a ``text`` block).
         """
         return self._fields.get(name, default)
+
+    def get_extra(self, name: str, default: object = None) -> object:
+        """Read a value from the block's ``extraState``.
+
+        Some fields serialize their value into ``extraState`` rather than
+        ``fields`` (for example a dropdown whose options load asynchronously),
+        so a block's full configuration can span both.
+        """
+        return self._extra.get(name, default)
 
     def get_input_block(self, name: str) -> Block | None:
         """Get the block connected to a named value input.
@@ -109,3 +119,9 @@ def _parse_next(data: dict[str, Any]) -> dict[str, Any] | None:
     if isinstance(raw, dict):
         return raw
     return None
+
+
+def _parse_extra(data: dict[str, Any]) -> dict[str, Any]:
+    """Extract ``extraState`` as a dict, or empty if absent."""
+    raw = data.get("extraState")
+    return raw if isinstance(raw, dict) else {}

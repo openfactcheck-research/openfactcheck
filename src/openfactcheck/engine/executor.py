@@ -16,7 +16,6 @@ from typing import Any
 
 from openfactcheck.engine.block import Block
 from openfactcheck.engine.context import ExecutionContext
-from openfactcheck.engine.errors import EngineError
 from openfactcheck.engine.parser import parse_pipeline
 
 
@@ -55,8 +54,9 @@ async def execute_pipeline(pipeline: dict[str, Any]) -> ExecutionResult:
     2. Walks each block chain, executing handlers via the :class:`ExecutionContext`.
     3. Returns an :class:`ExecutionResult` with captured output or error.
 
-    Any :class:`EngineError` raised during execution is caught and returned
-    as a failed result. Other exceptions propagate to the caller.
+    Any failure during execution (an :class:`EngineError`, a model/library
+    error, or an unexpected exception) is caught and returned as a failed
+    result, so a bad graph never crashes the runner.
     """
     ctx = ExecutionContext()
     try:
@@ -71,7 +71,7 @@ async def execute_pipeline(pipeline: dict[str, Any]) -> ExecutionResult:
             success=True,
             output="\n".join(ctx.output_lines),
         )
-    except EngineError as e:
+    except Exception as e:  # noqa: BLE001 - any block or library failure becomes a failed run, not a crash.
         return ExecutionResult(
             success=False,
             output="\n".join(ctx.output_lines),

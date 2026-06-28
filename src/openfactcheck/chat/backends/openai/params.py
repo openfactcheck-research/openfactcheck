@@ -47,7 +47,7 @@ def config_to_kwargs(config: ModelConfig) -> Kwargs:
 
     params: Kwargs = {"model": config.model}
     _set_optional(params, "temperature", config.temperature)
-    _set_optional(params, "max_tokens", config.max_output_tokens)
+    _set_optional(params, "max_completion_tokens", config.max_output_tokens)
     _set_optional(params, "top_p", config.top_p)
     _set_optional(params, "seed", config.seed)
     _set_optional(params, "frequency_penalty", config.frequency_penalty)
