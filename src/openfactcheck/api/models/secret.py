@@ -8,8 +8,8 @@ from pydantic import BaseModel, ConfigDict, field_validator
 
 from openfactcheck.api.models.validators import normalize_datetime, to_camel
 
-SECRET_NAME_PATTERN = r"^[a-z][a-z0-9_]{0,63}$"  # noqa: S105 - regex for secret names, not a credential.
-"""Allowed secret names: a leading lowercase letter, then lowercase letters, digits, or underscores, up to 64 chars."""
+SECRET_NAME_PATTERN = r"^[A-Za-z_][A-Za-z0-9_]{0,63}$"  # noqa: S105 - regex for secret names, not a credential.
+"""Allowed secret names: env-var style, leading letter or underscore then letters/digits/underscores, max 64."""
 
 
 class Secret(BaseModel):

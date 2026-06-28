@@ -66,4 +66,4 @@ class PreferencesRow(Base):
     __tablename__ = "preferences"
 
     user_id: Mapped[str] = mapped_column(String(255), primary_key=True)
-    data_json: Mapped[str] = mapped_column(Text, default="{}")
+    tour_completed: Mapped[bool] = mapped_column(Boolean, default=False)

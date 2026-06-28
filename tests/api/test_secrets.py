@@ -60,7 +60,7 @@ async def test_set_secret_replaces(client: AsyncClient) -> None:
 
 async def test_set_secret_rejects_invalid_name(client: AsyncClient) -> None:
     """A name that breaks the pattern is rejected."""
-    response = await client.put(f"{SECRETS_BASE}/BadName", json={"value": "value-1234"})
+    response = await client.put(f"{SECRETS_BASE}/bad-name", json={"value": "value-1234"})
 
     assert response.status_code == 422
 
