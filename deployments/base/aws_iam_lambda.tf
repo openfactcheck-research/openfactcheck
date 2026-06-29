@@ -155,3 +155,37 @@ resource "aws_iam_role_policy" "lambda_engine_logs" {
     ]
   })
 }
+
+# Read-only access to the user's encrypted secrets so a run can reach the
+# configured LLM and search providers. Scoped to a query of the users table.
+resource "aws_iam_role_policy" "lambda_engine_dynamodb" {
+  name = "users-secrets-read"
+  role = aws_iam_role.lambda_engine.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "dynamodb:Query"
+        Resource = aws_dynamodb_table.openfactcheck_users.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_engine_kms" {
+  name = "kms-decrypt"
+  role = aws_iam_role.lambda_engine.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "kms:Decrypt"
+        Resource = aws_kms_key.users.arn
+      }
+    ]
+  })
+}
