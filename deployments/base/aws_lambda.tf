@@ -104,8 +104,16 @@ resource "aws_lambda_function" "engine" {
   image_uri        = "${data.aws_ecr_repository.engine.repository_url}:latest"
   source_code_hash = split(":", data.aws_ecr_image.engine.image_digest)[1]
   publish          = true
-  timeout          = 900 # 15 min — max Lambda timeout for long pipelines
-  memory_size      = 512
+  timeout          = 900  # 15 min — max Lambda timeout for long pipelines
+  memory_size      = 2048 # CPU scales with memory; 512 MB starved the per-run SDK import and TLS handshake.
+
+  environment {
+    variables = {
+      OPENFACTCHECK_DYNAMODB_USERS_TABLE_NAME = aws_dynamodb_table.openfactcheck_users.name
+      OPENFACTCHECK_SECRETS_KMS_KEY_ID        = aws_kms_key.users.arn
+      OPENFACTCHECK_DYNAMODB_REGION           = var.aws_region
+    }
+  }
 
   tags = {
     Name = "OpenFactCheck - Lambda Engine - ${terraform.workspace} - ${var.aws_region}"
