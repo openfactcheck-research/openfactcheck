@@ -50,7 +50,11 @@ def put_secret(monkeypatch: pytest.MonkeyPatch) -> Iterator[SecretWriter]:
         table = boto3.resource("dynamodb", region_name=REGION).Table(TABLE)
 
         def _put(user_id: str, name: str, value: str) -> None:
-            blob = kms.encrypt(KeyId=key_id, Plaintext=value.encode())["CiphertextBlob"]
+            blob = kms.encrypt(
+                KeyId=key_id,
+                Plaintext=value.encode(),
+                EncryptionContext={"user_id": user_id},
+            )["CiphertextBlob"]
             table.put_item(
                 Item={
                     "PK": f"USER#{user_id}",

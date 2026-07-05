@@ -44,6 +44,10 @@ def resolve_user_secrets(user_id: str) -> dict[str, str]:
         ciphertext = item.get("ciphertext")
         if not isinstance(name, str) or not isinstance(ciphertext, str):
             continue
-        decrypted = kms.decrypt(CiphertextBlob=base64.b64decode(ciphertext), KeyId=key_id)
+        decrypted = kms.decrypt(
+            CiphertextBlob=base64.b64decode(ciphertext),
+            KeyId=key_id,
+            EncryptionContext={"user_id": user_id},
+        )
         secrets[name] = decrypted["Plaintext"].decode()
     return secrets

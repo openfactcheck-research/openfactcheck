@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING
 import boto3
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from mypy_boto3_kms.client import KMSClient
 
 
@@ -30,20 +32,28 @@ class KmsCipher:
         self._key_id = key_id
         self._client: KMSClient = boto3.client("kms", region_name=region_name)
 
-    async def encrypt(self, plaintext: str) -> str:
+    async def encrypt(self, plaintext: str, *, context: Mapping[str, str]) -> str:
         """Encrypt a secret value into a base64-encoded ciphertext."""
 
         def _do() -> str:
-            response = self._client.encrypt(KeyId=self._key_id, Plaintext=plaintext.encode())
+            response = self._client.encrypt(
+                KeyId=self._key_id,
+                Plaintext=plaintext.encode(),
+                EncryptionContext=dict(context),
+            )
             return base64.b64encode(response["CiphertextBlob"]).decode()
 
         return await asyncio.to_thread(_do)
 
-    async def decrypt(self, ciphertext: str) -> str:
+    async def decrypt(self, ciphertext: str, *, context: Mapping[str, str]) -> str:
         """Decrypt a base64-encoded ciphertext back to its secret value."""
 
         def _do() -> str:
-            response = self._client.decrypt(KeyId=self._key_id, CiphertextBlob=base64.b64decode(ciphertext))
+            response = self._client.decrypt(
+                KeyId=self._key_id,
+                CiphertextBlob=base64.b64decode(ciphertext),
+                EncryptionContext=dict(context),
+            )
             return response["Plaintext"].decode()
 
         return await asyncio.to_thread(_do)

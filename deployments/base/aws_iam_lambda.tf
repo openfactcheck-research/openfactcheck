@@ -31,6 +31,7 @@ resource "aws_iam_role_policy" "lambda_api_logs" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "APIWriteLogs"
         Effect = "Allow"
         Action = [
           "logs:CreateLogGroup",
@@ -51,6 +52,7 @@ resource "aws_iam_role_policy" "lambda_api_dynamodb" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "APIReadWriteTables"
         Effect = "Allow"
         Action = [
           "dynamodb:GetItem",
@@ -78,13 +80,22 @@ resource "aws_iam_role_policy" "lambda_api_kms" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "kms:Encrypt",
-          "kms:Decrypt"
-        ]
+        Sid      = "APIEncryptSecrets"
+        Effect   = "Allow"
+        Action   = "kms:Encrypt"
         Resource = aws_kms_key.users.arn
-      }
+      },
+      {
+        Sid      = "APITableKeyAccess"
+        Effect   = "Allow"
+        Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
+        Resource = aws_kms_key.users.arn
+        Condition = {
+          StringEquals = {
+            "kms:ViaService" = "dynamodb.${var.aws_region}.amazonaws.com"
+          }
+        }
+      },
     ]
   })
 }
@@ -97,6 +108,7 @@ resource "aws_iam_role_policy" "lambda_api_sfn" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "APIStartPipeline"
         Effect = "Allow"
         Action = [
           "states:StartExecution",
@@ -144,6 +156,7 @@ resource "aws_iam_role_policy" "lambda_engine_logs" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "EngineWriteLogs"
         Effect = "Allow"
         Action = [
           "logs:CreateLogGroup",
@@ -156,8 +169,6 @@ resource "aws_iam_role_policy" "lambda_engine_logs" {
   })
 }
 
-# Read-only access to the user's encrypted secrets so a run can reach the
-# configured LLM and search providers. Scoped to a query of the users table.
 resource "aws_iam_role_policy" "lambda_engine_dynamodb" {
   name = "users-secrets-read"
   role = aws_iam_role.lambda_engine.id
@@ -166,6 +177,7 @@ resource "aws_iam_role_policy" "lambda_engine_dynamodb" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid      = "EngineReadSecrets"
         Effect   = "Allow"
         Action   = "dynamodb:Query"
         Resource = aws_dynamodb_table.openfactcheck_users.arn
@@ -182,6 +194,7 @@ resource "aws_iam_role_policy" "lambda_engine_kms" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid      = "EngineDecryptSecrets"
         Effect   = "Allow"
         Action   = "kms:Decrypt"
         Resource = aws_kms_key.users.arn

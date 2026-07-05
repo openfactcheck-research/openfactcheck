@@ -237,7 +237,7 @@ async def _decrypt_secrets(secret_repo: SecretRepository, cipher: SecretCipher, 
     for secret in await secret_repo.list(user_id):
         ciphertext = await secret_repo.get_ciphertext(user_id, secret.name)
         if ciphertext is not None:
-            secrets[secret.name] = await cipher.decrypt(ciphertext)
+            secrets[secret.name] = await cipher.decrypt(ciphertext, context={"user_id": user_id})
     return secrets
 
 

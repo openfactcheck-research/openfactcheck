@@ -25,7 +25,7 @@ resource "aws_sfn_state_machine" "pipeline" {
             "PK" = { "S.$" = "States.Format('USER#{}#PROJECT#{}', $.user_id, $.project_id)" }
             "SK" = { "S.$" = "States.Format('WORKSPACE#{}', $.workspace_id)" }
           }
-          UpdateExpression     = "SET #run = :run, updatedAt = :now"
+          UpdateExpression = "SET #run = :run, updatedAt = :now"
           ExpressionAttributeNames = {
             "#run" = "run"
           }
@@ -98,7 +98,7 @@ resource "aws_sfn_state_machine" "pipeline" {
             "PK" = { "S.$" = "States.Format('USER#{}#PROJECT#{}', $.user_id, $.project_id)" }
             "SK" = { "S.$" = "States.Format('WORKSPACE#{}', $.workspace_id)" }
           }
-          UpdateExpression     = "SET #run = :run, updatedAt = :now"
+          UpdateExpression = "SET #run = :run, updatedAt = :now"
           ExpressionAttributeNames = {
             "#run" = "run"
           }
@@ -126,7 +126,7 @@ resource "aws_sfn_state_machine" "pipeline" {
             "PK" = { "S.$" = "States.Format('USER#{}#PROJECT#{}', $.user_id, $.project_id)" }
             "SK" = { "S.$" = "States.Format('WORKSPACE#{}', $.workspace_id)" }
           }
-          UpdateExpression     = "SET #run = :run, updatedAt = :now"
+          UpdateExpression = "SET #run = :run, updatedAt = :now"
           ExpressionAttributeNames = {
             "#run" = "run"
           }
@@ -154,7 +154,7 @@ resource "aws_sfn_state_machine" "pipeline" {
             "PK" = { "S.$" = "States.Format('USER#{}#PROJECT#{}', $.user_id, $.project_id)" }
             "SK" = { "S.$" = "States.Format('WORKSPACE#{}', $.workspace_id)" }
           }
-          UpdateExpression     = "SET #run = :run, updatedAt = :now"
+          UpdateExpression = "SET #run = :run, updatedAt = :now"
           ExpressionAttributeNames = {
             "#run" = "run"
           }
@@ -213,8 +213,9 @@ resource "aws_iam_role_policy" "sfn_pipeline_lambda" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = "lambda:InvokeFunction"
+        Sid    = "SFNInvokeEngine"
+        Effect = "Allow"
+        Action = "lambda:InvokeFunction"
         Resource = [
           aws_lambda_function.engine.arn,
           "${aws_lambda_function.engine.arn}:*"
@@ -232,6 +233,7 @@ resource "aws_iam_role_policy" "sfn_pipeline_dynamodb" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid      = "SFNWriteRunState"
         Effect   = "Allow"
         Action   = "dynamodb:UpdateItem"
         Resource = aws_dynamodb_table.openfactcheck.arn

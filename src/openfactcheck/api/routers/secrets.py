@@ -39,7 +39,7 @@ async def set_secret(
     cipher: Annotated[SecretCipher, Depends(get_cipher)],
 ) -> SecretResponse:
     """Set or replace a secret's value. The value is encrypted and never returned."""
-    ciphertext = await cipher.encrypt(body.value)
+    ciphertext = await cipher.encrypt(body.value, context={"user_id": user.sub})
     # Reveal the last four characters as a hint, only when the value is long enough not to over-reveal it.
     hint = body.value[-4:] if len(body.value) >= _MIN_HINT_LENGTH else ""
     secret = await repo.set(user.sub, name, ciphertext, hint)

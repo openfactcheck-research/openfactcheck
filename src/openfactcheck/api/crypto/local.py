@@ -1,5 +1,6 @@
 """Fernet-backed secret cipher for local development."""
 
+from collections.abc import Mapping
 from pathlib import Path
 
 from cryptography.fernet import Fernet
@@ -34,10 +35,17 @@ class LocalCipher:
         path.chmod(0o600)
         return key
 
-    async def encrypt(self, plaintext: str) -> str:
-        """Encrypt a secret value into a token string."""
+    async def encrypt(self, plaintext: str, *, context: Mapping[str, str]) -> str:
+        """Encrypt a secret value into a token string.
+
+        The context is accepted for protocol parity but not bound; this cipher
+        is for local development only, where the key file already scopes access.
+        """
         return self._fernet.encrypt(plaintext.encode()).decode()
 
-    async def decrypt(self, ciphertext: str) -> str:
-        """Decrypt a token string back to its secret value."""
+    async def decrypt(self, ciphertext: str, *, context: Mapping[str, str]) -> str:
+        """Decrypt a token string back to its secret value.
+
+        The context is accepted for protocol parity but not enforced.
+        """
         return self._fernet.decrypt(ciphertext.encode()).decode()
