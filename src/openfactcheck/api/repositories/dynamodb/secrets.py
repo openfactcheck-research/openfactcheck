@@ -6,27 +6,40 @@ from datetime import UTC, datetime
 from openfactcheck.api.models import Secret
 from openfactcheck.api.repositories.constants import MAX_SECRETS_PER_USER
 from openfactcheck.api.repositories.dynamodb.base import BaseDynamoRepository
-from openfactcheck.api.repositories.dynamodb.keys import secret_pk, secret_sk
+from openfactcheck.api.repositories.dynamodb.keys import project_secret_pk, secret_pk, secret_sk
 from openfactcheck.api.repositories.dynamodb.types import DynamoItem
 
 
 class DynamoSecretRepository(BaseDynamoRepository):
     """DynamoDB-backed repository for a user's encrypted secrets."""
 
-    async def list(self, user_id: str) -> list[Secret]:
-        """List the user's secrets (masked), ordered by name."""
-        items = await self._query_by_pk(secret_pk(user_id), sk_prefix="SECRET#")
+    @staticmethod
+    def _pk(user_id: str, project_id: str | None) -> str:
+        """Partition key for the scope: the user's globals, or a project's overrides."""
+        return project_secret_pk(user_id, project_id) if project_id else secret_pk(user_id)
+
+    async def list(self, user_id: str, project_id: str | None = None) -> list[Secret]:
+        """List the scope's secrets (masked), ordered by name."""
+        items = await self._query_by_pk(self._pk(user_id, project_id), sk_prefix="SECRET#")
         secrets = [Secret.model_validate(item) for item in items]
         return sorted(secrets, key=lambda s: s.name)
 
-    async def set(self, user_id: str, name: str, ciphertext: str, hint: str) -> Secret | None:
-        """Create or replace a secret's encrypted value.
+    async def set(
+        self,
+        user_id: str,
+        name: str,
+        ciphertext: str,
+        hint: str,
+        project_id: str | None = None,
+    ) -> Secret | None:
+        """Create or replace a secret's encrypted value within the scope.
 
         Returns ``None`` if storing a new secret would exceed
-        [`MAX_SECRETS_PER_USER`][openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER].
-        Replacing an existing secret is always allowed.
+        [`MAX_SECRETS_PER_USER`][openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER]
+        for that scope. Replacing an existing secret is always allowed.
         """
-        existing = await self._query_by_pk(secret_pk(user_id), sk_prefix="SECRET#")
+        pk = self._pk(user_id, project_id)
+        existing = await self._query_by_pk(pk, sk_prefix="SECRET#")
         names = {item.get("name") for item in existing}
         if name not in names and len(existing) >= MAX_SECRETS_PER_USER:
             return None
@@ -35,7 +48,7 @@ class DynamoSecretRepository(BaseDynamoRepository):
 
         def _do() -> DynamoItem:
             response = self._table.update_item(
-                Key={"PK": secret_pk(user_id), "SK": secret_sk(name)},
+                Key={"PK": pk, "SK": secret_sk(name)},
                 UpdateExpression=(
                     "SET #name = :name, hint = :hint, ciphertext = :ciphertext, "
                     "updatedAt = :now, createdAt = if_not_exists(createdAt, :now)"
@@ -54,14 +67,14 @@ class DynamoSecretRepository(BaseDynamoRepository):
         attrs = await asyncio.to_thread(_do)
         return Secret.model_validate(attrs)
 
-    async def get_ciphertext(self, user_id: str, name: str) -> str | None:
-        """Return the stored ciphertext for a secret, or ``None`` if it is not set."""
-        item = await self._get(secret_pk(user_id), secret_sk(name))
+    async def get_ciphertext(self, user_id: str, name: str, project_id: str | None = None) -> str | None:
+        """Return the stored ciphertext for a secret in the scope, or ``None`` if it is not set."""
+        item = await self._get(self._pk(user_id, project_id), secret_sk(name))
         if item is None:
             return None
         ciphertext = item.get("ciphertext")
         return ciphertext if isinstance(ciphertext, str) else None
 
-    async def delete(self, user_id: str, name: str) -> bool:
-        """Delete a secret. Returns ``False`` if it does not exist."""
-        return await self._delete(secret_pk(user_id), secret_sk(name))
+    async def delete(self, user_id: str, name: str, project_id: str | None = None) -> bool:
+        """Delete a secret from the scope. Returns ``False`` if it does not exist."""
+        return await self._delete(self._pk(user_id, project_id), secret_sk(name))

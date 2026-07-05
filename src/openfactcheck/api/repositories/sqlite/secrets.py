@@ -22,32 +22,46 @@ class SqliteSecretRepository:
         """
         self._session_factory = session_factory
 
-    async def list(self, user_id: str) -> list[Secret]:
-        """List the user's secrets (masked), ordered by name."""
+    async def list(self, user_id: str, project_id: str | None = None) -> list[Secret]:
+        """List the scope's secrets (masked), ordered by name."""
+        scope = project_id or ""
         async with self._session_factory() as session:
             result = await session.execute(
-                select(SecretRow).where(SecretRow.user_id == user_id).order_by(SecretRow.name),
+                select(SecretRow)
+                .where(SecretRow.user_id == user_id, SecretRow.project_id == scope)
+                .order_by(SecretRow.name),
             )
             return [Secret.model_validate(row_to_dict(row)) for row in result.scalars()]
 
-    async def set(self, user_id: str, name: str, ciphertext: str, hint: str) -> Secret | None:
-        """Create or replace a secret's encrypted value.
+    async def set(
+        self,
+        user_id: str,
+        name: str,
+        ciphertext: str,
+        hint: str,
+        project_id: str | None = None,
+    ) -> Secret | None:
+        """Create or replace a secret's encrypted value within the scope.
 
         Returns ``None`` if storing a new secret would exceed
-        [`MAX_SECRETS_PER_USER`][openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER].
-        Replacing an existing secret is always allowed.
+        [`MAX_SECRETS_PER_USER`][openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER]
+        for that scope. Replacing an existing secret is always allowed.
         """
+        scope = project_id or ""
         now = datetime.now(UTC)
         async with self._session_factory() as session:
-            row = await session.get(SecretRow, (user_id, name))
+            row = await session.get(SecretRow, (user_id, scope, name))
             if row is None:
                 count = await session.execute(
-                    select(func.count()).select_from(SecretRow).where(SecretRow.user_id == user_id),
+                    select(func.count())
+                    .select_from(SecretRow)
+                    .where(SecretRow.user_id == user_id, SecretRow.project_id == scope),
                 )
                 if count.scalar_one() >= MAX_SECRETS_PER_USER:
                     return None
                 row = SecretRow(
                     user_id=user_id,
+                    project_id=scope,
                     name=name,
                     ciphertext=ciphertext,
                     hint=hint,
@@ -62,17 +76,21 @@ class SqliteSecretRepository:
             await session.commit()
             return Secret.model_validate(row_to_dict(row))
 
-    async def get_ciphertext(self, user_id: str, name: str) -> str | None:
-        """Return the stored ciphertext for a secret, or ``None`` if it is not set."""
+    async def get_ciphertext(self, user_id: str, name: str, project_id: str | None = None) -> str | None:
+        """Return the stored ciphertext for a secret in the scope, or ``None`` if it is not set."""
         async with self._session_factory() as session:
-            row = await session.get(SecretRow, (user_id, name))
+            row = await session.get(SecretRow, (user_id, project_id or "", name))
             return row.ciphertext if row else None
 
-    async def delete(self, user_id: str, name: str) -> bool:
-        """Delete a secret. Returns ``False`` if it does not exist."""
+    async def delete(self, user_id: str, name: str, project_id: str | None = None) -> bool:
+        """Delete a secret from the scope. Returns ``False`` if it does not exist."""
         async with self._session_factory() as session:
             cursor = await session.execute(
-                delete(SecretRow).where(SecretRow.user_id == user_id, SecretRow.name == name),
+                delete(SecretRow).where(
+                    SecretRow.user_id == user_id,
+                    SecretRow.project_id == (project_id or ""),
+                    SecretRow.name == name,
+                ),
             )
             await session.commit()
             return bool(cursor.rowcount)

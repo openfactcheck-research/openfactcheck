@@ -81,3 +81,17 @@ async def test_SqliteSecretRepository_scopes_to_user(repo: SqliteSecretRepositor
 
     assert await repo.list(OTHER_USER) == []
     assert await repo.get_ciphertext(OTHER_USER, "openai") is None
+
+
+async def test_SqliteSecretRepository_scopes_to_project(repo: SqliteSecretRepository) -> None:
+    """A project override is stored separately from the global secret of the same name."""
+    await repo.set(USER_ID, "openai", "global-ct", "glob")
+    await repo.set(USER_ID, "openai", "project-ct", "proj", project_id="p1")
+
+    assert await repo.get_ciphertext(USER_ID, "openai") == "global-ct"
+    assert await repo.get_ciphertext(USER_ID, "openai", project_id="p1") == "project-ct"
+    assert [s.name for s in await repo.list(USER_ID, project_id="p1")] == ["openai"]
+
+    assert await repo.delete(USER_ID, "openai", project_id="p1") is True
+    assert await repo.get_ciphertext(USER_ID, "openai", project_id="p1") is None
+    assert await repo.get_ciphertext(USER_ID, "openai") == "global-ct"  # global intact

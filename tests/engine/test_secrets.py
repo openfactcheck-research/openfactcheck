@@ -13,7 +13,7 @@ from openfactcheck.engine.secrets import resolve_user_secrets
 REGION = "us-east-1"
 TABLE = "openfactcheck-users-test"
 
-SecretWriter = Callable[[str, str, str], None]
+SecretWriter = Callable[..., None]
 
 
 @pytest.fixture
@@ -49,15 +49,13 @@ def put_secret(monkeypatch: pytest.MonkeyPatch) -> Iterator[SecretWriter]:
 
         table = boto3.resource("dynamodb", region_name=REGION).Table(TABLE)
 
-        def _put(user_id: str, name: str, value: str) -> None:
-            blob = kms.encrypt(
-                KeyId=key_id,
-                Plaintext=value.encode(),
-                EncryptionContext={"user_id": user_id},
-            )["CiphertextBlob"]
+        def _put(user_id: str, name: str, value: str, project_id: str | None = None) -> None:
+            pk = f"USER#{user_id}#PROJECT#{project_id}" if project_id else f"USER#{user_id}"
+            context = {"user_id": user_id, "project_id": project_id} if project_id else {"user_id": user_id}
+            blob = kms.encrypt(KeyId=key_id, Plaintext=value.encode(), EncryptionContext=context)["CiphertextBlob"]
             table.put_item(
                 Item={
-                    "PK": f"USER#{user_id}",
+                    "PK": pk,
                     "SK": f"SECRET#{name}",
                     "name": name,
                     "ciphertext": base64.b64encode(blob).decode(),
@@ -88,3 +86,21 @@ def test_resolve_user_secrets_scoped_to_user(put_secret: SecretWriter) -> None:
     put_secret("u1", "OPENAI_API_KEY", "sk-1")
 
     assert resolve_user_secrets("u2") == {}
+
+
+def test_resolve_user_secrets_project_overrides_global(put_secret: SecretWriter) -> None:
+    put_secret("u1", "OPENAI_API_KEY", "global-openai")
+    put_secret("u1", "SERPER_API_KEY", "global-serper")
+    put_secret("u1", "OPENAI_API_KEY", "project-openai", project_id="p1")
+
+    assert resolve_user_secrets("u1", "p1") == {
+        "OPENAI_API_KEY": "project-openai",  # project override wins
+        "SERPER_API_KEY": "global-serper",  # inherited from global
+    }
+
+
+def test_resolve_user_secrets_without_project_is_global_only(put_secret: SecretWriter) -> None:
+    put_secret("u1", "OPENAI_API_KEY", "global-openai")
+    put_secret("u1", "OPENAI_API_KEY", "project-openai", project_id="p1")
+
+    assert resolve_user_secrets("u1") == {"OPENAI_API_KEY": "global-openai"}

@@ -231,13 +231,22 @@ async def _start_sfn(
 _RUN_TIMEOUT_SECONDS = 300
 
 
-async def _decrypt_secrets(secret_repo: SecretRepository, cipher: SecretCipher, user_id: str) -> dict[str, str]:
-    """Decrypt the user's stored secrets into an environment-variable map."""
+async def _decrypt_secrets(
+    secret_repo: SecretRepository,
+    cipher: SecretCipher,
+    user_id: str,
+    project_id: str,
+) -> dict[str, str]:
+    """Decrypt the user's global secrets plus this project's overrides (project wins)."""
     secrets: dict[str, str] = {}
-    for secret in await secret_repo.list(user_id):
-        ciphertext = await secret_repo.get_ciphertext(user_id, secret.name)
-        if ciphertext is not None:
-            secrets[secret.name] = await cipher.decrypt(ciphertext, context={"user_id": user_id})
+    for scope, context in (
+        (None, {"user_id": user_id}),
+        (project_id, {"user_id": user_id, "project_id": project_id}),
+    ):
+        for secret in await secret_repo.list(user_id, project_id=scope):
+            ciphertext = await secret_repo.get_ciphertext(user_id, secret.name, project_id=scope)
+            if ciphertext is not None:
+                secrets[secret.name] = await cipher.decrypt(ciphertext, context=context)
     return secrets
 
 
@@ -274,7 +283,7 @@ async def _run_local(  # noqa: PLR0913 - distinct collaborators, each needed for
     The subprocess environment is the base environment plus this user's
     decrypted secrets, so one run's API keys never leak into another's.
     """
-    secrets = await _decrypt_secrets(secret_repo, cipher, user_id)
+    secrets = await _decrypt_secrets(secret_repo, cipher, user_id, project_id)
     proc = await asyncio.create_subprocess_exec(
         sys.executable,
         "-m",

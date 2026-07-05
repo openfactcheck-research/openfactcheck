@@ -107,27 +107,35 @@ class WorkspaceRepository(Protocol):
 
 
 class SecretRepository(Protocol):
-    """Data access interface for a user's encrypted secrets."""
+    """Data access interface for a user's encrypted secrets.
 
-    async def list(self, user_id: str) -> list[Secret]:
-        """List the user's secrets (masked, no values), ordered by name."""
+    Secrets are scoped: with ``project_id`` unset they are the user's global
+    secrets; with ``project_id`` set they are that project's overrides. The two
+    scopes are stored independently and never mix at rest; merging (project
+    overriding global) happens at run time.
+    """
+
+    async def list(self, user_id: str, project_id: str | None = None) -> list[Secret]:
+        """List the scope's secrets (masked, no values), ordered by name."""
         ...
 
-    async def set(self, user_id: str, name: str, ciphertext: str, hint: str) -> Secret | None:
-        """Create or replace a secret's encrypted value.
+    async def set(
+        self, user_id: str, name: str, ciphertext: str, hint: str, project_id: str | None = None
+    ) -> Secret | None:
+        """Create or replace a secret's encrypted value within the scope.
 
         Returns ``None`` if storing a new secret would exceed
-        [`MAX_SECRETS_PER_USER`][openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER];
-        replacing an existing secret is always allowed.
+        [`MAX_SECRETS_PER_USER`][openfactcheck.api.repositories.constants.MAX_SECRETS_PER_USER]
+        for that scope; replacing an existing secret is always allowed.
         """
         ...
 
-    async def get_ciphertext(self, user_id: str, name: str) -> str | None:
-        """Return the stored ciphertext for a secret, or ``None`` if it is not set."""
+    async def get_ciphertext(self, user_id: str, name: str, project_id: str | None = None) -> str | None:
+        """Return the stored ciphertext for a secret in the scope, or ``None`` if it is not set."""
         ...
 
-    async def delete(self, user_id: str, name: str) -> bool:
-        """Delete a secret. Returns ``False`` if it does not exist."""
+    async def delete(self, user_id: str, name: str, project_id: str | None = None) -> bool:
+        """Delete a secret from the scope. Returns ``False`` if it does not exist."""
         ...
 
 

@@ -48,11 +48,16 @@ class WorkspaceRow(Base):
 
 
 class SecretRow(Base):
-    """ORM model for the ``secrets`` table."""
+    """ORM model for the ``secrets`` table.
+
+    ``project_id`` is empty for the user's global secrets and the project id for
+    a project override; it is part of the primary key so the two scopes coexist.
+    """
 
     __tablename__ = "secrets"
 
     user_id: Mapped[str] = mapped_column(String(255), primary_key=True)
+    project_id: Mapped[str] = mapped_column(String(12), primary_key=True, default="")
     name: Mapped[str] = mapped_column(String(64), primary_key=True)
     ciphertext: Mapped[str] = mapped_column(Text)
     hint: Mapped[str] = mapped_column(String(8), default="")

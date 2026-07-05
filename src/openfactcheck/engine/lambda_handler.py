@@ -35,10 +35,11 @@ _RUN_TIMEOUT_SECONDS = 870
 def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:  # noqa: ANN401 - AWS Lambda context type requires a heavy dependency.
     """AWS Lambda entry point — execute the pipeline with the user's secrets."""
     user_id: str = event["user_id"]
+    project_id: str | None = event.get("project_id")
     pipeline: dict[str, Any] = event["pipeline"]
 
     # Resolve secrets first, while the function's own AWS credentials are intact.
-    secrets = resolve_user_secrets(user_id)
+    secrets = resolve_user_secrets(user_id, project_id)
     # Only add new variables; a user secret never shadows a baseline variable.
     injectable = {name: value for name, value in secrets.items() if name not in _BASE_ENV}
 
