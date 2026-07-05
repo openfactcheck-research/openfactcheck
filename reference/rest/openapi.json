@@ -1002,7 +1002,7 @@
           "secrets"
         ],
         "summary": "List Secrets",
-        "description": "List the user's stored secrets, without their values.",
+        "description": "List the user's global secrets, without their values.",
         "operationId": "list_secrets_api_v1_secrets__get",
         "parameters": [
           {
@@ -1056,7 +1056,7 @@
           "secrets"
         ],
         "summary": "Set Secret",
-        "description": "Set or replace a secret's value. The value is encrypted and never returned.",
+        "description": "Set or replace a global secret's value. The value is encrypted and never returned.",
         "operationId": "set_secret_api_v1_secrets__name__put",
         "parameters": [
           {
@@ -1125,9 +1125,216 @@
           "secrets"
         ],
         "summary": "Delete Secret",
-        "description": "Delete a secret.",
+        "description": "Delete a global secret.",
         "operationId": "delete_secret_api_v1_secrets__name__delete",
         "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/secrets/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "List Project Secrets",
+        "description": "List the project's secret overrides, without their values.",
+        "operationId": "list_project_secrets_api_v1_secrets_projects__project_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 20,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SecretResponse"
+                  },
+                  "title": "Response List Project Secrets Api V1 Secrets Projects  Project Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/secrets/projects/{project_id}/{name}": {
+      "put": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "Set Project Secret",
+        "description": "Set or replace a project override for a secret. The value is encrypted and never returned.",
+        "operationId": "set_project_secret_api_v1_secrets_projects__project_id___name__put",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 20,
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSecretRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecretResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "secrets"
+        ],
+        "summary": "Delete Project Secret",
+        "description": "Delete a project override for a secret.",
+        "operationId": "delete_project_secret_api_v1_secrets_projects__project_id___name__delete",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 20,
+              "title": "Project Id"
+            }
+          },
           {
             "name": "name",
             "in": "path",
