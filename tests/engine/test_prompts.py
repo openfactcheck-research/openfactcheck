@@ -43,3 +43,57 @@ async def test_prompt_template_system_only_becomes_user() -> None:
     assert [m.role for m in messages] == ["user"]
     assert messages[0].content == "Check X"
     assert "claim" in template.variables
+
+
+async def test_prompt_template_builds_from_message_turns() -> None:
+    ctx = ExecutionContext()
+    block = Block({
+        "type": "prompt_template",
+        "extraState": {
+            "messages": [
+                {"role": "system", "content": "You are a checker."},
+                {"role": "user", "content": "Claim: {{claim}}"},
+                {"role": "assistant", "content": "Verifying."},
+                {"role": "user", "content": "Now: {{claim}}"},
+            ],
+        },
+    })
+
+    template = cast("PromptTemplate", ctx.execute_block(block))
+
+    assert [m.role for m in template.to_messages(claim="X")] == ["system", "user", "assistant", "user"]
+    assert "claim" in template.variables
+
+
+async def test_prompt_template_skips_empty_turns() -> None:
+    ctx = ExecutionContext()
+    block = Block({
+        "type": "prompt_template",
+        "extraState": {
+            "messages": [
+                {"role": "system", "content": "   "},
+                {"role": "user", "content": "Only this."},
+            ],
+        },
+    })
+
+    template = cast("PromptTemplate", ctx.execute_block(block))
+
+    messages = template.to_messages()
+    assert [m.role for m in messages] == ["user"]
+    assert messages[0].content == "Only this."
+
+
+async def test_prompt_template_prefers_messages_over_legacy_fields() -> None:
+    ctx = ExecutionContext()
+    block = Block({
+        "type": "prompt_template",
+        "fields": {"SYSTEM_TEXT": "legacy", "USER_TEXT": "legacy user"},
+        "extraState": {"messages": [{"role": "user", "content": "new turn"}]},
+    })
+
+    template = cast("PromptTemplate", ctx.execute_block(block))
+
+    messages = template.to_messages()
+    assert [m.role for m in messages] == ["user"]
+    assert messages[0].content == "new turn"
