@@ -16,8 +16,12 @@ Run keys:
     PK: USER#<userId>#PROJECT#<projectId>
     SK: WORKSPACE#<workspaceId>
 
-Secret keys:
+Secret keys (global):
     PK: USER#<userId>
+    SK: SECRET#<name>
+
+Secret keys (project override):
+    PK: USER#<userId>#PROJECT#<projectId>
     SK: SECRET#<name>
 
 Preferences keys:
@@ -68,6 +72,11 @@ def secret_pk(user_id: str) -> str:
 def secret_sk(name: str) -> str:
     """Sort key for a specific secret."""
     return f"SECRET#{name}"
+
+
+def project_secret_pk(user_id: str, project_id: str) -> str:
+    """Partition key grouping a user's secrets that override globals within one project."""
+    return f"USER#{user_id}#PROJECT#{project_id}"
 
 
 # ---------------------------------------------------------------------------
