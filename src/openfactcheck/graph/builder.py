@@ -92,6 +92,10 @@ class _InlineJoinEdge:
     spec: _InlineJoinSpec
 
 
+type WiringItem = Edge | Branch | _InlineJoinEdge
+"""An item [`add`][GraphBuilder.add] accepts: an edge, a decision branch, or an inline fan-in edge."""
+
+
 @dataclass(frozen=True, slots=True)
 class EdgePathBuilder[OutputT, StateT, DepsT]:
     """A partially-built edge, awaiting its destination.
@@ -594,7 +598,7 @@ class GraphBuilder(Generic[InputT, OutputT, StateT, DepsT]):
         """
         return EdgePathBuilder(source.id)
 
-    def add(self, *items: Edge | Branch | _InlineJoinEdge) -> None:
+    def add(self, *items: WiringItem) -> None:
         """Register edges and decision branches into the graph being built.
 
         Args:

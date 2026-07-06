@@ -14,6 +14,7 @@ commit, and license. Import from ``openfactcheck.components.factool``.
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
+from openfactcheck.components.factool.aggregator import FactoolAggregator
 from openfactcheck.components.factool.claim_processor import FactoolClaimProcessor, FactoolClaimProcessorModel
 from openfactcheck.components.factool.query_generator import FactoolQueryGenerator, FactoolQueryGeneratorModel
 from openfactcheck.components.factool.retriever import FactoolRetriever
@@ -52,6 +53,7 @@ PROVENANCE = Provenance(
 
 # Components
 __all__ = [
+    "FactoolAggregator",
     "FactoolClaimProcessor",
     "FactoolQueryGenerator",
     "FactoolRetriever",
@@ -73,6 +75,7 @@ __all__ += [
 
 if TYPE_CHECKING:
     from openfactcheck.components.protocols import (
+        Aggregator,
         ClaimProcessor,
         QueryGenerator,
         Retriever,
@@ -85,6 +88,7 @@ if TYPE_CHECKING:
     _generator: type[QueryGenerator] = FactoolQueryGenerator
     _retriever: type[Retriever] = FactoolRetriever
     _verifier: type[Verifier] = FactoolVerifier
+    _aggregator: type[Aggregator] = FactoolAggregator
 
 
 COMPONENTS: Mapping[str, Component] = {
@@ -96,5 +100,6 @@ COMPONENTS: Mapping[str, Component] = {
     ),
     "retriever": Component(factory=FactoolRetriever, role="retriever"),
     "verifier": Component(factory=FactoolVerifier, role="verifier", default_model=PROVENANCE.default_model),
+    "aggregator": Component(factory=FactoolAggregator, role="aggregator"),
 }
 """The Factool components, discovered through the ``openfactcheck.components`` entry point."""

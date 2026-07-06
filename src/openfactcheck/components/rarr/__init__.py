@@ -10,9 +10,10 @@ an attribution report.
 
 The agreement gate and editor run a sequential loop in which the passage is
 revised in place, so each check sees the latest version; the pipeline expresses
-this as a graph cycle. The retriever, agreement gate, editor, and evidence
-selector are specific to RARR's shape and do not implement the shared component
-protocols.
+this as a graph cycle over the reviser (the gate-and-edit loop body), then an
+aggregator consolidates the checks and the revised passage into a result. The
+retriever, agreement gate, editor, evidence selector, reviser, and aggregator are
+specific to RARR's shape and do not implement the shared component protocols.
 
 The LLM components run on an injected chat client;
 [`PROVENANCE`][PROVENANCE] records the recommended
@@ -23,6 +24,7 @@ license. Import from ``openfactcheck.components.rarr``.
 from typing import TYPE_CHECKING
 
 from openfactcheck.components.provenance import Provenance
+from openfactcheck.components.rarr.aggregator import RARRAggregator
 from openfactcheck.components.rarr.agreement_gate import RARRAgreementGate, RARRAgreementGateModel
 from openfactcheck.components.rarr.claim_processor import RARRClaimProcessor
 from openfactcheck.components.rarr.editor import RARREditor, RARREditorModel
@@ -30,6 +32,7 @@ from openfactcheck.components.rarr.errors import RARRConfigError, RARRError
 from openfactcheck.components.rarr.evidence_selector import RARREvidenceSelector
 from openfactcheck.components.rarr.query_generator import RARRQueryGenerator, RARRQueryGeneratorModel
 from openfactcheck.components.rarr.retriever import QuestionedSource, RARRRetriever
+from openfactcheck.components.rarr.reviser import RARRResearch, RARRReviser
 
 _CITATION = """\
 @inproceedings{gao-etal-2023-rarr,
@@ -57,12 +60,14 @@ PROVENANCE = Provenance(
 
 # Components
 __all__ = [
+    "RARRAggregator",
     "RARRAgreementGate",
     "RARRClaimProcessor",
     "RARREditor",
     "RARREvidenceSelector",
     "RARRQueryGenerator",
     "RARRRetriever",
+    "RARRReviser",
 ]
 
 # Structured outputs (the value each LLM component's ``on_partial`` hook streams)
@@ -75,6 +80,7 @@ __all__ += [
 # Types
 __all__ += [
     "QuestionedSource",
+    "RARRResearch",
 ]
 
 # Errors
@@ -94,7 +100,7 @@ if TYPE_CHECKING:
 
     # Type-only conformance: each RARR component that implements a shared category
     # protocol must satisfy it, so pyright fails the gate the moment one drifts.
-    # The retriever, agreement gate, editor, and selector are RARR-specific and
-    # bind to no protocol. Absent at runtime.
+    # The retriever, agreement gate, editor, selector, reviser, and aggregator are
+    # RARR-specific and bind to no protocol. Absent at runtime.
     _processor: type[ClaimProcessor] = RARRClaimProcessor
     _generator: type[QueryGenerator] = RARRQueryGenerator

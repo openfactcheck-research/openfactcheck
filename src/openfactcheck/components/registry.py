@@ -24,11 +24,11 @@ from openfactcheck.graph import Graph
 
 _COMPONENT_GROUP = "openfactcheck.components"
 
-type ComponentRole = Literal["claim_processor", "query_generator", "retriever", "verifier", "reviser"]
+type ComponentRole = Literal["claim_processor", "query_generator", "retriever", "verifier", "aggregator", "reviser"]
 """The pipeline role a component fills.
 
 The linear pipeline uses it to place the component (extract, then per-claim query/retrieve/verify, then
-revise); it is metadata, not the component's address.
+aggregate, then revise); it is metadata, not the component's address.
 """
 
 

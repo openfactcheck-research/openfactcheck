@@ -142,6 +142,7 @@ nav:
       - Graph:
           - reference/graph/index.md
           - Builder: reference/graph/builder.md
+          - Composition: reference/graph/edges.md
           - Graph and execution: reference/graph/graph.md
           - Steps: reference/graph/step.md
           - Joins and reducers: reference/graph/join.md

@@ -15,7 +15,7 @@ from pytest_mock import MockerFixture
 from openfactcheck.components import factcheckgpt as factcheckgpt_components
 from openfactcheck.components import factool as factool_components
 from openfactcheck.components import nodes
-from openfactcheck.components.types import Claim, Evidence, Input, Query, Source, Verdict
+from openfactcheck.components.types import Claim, Evidence, Input, Query, Result, Source, Verdict
 from openfactcheck.graph import GraphBuilder, NodeEmitted, RunOptions
 
 _FACTOOL = "openfactcheck.components.nodes.factool"
@@ -211,7 +211,16 @@ def test_factcheckgpt_offers_no_reviser_node() -> None:
     assert not hasattr(nodes.factcheckgpt, "reviser")
 
 
-def test_bundles_offer_no_aggregator_node() -> None:
-    """Aggregation is the facade's job; no bundle exposes an aggregator node."""
-    assert not hasattr(nodes.factool, "aggregator")
-    assert not hasattr(nodes.factcheckgpt, "aggregator")
+def test_bundles_offer_an_aggregator_node() -> None:
+    """Each standard bundle exposes an aggregator node that consolidates its verdicts into a result."""
+    g = GraphBuilder(input_type=list[Verdict], output_type=Result, name="agg")
+    aggregator = nodes.factool.aggregator(g)
+    g.add(g.edge_from(g.start_node).to(aggregator), g.edge_from(aggregator).to(g.end_node))
+
+    verdicts = [Verdict(claim=Claim(text="The sky is blue"), label="supported", reasoning="stub")]
+    result = g.build().run(verdicts, state=None, deps=None)
+
+    assert isinstance(result, Result)
+    assert result.verdicts == verdicts
+    assert aggregator.id == "factool/aggregator"
+    assert hasattr(nodes.factcheckgpt, "aggregator")

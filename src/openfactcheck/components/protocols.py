@@ -9,7 +9,7 @@ interchangeable with any other implementation of the same category.
 from collections.abc import Callable
 from typing import Protocol, runtime_checkable
 
-from openfactcheck.components.types import Claim, Evidence, Input, Query, Verdict
+from openfactcheck.components.types import Claim, Evidence, Input, Query, Result, Verdict
 
 
 @runtime_checkable
@@ -106,6 +106,32 @@ class Verifier(Protocol):
         Returns:
             Verdict describing whether the evidence supports, refutes, or
             is insufficient for the claim.
+        """
+        ...
+
+
+@runtime_checkable
+class Aggregator(Protocol):
+    """Consolidate a run's per-claim verdicts into a single result.
+
+    The final stage of a standard pipeline: it gathers the verdicts into a
+    [`Result`][Result] whose summary counts them and reads off an overall
+    judgment. Its default form does no model calls; it arranges what the
+    pipeline produced.
+    """
+
+    async def __call__(self, verdicts: list[Verdict], *, on_partial: Callable[[object], None] | None = None) -> Result:
+        """Consolidate ``verdicts`` into a result.
+
+        Args:
+            verdicts: The per-claim verdicts to consolidate.
+            on_partial: Optional sink called with the in-progress result as it
+                streams in, each call carrying more of it. Omit it for a single
+                non-streaming call; an implementation without streaming may
+                ignore it.
+
+        Returns:
+            The result over the verdicts, carrying its computed summary.
         """
         ...
 

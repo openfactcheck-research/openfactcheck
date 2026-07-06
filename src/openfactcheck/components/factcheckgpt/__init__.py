@@ -15,6 +15,7 @@ commit, and license. Import from ``openfactcheck.components.factcheckgpt``.
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
+from openfactcheck.components.factcheckgpt.aggregator import FactcheckGPTAggregator
 from openfactcheck.components.factcheckgpt.claim_processor import (
     FactcheckGPTClaimProcessor,
     FactcheckGPTClaimProcessorModel,
@@ -56,6 +57,7 @@ PROVENANCE = Provenance(
 
 # Components
 __all__ = [
+    "FactcheckGPTAggregator",
     "FactcheckGPTClaimProcessor",
     "FactcheckGPTQueryGenerator",
     "FactcheckGPTRetriever",
@@ -79,6 +81,7 @@ __all__ += [
 
 if TYPE_CHECKING:
     from openfactcheck.components.protocols import (
+        Aggregator,
         ClaimProcessor,
         QueryGenerator,
         Retriever,
@@ -93,6 +96,7 @@ if TYPE_CHECKING:
     _retriever: type[Retriever] = FactcheckGPTRetriever
     _verifier: type[Verifier] = FactcheckGPTVerifier
     _reviser: type[Reviser] = FactcheckGPTReviser
+    _aggregator: type[Aggregator] = FactcheckGPTAggregator
 
 
 COMPONENTS: Mapping[str, Component] = {
@@ -105,5 +109,6 @@ COMPONENTS: Mapping[str, Component] = {
     "retriever": Component(factory=FactcheckGPTRetriever, role="retriever"),
     "verifier": Component(factory=FactcheckGPTVerifier, role="verifier", default_model=PROVENANCE.default_model),
     "reviser": Component(factory=FactcheckGPTReviser, role="reviser", default_model=PROVENANCE.default_model),
+    "aggregator": Component(factory=FactcheckGPTAggregator, role="aggregator"),
 }
 """The FactcheckGPT components, discovered through the ``openfactcheck.components`` entry point."""

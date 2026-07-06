@@ -1,50 +1,38 @@
 """RARR nodes: the research-and-revise stages, prebuilt as graph nodes.
 
-RARR works on a whole passage rather than atomic claims, and its retrieve-check-edit loop is a cycle, so its
-nodes differ from the linear factories:
+RARR works on a whole passage rather than atomic claims, and its check-and-edit loop is a cycle, so its nodes
+differ from the linear factories:
 
-- [`claim_processor`][claim_processor] emits a single claim (the whole
-  passage), so it is wired without a fan-out.
+- [`claim_processor`][claim_processor] emits a single claim (the whole passage), so it is wired without a
+  fan-out.
 - [`query_generator`][query_generator] lifts RARR's query generator.
-- [`retriever_verifier_loop`][retriever_verifier_loop] is a subgraph: it
-  retrieves evidence per question, then loops over each piece, checking the passage against it and editing
-  the passage to agree when it disagrees. It plugs into a graph as one node.
+- [`retriever`][retriever] retrieves evidence per question and seeds the research state.
+- [`reviser`][reviser] checks the passage against the next piece of evidence and edits it to agree; run it in a
+  [`loop`][openfactcheck.graph.loop] until no evidence is left.
+- [`aggregator`][aggregator] consolidates the revised passage and its checks into a result.
 """
 
-from dataclasses import dataclass
 from typing import Any
 
 from openfactcheck.chat import ChatClient
 from openfactcheck.components.rarr import (
     PROVENANCE,
+    RARRAggregator,
     RARRAgreementGate,
     RARRClaimProcessor,
     RARREditor,
     RARRQueryGenerator,
+    RARRResearch,
     RARRRetriever,
+    RARRReviser,
 )
-from openfactcheck.components.rarr.retriever import QuestionedSource
 from openfactcheck.components.registry import Pipeline
-from openfactcheck.components.types import Claim, Input, Query, Verdict
-from openfactcheck.graph import AnyGraphBuilder, Graph, GraphBuilder, Step, StepContext
+from openfactcheck.components.types import Claim, Input, Query, Result
+from openfactcheck.graph import AnyGraphBuilder, Graph, GraphBuilder, Step, StepContext, chain, loop
 from openfactcheck.integrations.serper import SerperClient
 
 DEFAULT_MAX_REVISION_STEPS = 200
 """Safety cap on the revision loop. The loop normally stops once all evidence is processed."""
-
-
-@dataclass(frozen=True, slots=True)
-class ResearchResult:
-    """The outcome of the retrieve-and-revise loop: the revised passage and the checks behind it."""
-
-    passage: str
-    """The passage after every disagreement found has been edited in."""
-
-    pending: tuple[QuestionedSource, ...]
-    """The ``(question, evidence)`` pairs still to check; empty once the loop has finished."""
-
-    gates: tuple[Verdict, ...]
-    """The agreement check recorded for each processed pair, in order."""
 
 
 def claim_processor(
@@ -99,77 +87,94 @@ def query_generator(
     return step
 
 
-def retriever_verifier_loop(
+def retriever(
     g: AnyGraphBuilder,
-    chat: ChatClient,
     serper: SerperClient | None = None,
     *,
-    node_id: str = "rarr/retriever_verifier_loop",
-    max_revision_steps: int = DEFAULT_MAX_REVISION_STEPS,
-) -> Step[Query, ResearchResult, Any, Any]:
-    """Build RARR's retrieve-and-revise cycle as a subgraph and lift it onto ``g`` as one node.
+    node_id: str = "rarr/retriever",
+) -> Step[Query, RARRResearch, Any, Any]:
+    """Build RARR's retriever and lift it onto ``g`` as a node: a query in, the seeded research state out.
 
-    The subgraph retrieves one piece of evidence per question, then loops: it checks the current passage
-    against the next ``(question, evidence)`` pair with the agreement gate and, on disagreement, edits the
-    passage to agree before moving on, so each check sees the passage as edited so far. It returns the revised
-    passage and the agreement check for each pair.
+    Retrieves one piece of evidence per question and seeds the research state with the passage (the query's
+    claim) and the ``(question, evidence)`` pairs still to check.
 
-    The node's input passage is read from the query's claim, so feed it a query whose claim is the passage to
-    revise (as [`claim_processor`][claim_processor] produces).
+    Args:
+        g: The builder to register the node onto.
+        serper: Web-search client for retrieval. Defaults to a client that reads its key from the
+            environment.
+        node_id: Identifier for the node.
+
+    Returns:
+        The registered node, ready to wire with [`edge_from`][openfactcheck.graph.GraphBuilder.edge_from].
+    """
+    component = RARRRetriever(serper=serper if serper is not None else SerperClient())
+
+    @g.step_node(node_id=node_id)
+    async def step(ctx: StepContext[Query, Any, Any]) -> RARRResearch:
+        pairs = await component(ctx.inputs)
+        return RARRResearch(passage=ctx.inputs.claim.text, pending=tuple(pairs), gates=())
+
+    return step
+
+
+def reviser(
+    g: AnyGraphBuilder,
+    chat: ChatClient,
+    *,
+    node_id: str = "rarr/reviser",
+) -> Step[RARRResearch, RARRResearch, Any, Any]:
+    """Build RARR's reviser (the agreement gate and editor) and lift it onto ``g`` as one node.
+
+    Checks the passage against the next pending pair and edits it to agree on a disagreement. Run it in a
+    [`loop`][openfactcheck.graph.loop] until the research state has no pending pairs, so each lap sees the
+    passage as edited so far.
 
     Args:
         g: The builder to register the node onto.
         chat: Chat client backing the agreement gate and editor.
-        serper: Web-search client for retrieval. Defaults to a client that reads its key from the
-            environment.
         node_id: Identifier for the node.
-        max_revision_steps: Safety cap on revision-loop laps; the loop normally stops once all evidence is
-            processed.
 
     Returns:
-        The registered subgraph node.
+        The registered node, ready to wire with [`edge_from`][openfactcheck.graph.GraphBuilder.edge_from].
     """
-    retrieve = RARRRetriever(serper=serper if serper is not None else SerperClient())
-    gate = RARRAgreementGate(client=chat)
-    editor = RARREditor(client=chat)
+    component = RARRReviser(gate=RARRAgreementGate(client=chat), editor=RARREditor(client=chat))
 
-    inner: GraphBuilder[Query, ResearchResult, Any, Any] = GraphBuilder(
-        input_type=Query, output_type=ResearchResult, name="rarr_retriever_verifier_loop"
-    )
+    @g.step_node(node_id=node_id)
+    async def step(ctx: StepContext[RARRResearch, Any, Any]) -> RARRResearch:
+        return await component(ctx.inputs, on_partial=ctx.emit if ctx.streaming else None)
 
-    @inner.step_node
-    async def retriever_start(ctx: StepContext[Query, Any, Any]) -> ResearchResult:
-        pairs = await retrieve(ctx.inputs)
-        return ResearchResult(passage=ctx.inputs.claim.text, pending=tuple(pairs), gates=())
-
-    @inner.step_node
-    async def reviser(ctx: StepContext[ResearchResult, Any, Any]) -> ResearchResult:
-        result = ctx.inputs
-        question, source = result.pending[0]
-        verdict = await gate(result.passage, question, source, on_partial=ctx.emit if ctx.streaming else None)
-        passage = (
-            await editor(result.passage, question, source, on_partial=ctx.emit if ctx.streaming else None)
-            if verdict.label == "refuted"
-            else result.passage
-        )
-        return ResearchResult(passage=passage, pending=result.pending[1:], gates=(*result.gates, verdict))
-
-    more_pending = inner.decision_node(ResearchResult, node_id="more_pending")
-    inner.add(
-        inner.edge_from(inner.start_node).to(retriever_start),
-        inner.edge_from(retriever_start).to(more_pending),
-        more_pending.when(lambda result: len(result.pending) > 0, reviser, max_iterations=max_revision_steps),
-        more_pending.otherwise(inner.end_node),
-        inner.edge_from(reviser).to(more_pending),
-    )
-    return g.subgraph_node(inner.build(), node_id=node_id)
+    return step
 
 
-def build_graph(*, chat: ChatClient, serper: SerperClient | None = None) -> Graph[Input, ResearchResult, None, None]:
+def aggregator(
+    g: AnyGraphBuilder,
+    *,
+    node_id: str = "rarr/aggregator",
+) -> Step[RARRResearch, Result, Any, Any]:
+    """Build RARR's aggregator and lift it onto ``g`` as a node: the research state in, a result out.
+
+    Args:
+        g: The builder to register the node onto.
+        node_id: Identifier for the node.
+
+    Returns:
+        The registered node, ready to wire with [`edge_from`][openfactcheck.graph.GraphBuilder.edge_from].
+    """
+    component = RARRAggregator()
+
+    @g.step_node(node_id=node_id)
+    async def step(ctx: StepContext[RARRResearch, Any, Any]) -> Result:
+        return await component(ctx.inputs, on_partial=ctx.emit if ctx.streaming else None)
+
+    return step
+
+
+def build_graph(*, chat: ChatClient, serper: SerperClient | None = None) -> Graph[Input, Result, None, None]:
     """Wire RARR's research-and-revise pipeline into a runnable graph.
 
-    Treats the input as one passage, generates verification questions, then runs the retrieve-and-revise
-    cycle, returning the revised passage and its agreement checks.
+    Treats the input as one passage, generates verification questions, retrieves evidence, then loops the
+    check-and-revise step until every ``(question, evidence)`` pair is processed, consolidating the revised
+    passage and its agreement checks into a result.
 
     Args:
         chat: Chat client backing the query generator, agreement gate, and editor.
@@ -177,19 +182,27 @@ def build_graph(*, chat: ChatClient, serper: SerperClient | None = None) -> Grap
             environment.
 
     Returns:
-        A graph from input text to the research result.
+        A graph from input text to the consolidated result.
     """
-    g: GraphBuilder[Input, ResearchResult, None, None] = GraphBuilder(
-        input_type=Input, output_type=ResearchResult, name="rarr"
-    )
-    cp = claim_processor(g)
-    qg = query_generator(g, chat)
-    loop = retriever_verifier_loop(g, chat, serper)
+    g: GraphBuilder[Input, Result, None, None] = GraphBuilder(input_type=Input, output_type=Result, name="rarr")
     g.add(
-        g.edge_from(g.start_node).to(cp),
-        g.edge_from(cp).to(qg),
-        g.edge_from(qg).to(loop),
-        g.edge_from(loop).to(g.end_node),
+        *chain(
+            g,
+            g.start_node,
+            claim_processor(g),
+            query_generator(g, chat),
+            retriever(g, serper),
+            loop(
+                g,
+                reviser(g, chat),
+                until=lambda research: len(research.pending) == 0,
+                max_iterations=DEFAULT_MAX_REVISION_STEPS,
+                input_type=RARRResearch,
+                node_id="more_pending",
+            ),
+            aggregator(g),
+            g.end_node,
+        )
     )
     return g.build()
 

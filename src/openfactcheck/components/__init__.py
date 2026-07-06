@@ -9,6 +9,7 @@ any other. The contracts are defined in terms of the data types in this layer
 """
 
 from openfactcheck.components.protocols import (
+    Aggregator,
     ClaimProcessor,
     QueryGenerator,
     Retriever,
@@ -21,8 +22,8 @@ from openfactcheck.components.types import (
     Evidence,
     Input,
     Query,
-    Report,
-    ReportSummary,
+    Result,
+    ResultSummary,
     Source,
     SourceMetadata,
     Verdict,
@@ -31,6 +32,7 @@ from openfactcheck.components.types import (
 
 # Component category contracts
 __all__ = [
+    "Aggregator",
     "ClaimProcessor",
     "QueryGenerator",
     "Retriever",
@@ -44,8 +46,8 @@ __all__ += [
     "Evidence",
     "Input",
     "Query",
-    "Report",
-    "ReportSummary",
+    "Result",
+    "ResultSummary",
     "Source",
     "SourceMetadata",
     "Verdict",

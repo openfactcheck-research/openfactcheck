@@ -108,8 +108,8 @@ class Verdict(BaseModel):
     """A corrected version of the claim, or ``None`` when there is nothing to correct."""
 
 
-class ReportSummary(BaseModel):
-    """Counts of a report's verdicts and an overall read of its factuality."""
+class ResultSummary(BaseModel):
+    """Counts of a result's verdicts and an overall read of its factuality."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
@@ -134,27 +134,24 @@ class ReportSummary(BaseModel):
     """
 
 
-class Report(BaseModel):
-    """The complete result of fact-checking an input."""
+class Result(BaseModel):
+    """The consolidated result of a fact-checking run: the verdicts and an overall read of them."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
 
-    input: Input
-    """The original input that was checked."""
-
     verdicts: list[Verdict]
-    """The verdict for each extracted claim, each carrying its claim and the evidence behind it."""
+    """The verdict for each checked claim, each carrying its claim and the evidence behind it."""
 
     revision: str | None = None
     """The input revised to correct its factual errors, or ``None`` when no revision was produced."""
 
     attribution: list[Source] | None = None
-    """Sources cited as the attribution report for the result, or ``None`` when the pipeline produces none."""
+    """Sources cited as attribution for the result, or ``None`` when the pipeline produces none."""
 
     @model_validator(mode="before")
     @classmethod
     def _drop_computed_summary(cls, data: object) -> object:
-        """Ignore a serialized ``summary`` on input so a dumped report can be reloaded.
+        """Ignore a serialized ``summary`` on input so a dumped result can be reloaded.
 
         The summary is computed from the verdicts, so it is recomputed rather than read back.
         """
@@ -165,7 +162,7 @@ class Report(BaseModel):
 
     @computed_field
     @property
-    def summary(self) -> ReportSummary:
+    def summary(self) -> ResultSummary:
         """Counts of the verdicts by label, with an overall factuality read."""
         supported = sum(verdict.label == "supported" for verdict in self.verdicts)
         refuted = sum(verdict.label == "refuted" for verdict in self.verdicts)
@@ -177,7 +174,7 @@ class Report(BaseModel):
             factual = True
         else:
             factual = None
-        return ReportSummary(
+        return ResultSummary(
             supported=supported,
             refuted=refuted,
             not_enough_evidence=not_enough_evidence,
