@@ -68,16 +68,17 @@ def build_prebuilt_graph(
 
     Args:
         pipeline: The prebuilt pipeline to build.
-        config: The run configuration, for the global model and Serper key.
+        config: The run configuration, for the global model (with its sampling) and Serper key.
         stack: The exit stack the chat client is registered on.
 
     Returns:
         The pipeline's runnable graph.
     """
+    model = config.model if isinstance(config.model, ModelSpec) else ModelSpec(name=config.model)
     chat = resolve_chat_client(
-        ModelSpec(),
+        model,
         RuntimeSpec(),
-        fallback_name=config.model or pipeline.default_model,
+        fallback_name=pipeline.default_model,
         global_runtime=config.runtime,
         stack=stack,
     )

@@ -6,9 +6,10 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from openfactcheck._core import OpenFactCheck
-    from openfactcheck.config import OpenFactCheckConfig
+    from openfactcheck.config import ModelSpec, OpenFactCheckConfig
 
 __all__ = [
+    "ModelSpec",
     "OpenFactCheck",
     "OpenFactCheckConfig",
 ]
@@ -20,6 +21,7 @@ __version__ = version("openfactcheck")
 _EXPORTS = {
     "OpenFactCheck": "openfactcheck._core",
     "OpenFactCheckConfig": "openfactcheck.config",
+    "ModelSpec": "openfactcheck.config",
 }
 
 

@@ -146,7 +146,11 @@ def test_serialization_round_trip() -> None:
     restored = Result.model_validate(data)
     assert restored.verdicts[0].label == "supported"
     assert restored.verdicts[0].evidence is not None
-    assert restored.verdicts[0].evidence.sources[0].content == "Scientific consensus"
+    restored_source = restored.verdicts[0].evidence.sources[0]
+    assert restored_source.content == "Scientific consensus"
+    assert isinstance(restored_source.metadata, WebMetadata)
+    assert restored_source.metadata.url == "https://x.com"
+    assert restored_source.metadata.title == "X"
 
 
 def test_frozen_model_rejects_mutation() -> None:

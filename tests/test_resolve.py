@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from pydantic import SecretStr
+from pytest_mock import MockerFixture
 
 from openfactcheck.chat import ChatClient
 from openfactcheck.components.registry import get_pipeline
@@ -51,3 +52,36 @@ def test_build_prebuilt_graph_builds_a_named_pipeline(monkeypatch: pytest.Monkey
     graph = build_prebuilt_graph(get_pipeline("factool"), OpenFactCheckConfig(), stack=AsyncExitStack())
 
     assert isinstance(graph, Graph)
+
+
+def test_build_prebuilt_graph_passes_the_configured_model_spec(
+    mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A ModelSpec on the config, sampling and all, is the spec handed to the chat client."""
+    monkeypatch.setenv("SERPER_API_KEY", "test-key")
+    spec = ModelSpec(name="openai/gpt-4o", temperature=0.2, max_output_tokens=256)
+    resolve = mocker.patch("openfactcheck.resolve.resolve_chat_client", wraps=resolve_chat_client)
+
+    build_prebuilt_graph(
+        get_pipeline("factool"),
+        OpenFactCheckConfig(pipeline="factool", model=spec),
+        stack=AsyncExitStack(),
+    )
+
+    assert resolve.call_args.args[0] is spec
+
+
+def test_build_prebuilt_graph_coerces_a_model_string_to_a_spec(
+    mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A ``"provider/model"`` string on the config becomes a spec carrying that name."""
+    monkeypatch.setenv("SERPER_API_KEY", "test-key")
+    resolve = mocker.patch("openfactcheck.resolve.resolve_chat_client", wraps=resolve_chat_client)
+
+    build_prebuilt_graph(
+        get_pipeline("factool"),
+        OpenFactCheckConfig(pipeline="factool", model="openai/gpt-4o"),
+        stack=AsyncExitStack(),
+    )
+
+    assert resolve.call_args.args[0].name == "openai/gpt-4o"

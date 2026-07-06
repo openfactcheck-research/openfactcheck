@@ -32,13 +32,15 @@ async def test_FactoolVerifier_factual_claim_is_supported() -> None:
     client = _FakeClient(SimpleNamespace(reasoning="ok", factuality=True, error="None", correction="None"))
     verifier = FactoolVerifier(client=client)
     claim = Claim(text="the earth is round")
+    evidence = Evidence(claim=claim, sources=[Source(content="it is round")])
 
-    verdict = await verifier(claim, Evidence(claim=claim, sources=[Source(content="it is round")]))
+    verdict = await verifier(claim, evidence)
 
     assert verdict.label == "supported"
     assert verdict.confidence is None
     assert verdict.error is None
     assert verdict.correction is None
+    assert verdict.evidence == evidence
 
 
 @pytest.mark.asyncio(loop_scope="function")
