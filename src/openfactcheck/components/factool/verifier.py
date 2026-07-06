@@ -73,6 +73,7 @@ class FactoolVerifier:
         )
         return Verdict(
             claim=claim,
+            evidence=evidence,
             label="supported" if result.factuality else "refuted",
             confidence=None,
             reasoning=result.reasoning,

@@ -9,8 +9,8 @@
     4. Config file (``openfactcheck.json`` or ``openfactcheck.yaml``)
     5. Field defaults
 
-Every field is a flat scalar, so any of them can come from the environment, the ``.env`` file, or a config
-file.
+Most fields are flat scalars, so they can come from the environment, the ``.env`` file, or a config file; the
+model may also be given as a full [`ModelSpec`][ModelSpec] to set sampling parameters alongside its name.
 """
 
 from typing import Literal
@@ -24,6 +24,7 @@ from pydantic_settings import (
     YamlConfigSettingsSource,
 )
 
+from openfactcheck.config.models import ModelSpec
 from openfactcheck.config.runtime import RuntimeSpec
 
 type PipelineName = str
@@ -70,8 +71,9 @@ class OpenFactCheckConfig(BaseSettings):
         case_sensitive=False,
     )
 
-    model: str | None = None
-    """Global default model as ``"provider/model"``. Unset lets each component use its own default."""
+    model: str | ModelSpec | None = None
+    """Global default model. A ``"provider/model"`` string, or a [`ModelSpec`][ModelSpec] to set sampling
+    parameters alongside the name. Unset lets each component use its own default."""
 
     verbosity: Literal["debug", "info", "warning", "error", "critical"] = "warning"
     """Log level for a run."""

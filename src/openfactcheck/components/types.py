@@ -6,9 +6,9 @@ terms of these types, so any implementation of one category produces what the
 next can take.
 """
 
-from typing import Literal, cast
+from typing import Annotated, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 
 class Input(BaseModel):
@@ -42,19 +42,29 @@ class Query(BaseModel):
 
 
 class SourceMetadata(BaseModel):
-    """Base metadata for a source. Subclass for specific source types."""
+    """Metadata for a source with no specific provenance. Subclass for specific source types."""
 
     model_config = ConfigDict(frozen=True, extra="forbid", use_attribute_docstrings=True)
+
+    kind: Literal["none"] = "none"
+    """Tag identifying the metadata type."""
 
 
 class WebMetadata(SourceMetadata):
     """Metadata for a web source."""
+
+    kind: Literal["web"] = "web"  # pyright: ignore[reportIncompatibleVariableOverride] - narrowing the discriminator is the point.
+    """Tag identifying the metadata type."""
 
     url: str
     """Address of the web page."""
 
     title: str | None = None
     """Title of the web page, or ``None`` when the source provides none."""
+
+
+type AnySourceMetadata = Annotated[SourceMetadata | WebMetadata, Field(discriminator="kind")]
+"""Any source metadata, resolved to the concrete type by its ``kind`` tag."""
 
 
 class Source(BaseModel):
@@ -65,7 +75,7 @@ class Source(BaseModel):
     content: str
     """The source's textual content."""
 
-    metadata: SourceMetadata = SourceMetadata()
+    metadata: AnySourceMetadata = SourceMetadata()
     """Structured metadata describing where the source came from."""
 
 
