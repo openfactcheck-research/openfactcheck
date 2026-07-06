@@ -1574,6 +1574,8 @@
       
         
       
+        
+      
     
     
     
@@ -1648,6 +1650,34 @@
     
   
     Builder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph/edges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Composition
   
 
     
@@ -2137,6 +2167,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Verifier
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.protocols.Aggregator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Aggregator
       
     </span>
   </a>
@@ -3563,6 +3604,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.components.protocols.Aggregator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Aggregator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.components.protocols.Reviser" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3800,6 +3852,58 @@ retriever that finds nothing should return
 
 
         <p>Decide whether evidence supports, refutes, or is insufficient for a claim.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.components.protocols.Aggregator" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Aggregator</span>
+
+
+<a href="#openfactcheck.components.protocols.Aggregator" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.Protocol">Protocol</span></code></p>
+
+
+
+        <p>Consolidate a run's per-claim verdicts into a single result.</p>
+<p>The final stage of a standard pipeline: it gathers the verdicts into a
+<a class="autorefs autorefs-internal" title="            Result" href="../../types/#openfactcheck.components.types.Result"><code>Result</code></a> whose summary counts them and reads off an overall
+judgment. Its default form does no model calls; it arranges what the
+pipeline produced.</p>
 
 
 

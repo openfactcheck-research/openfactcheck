@@ -1574,6 +1574,8 @@
       
         
       
+        
+      
     
     
     
@@ -1648,6 +1650,34 @@
     
   
     Builder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../graph/edges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Composition
   
 
     
@@ -2199,6 +2229,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;COMPONENTS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openfactcheck.components.factool.FactoolAggregator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FactoolAggregator
       
     </span>
   </a>
@@ -3697,6 +3738,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.components.factool.FactoolAggregator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FactoolAggregator
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.components.factool.FactoolClaimProcessor" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4012,7 +4064,10 @@ commit, and license. Import from <code>openfactcheck.components.factool</code>.<
 <a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="n">role</span><span class="o">=</span><span class="s2">&quot;verifier&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        <span class="n">default_model</span><span class="o">=</span><span class="n">default_model</span><span class="p">,</span>
 <a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="p">),</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="p">}</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="s2">&quot;aggregator&quot;</span><span class="p">:</span> <span class="n">Component</span><span class="p">(</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        <span class="n">factory</span><span class="o">=</span><span class="n">FactoolAggregator</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="s2">&quot;aggregator&quot;</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="p">),</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="p">}</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4024,6 +4079,59 @@ commit, and license. Import from <code>openfactcheck.components.factool</code>.<
 </div>
 
 
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="openfactcheck.components.factool.FactoolAggregator" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">FactoolAggregator</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#openfactcheck.components.factool.FactoolAggregator" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">FactoolAggregator</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Aggregator that gathers Factool's per-claim verdicts into a result.</p>
+<p>Wraps the verdicts in a <a class="autorefs autorefs-internal" title="            Result" href="../../types/#openfactcheck.components.types.Result"><code>Result</code></a> and lets it compute the summary,
+making no model calls.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-class">
 
