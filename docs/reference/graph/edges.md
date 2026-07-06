@@ -1,0 +1,3 @@
+# Composition
+
+::: openfactcheck.graph.edges

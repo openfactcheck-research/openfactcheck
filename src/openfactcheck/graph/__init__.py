@@ -35,8 +35,9 @@ Example:
     ```
 """
 
-from openfactcheck.graph.builder import AnyGraphBuilder, EdgePathBuilder, GraphBuilder
+from openfactcheck.graph.builder import AnyGraphBuilder, EdgePathBuilder, GraphBuilder, WiringItem
 from openfactcheck.graph.decision import Branch, Decision
+from openfactcheck.graph.edges import Predicate, Segment, branch, chain, loop, per_item
 from openfactcheck.graph.errors import (
     GraphBuildError,
     GraphError,
@@ -113,6 +114,17 @@ __all__ += [
     "StartNode",
     "Step",
     "StepContext",
+    "WiringItem",
+]
+
+# Composition combinators
+__all__ += [
+    "Predicate",
+    "Segment",
+    "branch",
+    "chain",
+    "loop",
+    "per_item",
 ]
 
 # Events

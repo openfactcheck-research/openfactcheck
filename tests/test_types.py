@@ -8,7 +8,7 @@ from openfactcheck.components.types import (
     Evidence,
     Input,
     Query,
-    Report,
+    Result,
     Source,
     Verdict,
     WebMetadata,
@@ -102,15 +102,12 @@ def test_verdict_carries_error_and_correction() -> None:
     assert verdict.correction == "The earth is round."
 
 
-def test_report() -> None:
+def test_result() -> None:
     claim = Claim(text="The earth is flat")
     evidence = Evidence(claim=claim, sources=[Source(content="Earth is a sphere")])
     verdict = Verdict(claim=claim, evidence=evidence, label="refuted", confidence=0.99, reasoning="Contradicted")
 
-    result = Report(
-        input=Input(content="The earth is flat"),
-        verdicts=[verdict],
-    )
+    result = Result(verdicts=[verdict])
     assert len(result.verdicts) == 1
     assert result.verdicts[0].label == "refuted"
     assert result.verdicts[0].evidence is not None
@@ -119,19 +116,15 @@ def test_report() -> None:
     assert result.attribution is None
 
 
-def test_report_empty() -> None:
-    result = Report(
-        input=Input(content=""),
-        verdicts=[],
-    )
+def test_result_empty() -> None:
+    result = Result(verdicts=[])
     assert result.verdicts == []
 
 
-def test_report_carries_revision_and_attribution() -> None:
+def test_result_carries_revision_and_attribution() -> None:
     sources = [Source(content="cited passage", metadata=WebMetadata(url="https://x.com"))]
 
-    result = Report(
-        input=Input(content="The sky is green"),
+    result = Result(
         verdicts=[],
         revision="The sky is blue",
         attribution=sources,
@@ -147,13 +140,10 @@ def test_serialization_round_trip() -> None:
     evidence = Evidence(claim=claim, sources=[source])
     verdict = Verdict(claim=claim, evidence=evidence, label="supported", confidence=0.9, reasoning="Well established")
 
-    result = Report(
-        input=Input(content="Water is wet"),
-        verdicts=[verdict],
-    )
+    result = Result(verdicts=[verdict])
 
     data = result.model_dump()
-    restored = Report.model_validate(data)
+    restored = Result.model_validate(data)
     assert restored.verdicts[0].label == "supported"
     assert restored.verdicts[0].evidence is not None
     assert restored.verdicts[0].evidence.sources[0].content == "Scientific consensus"

@@ -1,8 +1,7 @@
-"""Tests for the RARR nodes (the single-claim processor and the retrieve-and-revise subgraph).
+"""Tests for the RARR nodes: the single-claim processor and the flat retrieve-and-revise pipeline.
 
 The RARR components are replaced with plain async stubs (patched at the node module's import site) so the
-subgraph cycle runs without LLM or network calls. The components themselves are tested under
-``tests/components/rarr``.
+loop runs without LLM or network calls. The components themselves are tested under ``tests/components/rarr``.
 """
 
 import asyncio
@@ -12,8 +11,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from openfactcheck.components import nodes
-from openfactcheck.components.nodes.rarr import ResearchResult
-from openfactcheck.components.types import Claim, Evidence, Input, Query, Source, Verdict
+from openfactcheck.components.types import Claim, Evidence, Input, Query, Result, Source, Verdict
 from openfactcheck.graph import Graph, GraphBuilder, GraphEvent, RunFinished
 
 _RARR = "openfactcheck.components.nodes.rarr"
@@ -46,32 +44,22 @@ def _build(
     *,
     retrieve: Callable[[Query], object] = _retrieve,
     gate: Callable[..., object] = _gate,
-) -> Graph[Input, ResearchResult, None, None]:
+) -> Graph[Input, Result, None, None]:
     mocker.patch(f"{_RARR}.RARRClaimProcessor", return_value=_process)
     mocker.patch(f"{_RARR}.RARRQueryGenerator", return_value=_generate)
     mocker.patch(f"{_RARR}.RARRRetriever", return_value=retrieve)
     mocker.patch(f"{_RARR}.RARRAgreementGate", return_value=gate)
     mocker.patch(f"{_RARR}.RARREditor", return_value=_edit)
 
-    g = GraphBuilder(input_type=Input, output_type=ResearchResult, name="rarr-nodes")
-    claim_processor = nodes.rarr.claim_processor(g)
-    query_generator = nodes.rarr.query_generator(g, mocker.Mock())
-    loop = nodes.rarr.retriever_verifier_loop(g, mocker.Mock(), mocker.Mock())
-    g.add(
-        g.edge_from(g.start_node).to(claim_processor),
-        g.edge_from(claim_processor).to(query_generator),
-        g.edge_from(query_generator).to(loop),
-        g.edge_from(loop).to(g.end_node),
-    )
-    return g.build()
+    return nodes.rarr.build_graph(chat=mocker.Mock(), serper=mocker.Mock())
 
 
 def test_rarr_loop_revises_only_on_disagreement(mocker: MockerFixture) -> None:
     result = _build(mocker).run(Input(content="The sky is green."), state=None, deps=None)
 
     # E1 disagreed (edited); E2 agreed (left alone).
-    assert result.passage == "The sky is green. <fixed:E1>"
-    assert [verdict.label for verdict in result.gates] == ["refuted", "supported"]
+    assert result.revision == "The sky is green. <fixed:E1>"
+    assert [verdict.label for verdict in result.verdicts] == ["refuted", "supported"]
 
 
 def test_rarr_loop_threads_the_edited_passage(mocker: MockerFixture) -> None:
@@ -93,11 +81,11 @@ def test_rarr_loop_no_evidence_skips_the_cycle(mocker: MockerFixture) -> None:
 
     result = _build(mocker, retrieve=empty_retrieve).run(Input(content="The sky is green."), state=None, deps=None)
 
-    assert result.gates == ()
-    assert result.passage == "The sky is green."
+    assert result.verdicts == []
+    assert result.revision == "The sky is green."
 
 
-def test_rarr_nodes_astream_finishes_with_research_result(mocker: MockerFixture) -> None:
+def test_rarr_pipeline_astream_finishes_with_result(mocker: MockerFixture) -> None:
     graph = _build(mocker)
 
     async def collect() -> list[GraphEvent]:
@@ -106,9 +94,9 @@ def test_rarr_nodes_astream_finishes_with_research_result(mocker: MockerFixture)
     events = asyncio.run(collect())
 
     node_ids = {getattr(event, "node_id", None) for event in events}
-    assert "rarr/retriever_verifier_loop" in node_ids
+    assert "rarr/reviser" in node_ids
     assert isinstance(events[-1], RunFinished)
-    assert isinstance(events[-1].output, ResearchResult)
+    assert isinstance(events[-1].output, Result)
 
 
 @pytest.mark.asyncio(loop_scope="function")

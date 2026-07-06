@@ -10,18 +10,20 @@ from typing import Any
 from openfactcheck.chat import ChatClient
 from openfactcheck.components.factool import (
     PROVENANCE,
+    FactoolAggregator,
     FactoolClaimProcessor,
     FactoolQueryGenerator,
     FactoolRetriever,
     FactoolVerifier,
 )
 from openfactcheck.components.registry import Pipeline
-from openfactcheck.components.types import Claim, Evidence, Input, Query, Verdict
-from openfactcheck.graph import AnyGraphBuilder, Graph, GraphBuilder, Step, StepContext
+from openfactcheck.components.types import Claim, Evidence, Input, Query, Result, Verdict
+from openfactcheck.graph import AnyGraphBuilder, Graph, GraphBuilder, Step, StepContext, chain, per_item
 from openfactcheck.integrations.serper import SerperClient
 
 __all__ = [
     "PROVENANCE",
+    "aggregator",
     "build_graph",
     "claim_processor",
     "query_generator",
@@ -134,11 +136,34 @@ def verifier(
     return step
 
 
-def build_graph(*, chat: ChatClient, serper: SerperClient | None = None) -> Graph[Input, list[Verdict], None, None]:
+def aggregator(
+    g: AnyGraphBuilder,
+    *,
+    node_id: str = "factool/aggregator",
+) -> Step[list[Verdict], Result, Any, Any]:
+    """Build Factool's aggregator and lift it onto ``g`` as a node: collected verdicts in, a result out.
+
+    Args:
+        g: The builder to register the node onto.
+        node_id: Identifier for the node, used to wire edges and label events.
+
+    Returns:
+        The registered node, ready to wire with [`edge_from`][openfactcheck.graph.GraphBuilder.edge_from].
+    """
+    component = FactoolAggregator()
+
+    @g.step_node(node_id=node_id)
+    async def step(ctx: StepContext[list[Verdict], Any, Any]) -> Result:
+        return await component(ctx.inputs, on_partial=ctx.emit if ctx.streaming else None)
+
+    return step
+
+
+def build_graph(*, chat: ChatClient, serper: SerperClient | None = None) -> Graph[Input, Result, None, None]:
     """Wire Factool's knowledge-QA pipeline into a runnable graph.
 
     Extracts claims, then for each claim in parallel generates a query, retrieves evidence, and verifies,
-    collecting the per-claim verdicts at the end.
+    consolidating the per-claim verdicts into a result at the end.
 
     Args:
         chat: Chat client backing the claim processor, query generator, and verifier.
@@ -146,21 +171,23 @@ def build_graph(*, chat: ChatClient, serper: SerperClient | None = None) -> Grap
             environment.
 
     Returns:
-        A graph from input text to the list of per-claim verdicts.
+        A graph from input text to the consolidated result.
     """
-    g: GraphBuilder[Input, list[Verdict], None, None] = GraphBuilder(
-        input_type=Input, output_type=list[Verdict], name="factool"
-    )
-    cp = claim_processor(g, chat)
-    qg = query_generator(g, chat)
-    rt = retriever(g, serper)
-    vf = verifier(g, chat)
+    g: GraphBuilder[Input, Result, None, None] = GraphBuilder(input_type=Input, output_type=Result, name="factool")
     g.add(
-        g.edge_from(g.start_node).to(cp),
-        g.edge_from(cp).map().to(qg),
-        g.edge_from(qg).to(rt),
-        g.edge_from(rt).to(vf),
-        g.edge_from(vf).collect().to(g.end_node),
+        *chain(
+            g,
+            g.start_node,
+            claim_processor(g, chat),
+            per_item(
+                g,
+                query_generator(g, chat),
+                retriever(g, serper),
+                verifier(g, chat),
+            ),
+            aggregator(g),
+            g.end_node,
+        )
     )
     return g.build()
 
