@@ -583,6 +583,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.components.types.AnySourceMetadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-type_alias"></code>&nbsp;AnySourceMetadata
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.components.types.Input" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -686,6 +697,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" SourceMetadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.components.types.SourceMetadata.kind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kind
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -699,6 +727,17 @@
   
     <nav class="md-nav" aria-label=" WebMetadata">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.components.types.WebMetadata.kind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kind
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#openfactcheck.components.types.WebMetadata.url" class="md-nav__link">
@@ -3944,6 +3983,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#openfactcheck.components.types.AnySourceMetadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-type_alias"></code>&nbsp;AnySourceMetadata
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openfactcheck.components.types.Input" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4047,6 +4097,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" SourceMetadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.components.types.SourceMetadata.kind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kind
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -4060,6 +4127,17 @@
   
     <nav class="md-nav" aria-label=" WebMetadata">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openfactcheck.components.types.WebMetadata.kind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;kind
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#openfactcheck.components.types.WebMetadata.url" class="md-nav__link">
@@ -4447,6 +4525,27 @@ next can take.</p>
 
 
 
+<div class="doc doc-object doc-type_alias">
+
+
+
+<h2 id="openfactcheck.components.types.AnySourceMetadata" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-type_alias"></code>            <span class="doc doc-object-name doc-type_alias-name">AnySourceMetadata</span>
+
+
+<a href="#openfactcheck.components.types.AnySourceMetadata" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nc">AnySourceMetadata</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">SourceMetadata</span> <span class="o">|</span> <span class="n">WebMetadata</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">discriminator</span><span class="o">=</span><span class="n">kind</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Any source metadata, resolved to the concrete type by its <code>kind</code> tag.</p>
+    </div>
+
+</div>
+
 
 <div class="doc doc-object doc-class">
 
@@ -4705,7 +4804,7 @@ next can take.</p>
 
 
 
-        <p>Base metadata for a source. Subclass for specific source types.</p>
+        <p>Metadata for a source with no specific provenance. Subclass for specific source types.</p>
 
 
 
@@ -4724,6 +4823,31 @@ next can take.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="openfactcheck.components.types.SourceMetadata.kind" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">kind</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.components.types.SourceMetadata.kind" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Tag identifying the metadata type.</p>
+
+    </div>
+
+</div>
 
 
 
@@ -4772,6 +4896,31 @@ next can take.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="openfactcheck.components.types.WebMetadata.kind" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">kind</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#openfactcheck.components.types.WebMetadata.kind" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;web&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;web&#39;</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Tag identifying the metadata type.</p>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-attribute">
 
@@ -4908,7 +5057,7 @@ next can take.</p>
   </span>
 
 <a href="#openfactcheck.components.types.Source.metadata" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">metadata</span><span class="p">:</span> <span class="n">SourceMetadata</span> <span class="o">=</span> <span class="n">SourceMetadata</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">metadata</span><span class="p">:</span> <span class="n">AnySourceMetadata</span> <span class="o">=</span> <span class="n">SourceMetadata</span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">

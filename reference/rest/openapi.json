@@ -52,14 +52,14 @@
         }
       }
     },
-    "/api/v1/projects/": {
+    "/api/v1/projects": {
       "get": {
         "tags": [
           "projects"
         ],
         "summary": "List Projects",
         "description": "List all projects for the current user.",
-        "operationId": "list_projects_api_v1_projects__get",
+        "operationId": "list_projects_api_v1_projects_get",
         "parameters": [
           {
             "name": "limit",
@@ -111,7 +111,7 @@
                   "items": {
                     "$ref": "#/components/schemas/ProjectResponse"
                   },
-                  "title": "Response List Projects Api V1 Projects  Get"
+                  "title": "Response List Projects Api V1 Projects Get"
                 }
               }
             }
@@ -134,7 +134,7 @@
         ],
         "summary": "Create Project",
         "description": "Create a new project.",
-        "operationId": "create_project_api_v1_projects__post",
+        "operationId": "create_project_api_v1_projects_post",
         "parameters": [
           {
             "name": "authorization",
@@ -366,14 +366,14 @@
         }
       }
     },
-    "/api/v1/projects/{project_id}/workspaces/": {
+    "/api/v1/projects/{project_id}/workspaces": {
       "get": {
         "tags": [
           "workspaces"
         ],
         "summary": "List Workspaces",
         "description": "List all workspaces in a project.",
-        "operationId": "list_workspaces_api_v1_projects__project_id__workspaces__get",
+        "operationId": "list_workspaces_api_v1_projects__project_id__workspaces_get",
         "parameters": [
           {
             "name": "project_id",
@@ -412,7 +412,7 @@
                   "items": {
                     "$ref": "#/components/schemas/WorkspaceResponse"
                   },
-                  "title": "Response List Workspaces Api V1 Projects  Project Id  Workspaces  Get"
+                  "title": "Response List Workspaces Api V1 Projects  Project Id  Workspaces Get"
                 }
               }
             }
@@ -435,7 +435,7 @@
         ],
         "summary": "Create Workspace",
         "description": "Create a new workspace in a project.",
-        "operationId": "create_workspace_api_v1_projects__project_id__workspaces__post",
+        "operationId": "create_workspace_api_v1_projects__project_id__workspaces_post",
         "parameters": [
           {
             "name": "project_id",
@@ -843,10 +843,10 @@
     "/api/v1/projects/{project_id}/workspaces/{workspace_id}/run": {
       "post": {
         "tags": [
-          "workspaces"
+          "runs"
         ],
         "summary": "Run Pipeline",
-        "description": "Run a pipeline. Sets workspace run to running and starts execution.",
+        "description": "Run a pipeline and stream its events as newline-delimited JSON.\n\nThe response body is a stream of JSON events, one per line, ending with a ``finished`` event that\ncarries the run's success and final output.",
         "operationId": "run_pipeline_api_v1_projects__project_id__workspaces__workspace_id__run_post",
         "parameters": [
           {
@@ -897,89 +897,11 @@
           }
         },
         "responses": {
-          "202": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RunResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "workspaces"
-        ],
-        "summary": "Get Run",
-        "description": "Get the latest run state for a workspace.",
-        "operationId": "get_run_api_v1_projects__project_id__workspaces__workspace_id__run_get",
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "maxLength": 20,
-              "title": "Project Id"
-            }
-          },
-          {
-            "name": "workspace_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "maxLength": 20,
-              "title": "Workspace Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
-          }
-        ],
-        "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/RunResponse"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "title": "Response Get Run Api V1 Projects  Project Id  Workspaces  Workspace Id  Run Get"
-                }
+                "schema": {}
               }
             }
           },
@@ -996,14 +918,14 @@
         }
       }
     },
-    "/api/v1/secrets/": {
+    "/api/v1/secrets": {
       "get": {
         "tags": [
           "secrets"
         ],
         "summary": "List Secrets",
         "description": "List the user's global secrets, without their values.",
-        "operationId": "list_secrets_api_v1_secrets__get",
+        "operationId": "list_secrets_api_v1_secrets_get",
         "parameters": [
           {
             "name": "authorization",
@@ -1032,7 +954,7 @@
                   "items": {
                     "$ref": "#/components/schemas/SecretResponse"
                   },
-                  "title": "Response List Secrets Api V1 Secrets  Get"
+                  "title": "Response List Secrets Api V1 Secrets Get"
                 }
               }
             }
@@ -1380,14 +1302,14 @@
         }
       }
     },
-    "/api/v1/preferences/": {
+    "/api/v1/preferences": {
       "get": {
         "tags": [
           "preferences"
         ],
         "summary": "Get Preferences",
         "description": "Return the current user's preferences.",
-        "operationId": "get_preferences_api_v1_preferences__get",
+        "operationId": "get_preferences_api_v1_preferences_get",
         "parameters": [
           {
             "name": "authorization",
@@ -1435,7 +1357,7 @@
         ],
         "summary": "Update Preferences",
         "description": "Replace the current user's preferences.",
-        "operationId": "update_preferences_api_v1_preferences__put",
+        "operationId": "update_preferences_api_v1_preferences_put",
         "parameters": [
           {
             "name": "authorization",
@@ -1712,30 +1634,6 @@
         ],
         "title": "RunRequest",
         "description": "Request body for running a pipeline."
-      },
-      "RunResponse": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "title": "Status"
-          },
-          "output": {
-            "type": "string",
-            "title": "Output",
-            "default": ""
-          },
-          "error": {
-            "type": "string",
-            "title": "Error",
-            "default": ""
-          }
-        },
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "title": "RunResponse",
-        "description": "Run state returned to the frontend."
       },
       "SecretResponse": {
         "properties": {
