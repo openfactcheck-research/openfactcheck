@@ -9,7 +9,7 @@ PROJECTS_BASE = "/api/v1/projects"
 
 
 async def _create_project(client: AsyncClient, name: str = "Test Project") -> str:
-    response = await client.post(f"{PROJECTS_BASE}/", json={"name": name})
+    response = await client.post(PROJECTS_BASE, json={"name": name})
     assert response.status_code == 201
     return response.json()["id"]
 
@@ -19,7 +19,7 @@ def _ws_base(project_id: str) -> str:
 
 
 async def _create_workspace(client: AsyncClient, project_id: str, name: str = "Test WS") -> dict[str, object]:
-    response = await client.post(f"{_ws_base(project_id)}/", json={"name": name})
+    response = await client.post(_ws_base(project_id), json={"name": name})
     assert response.status_code == 201
     return response.json()
 
@@ -42,7 +42,7 @@ async def test_list_workspaces(client: AsyncClient) -> None:
     await _create_workspace(client, pid, "First")
     await _create_workspace(client, pid, "Second")
 
-    response = await client.get(f"{_ws_base(pid)}/")
+    response = await client.get(_ws_base(pid))
 
     assert response.status_code == 200
     workspaces = response.json()
@@ -55,7 +55,7 @@ async def test_list_workspaces_empty(client: AsyncClient) -> None:
     """GET returns an empty list when no workspaces exist."""
     pid = await _create_project(client)
 
-    response = await client.get(f"{_ws_base(pid)}/")
+    response = await client.get(_ws_base(pid))
 
     assert response.status_code == 200
     assert response.json() == []
@@ -150,7 +150,7 @@ async def test_create_workspace_enforces_limit(client: AsyncClient) -> None:
     for i in range(5):
         await _create_workspace(client, pid, f"WS {i}")
 
-    response = await client.post(f"{_ws_base(pid)}/", json={"name": "Overflow"})
+    response = await client.post(_ws_base(pid), json={"name": "Overflow"})
 
     assert response.status_code == 422
     assert response.json()["code"] == "WORKSPACE_LIMIT_REACHED"
@@ -170,6 +170,6 @@ async def test_reorder_workspaces(client: AsyncClient) -> None:
 
     assert response.status_code == 204
 
-    list_response = await client.get(f"{_ws_base(pid)}/")
+    list_response = await client.get(_ws_base(pid))
     names = [ws["name"] for ws in list_response.json()]
     assert names == ["C", "A", "B"]

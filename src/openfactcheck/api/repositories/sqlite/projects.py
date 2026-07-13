@@ -90,7 +90,7 @@ class SqliteProjectRepository:
         return await self.get(user_id, project_id)
 
     async def delete(self, user_id: str, project_id: str) -> bool:
-        """Delete the project and cascade-delete its workspaces and runs.
+        """Delete the project and cascade-delete its workspaces.
 
         Returns ``False`` if the project doesn't exist.
         """

@@ -7,8 +7,6 @@ from openfactcheck.api.models.user import AuthUser
 from openfactcheck.api.models.workspace import (
     Workspace,
     WorkspaceCreate,
-    WorkspaceRun,
-    WorkspaceRunStatus,
     WorkspaceSettings,
     WorkspaceUpdate,
 )
@@ -22,8 +20,6 @@ __all__ = [
     "Secret",
     "Workspace",
     "WorkspaceCreate",
-    "WorkspaceRun",
-    "WorkspaceRunStatus",
     "WorkspaceSettings",
     "WorkspaceUpdate",
 ]

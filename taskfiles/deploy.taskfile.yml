@@ -9,7 +9,7 @@ vars:
   ACCOUNTS_DIR: deployments/accounts
 
   # Deployment Types
-  ENVIRONMENT_DEPLOYS: base repositories
+  ENVIRONMENT_DEPLOYS: base
   ACCOUNT_DEPLOYS: secrets
 
   # Binaries
@@ -18,14 +18,11 @@ vars:
 tasks:
   _build:
     internal: true
-    desc: Build Lambda container images (skipped for non-base deployments)
+    desc: Build the API Lambda deployment zip (skipped for non-base deployments)
     status:
       - '[ "{{.DEP}}" != "" ] && [ "{{.DEP}}" != "base" ]'
     cmds:
       - task: :build:lambda
-        vars: {APP: 'api', TARGET: '{{.TARGET}}'}
-      - task: :build:lambda
-        vars: {APP: 'engine', TARGET: '{{.TARGET}}'}
 
   _prepare:
     internal: true

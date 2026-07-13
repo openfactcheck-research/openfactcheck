@@ -12,9 +12,14 @@ output "cognito_user_pool_client_id" {
   value       = aws_cognito_user_pool_client.openfactcheck_client.id
 }
 
-output "api_gateway_url" {
-  description = "API Gateway invoke URL"
-  value       = aws_apigatewayv2_stage.default.invoke_url
+output "api_function_url" {
+  description = "Lambda Function URL (origin; reachable only through CloudFront)"
+  value       = aws_lambda_function_url.api.function_url
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution serving the API custom domain"
+  value       = aws_cloudfront_distribution.api.id
 }
 
 output "dynamodb_table_name" {
@@ -30,11 +35,6 @@ output "dynamodb_users_table_name" {
 output "users_kms_key_arn" {
   description = "KMS key ARN for user secrets encryption"
   value       = aws_kms_key.users.arn
-}
-
-output "ecr_repository_url" {
-  description = "ECR repository URL for the API container image"
-  value       = data.aws_ecr_repository.api.repository_url
 }
 
 output "lambda_function_name" {

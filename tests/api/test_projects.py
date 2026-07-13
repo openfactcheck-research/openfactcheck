@@ -9,7 +9,7 @@ BASE = "/api/v1/projects"
 
 
 async def _create_project(client: AsyncClient, name: str = "Test Project") -> dict[str, object]:
-    response = await client.post(f"{BASE}/", json={"name": name})
+    response = await client.post(BASE, json={"name": name})
     assert response.status_code == 201
     return response.json()
 
@@ -29,7 +29,7 @@ async def test_list_projects(client: AsyncClient) -> None:
     await _create_project(client, "First")
     await _create_project(client, "Second")
 
-    response = await client.get(f"{BASE}/")
+    response = await client.get(BASE)
 
     assert response.status_code == 200
     projects = response.json()
@@ -40,7 +40,7 @@ async def test_list_projects(client: AsyncClient) -> None:
 
 async def test_list_projects_empty(client: AsyncClient) -> None:
     """GET /projects returns an empty list when no projects exist."""
-    response = await client.get(f"{BASE}/")
+    response = await client.get(BASE)
 
     assert response.status_code == 200
     assert response.json() == []
@@ -103,6 +103,6 @@ async def test_delete_project_not_found(client: AsyncClient) -> None:
 
 async def test_create_project_empty_name(client: AsyncClient) -> None:
     """POST /projects with an empty name returns 422."""
-    response = await client.post(f"{BASE}/", json={"name": ""})
+    response = await client.post(BASE, json={"name": ""})
 
     assert response.status_code == 422

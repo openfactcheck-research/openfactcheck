@@ -1,6 +1,6 @@
-"""Tests for the pipeline run endpoint (local isolated-subprocess execution)."""
+"""Tests for the pipeline run endpoint (HTTP newline-delimited JSON streaming)."""
 
-import asyncio
+import json
 from typing import Any
 
 import pytest
@@ -10,35 +10,48 @@ pytestmark = pytest.mark.asyncio(loop_scope="function")
 
 PROJECTS_BASE = "/api/v1/projects"
 
+# A pipeline of one print block: it needs no API keys, so it runs fully offline.
+_PRINT_PIPELINE = {
+    "blocks": {
+        "blocks": [
+            {"type": "text_print", "inputs": {"TEXT": {"block": {"type": "text", "fields": {"TEXT": "hi"}}}}},
+        ],
+    },
+}
+
 
 async def _make_workspace(client: AsyncClient) -> tuple[str, str]:
-    project_id = (await client.post(f"{PROJECTS_BASE}/", json={"name": "P"})).json()["id"]
-    workspace_id = (await client.post(f"{PROJECTS_BASE}/{project_id}/workspaces/", json={"name": "W"})).json()["id"]
+    project_id = (await client.post(PROJECTS_BASE, json={"name": "P"})).json()["id"]
+    workspace_id = (await client.post(f"{PROJECTS_BASE}/{project_id}/workspaces", json={"name": "W"})).json()["id"]
     return project_id, workspace_id
 
 
-async def _poll_run(client: AsyncClient, project_id: str, workspace_id: str) -> dict[str, Any]:
-    url = f"{PROJECTS_BASE}/{project_id}/workspaces/{workspace_id}/run"
-    for _ in range(200):
-        run = (await client.get(url)).json()
-        if run and run["status"] in {"completed", "failed"}:
-            return run
-        await asyncio.sleep(0.05)
-    raise AssertionError("run did not finish in time")
+def _events(body: str) -> list[dict[str, Any]]:
+    return [json.loads(line) for line in body.splitlines() if line.strip()]
 
 
-async def test_run_executes_pipeline_in_isolated_subprocess(client: AsyncClient) -> None:
+async def test_run_streams_events_as_ndjson(client: AsyncClient) -> None:
+    """A run streams its events as newline-delimited JSON, ending with a successful finished event."""
     project_id, workspace_id = await _make_workspace(client)
-    pipeline = {
-        "blocks": {"blocks": [{"type": "text_print", "inputs": {"TEXT": {"block": {"type": "text", "fields": {"TEXT": "hi"}}}}}]},
-    }
 
     response = await client.post(
         f"{PROJECTS_BASE}/{project_id}/workspaces/{workspace_id}/run",
-        json={"pipeline": pipeline},
+        json={"pipeline": _PRINT_PIPELINE},
     )
 
-    assert response.status_code == 202
-    run = await _poll_run(client, project_id, workspace_id)
-    assert run["status"] == "completed"
-    assert run["output"] == "hi"
+    assert response.status_code == 200
+    events = _events(response.text)
+    assert any(e["type"] == "output" and e["text"] == "hi" for e in events)
+    assert events[-1] == {"type": "finished", "success": True, "output": "hi", "error": None}
+
+
+async def test_run_unknown_workspace_returns_404(client: AsyncClient) -> None:
+    """A run against a nonexistent workspace is a 404 before any streaming begins."""
+    project_id = (await client.post(PROJECTS_BASE, json={"name": "P"})).json()["id"]
+
+    response = await client.post(
+        f"{PROJECTS_BASE}/{project_id}/workspaces/missing/run",
+        json={"pipeline": _PRINT_PIPELINE},
+    )
+
+    assert response.status_code == 404

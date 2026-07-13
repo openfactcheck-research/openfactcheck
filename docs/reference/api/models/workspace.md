@@ -1,21 +1,11 @@
 # Workspace
 
-A pipeline configuration scoped to a project. Each workspace carries settings, a
-content blob (the pipeline itself), and the latest run state.
+A pipeline configuration scoped to a project. Each workspace carries settings and a
+content blob (the pipeline itself).
 
 ## Data model/s
 
 ::: openfactcheck.api.models.workspace.Workspace
-    options:
-      show_root_heading: true
-      heading_level: 3
-
-::: openfactcheck.api.models.workspace.WorkspaceRun
-    options:
-      show_root_heading: true
-      heading_level: 3
-
-::: openfactcheck.api.models.workspace.WorkspaceRunStatus
     options:
       show_root_heading: true
       heading_level: 3

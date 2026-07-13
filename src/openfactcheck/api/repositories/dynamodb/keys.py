@@ -50,7 +50,7 @@ def project_sk(project_id: str) -> str:
 
 
 def workspace_pk(user_id: str, project_id: str) -> str:
-    """Partition key grouping all workspaces (and their runs) within a project."""
+    """Partition key grouping all workspaces within a project."""
     return f"USER#{user_id}#PROJECT#{project_id}"
 
 

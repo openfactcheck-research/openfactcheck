@@ -1,33 +1,46 @@
 # ##############################################################################
-# ECR Data Source — repository lives in deployments/repositories
-# ##############################################################################
-
-data "aws_ecr_repository" "api" {
-  name = "openfactcheck-api-${terraform.workspace}-${var.aws_region}"
-}
-
-data "aws_ecr_image" "api" {
-  repository_name = data.aws_ecr_repository.api.name
-  image_tag       = "latest"
-}
-
-# ##############################################################################
 # Lambda Function — API
 # ##############################################################################
 
+locals {
+  api_zip = "${path.module}/../artifacts/api/build/api.zip"
+}
+
 resource "aws_lambda_function" "api" {
-  function_name    = "openfactcheck-api-${terraform.workspace}-${var.aws_region}"
-  description      = var.build_version
-  role             = aws_iam_role.lambda_api.arn
-  package_type     = "Image"
-  image_uri        = "${data.aws_ecr_repository.api.repository_url}:latest"
-  source_code_hash = split(":", data.aws_ecr_image.api.image_digest)[1]
-  publish          = true
-  timeout          = 30
-  memory_size      = 256
+  function_name = "openfactcheck-api-${terraform.workspace}-${var.aws_region}"
+  description   = var.build_version
+  role          = aws_iam_role.lambda_api.arn
+
+  package_type      = "Zip"
+  runtime           = "python3.12"
+  architectures     = ["arm64"]
+  handler           = "run.sh"
+  s3_bucket         = aws_s3_bucket.artifacts.id
+  s3_key            = aws_s3_object.api.key
+  s3_object_version = aws_s3_object.api.version_id
+  source_code_hash  = filebase64sha256(local.api_zip)
+  layers            = [local.lwa_layer_arn]
+  publish           = true
+
+  # Runs fact-check pipelines in-process for the streaming run endpoint, so it needs the
+  # engine's headroom: the full Lambda timeout and the memory that keeps a run responsive.
+  timeout     = 900
+  memory_size = 2048
+
+  # Snapshot the initialized environment when a version is published so cold invocations
+  # resume from the snapshot instead of starting the runtime and app from scratch.
+  snap_start {
+    apply_on = "PublishedVersions"
+  }
 
   environment {
     variables = {
+      # Lambda Web Adapter: wrap the runtime, stream responses, and gate readiness on /health.
+      AWS_LAMBDA_EXEC_WRAPPER      = "/opt/bootstrap"
+      AWS_LWA_INVOKE_MODE          = "response_stream"
+      AWS_LWA_READINESS_CHECK_PATH = "/health"
+      PORT                         = "8080"
+
       OPENFACTCHECK_MODE                      = "cloud"
       OPENFACTCHECK_DYNAMODB_TABLE_NAME       = aws_dynamodb_table.openfactcheck.name
       OPENFACTCHECK_DYNAMODB_USERS_TABLE_NAME = aws_dynamodb_table.openfactcheck_users.name
@@ -37,7 +50,7 @@ resource "aws_lambda_function" "api" {
       OPENFACTCHECK_COGNITO_USER_POOL_ID      = aws_cognito_user_pool.openfactcheck.id
       OPENFACTCHECK_COGNITO_CLIENT_ID         = aws_cognito_user_pool_client.openfactcheck_client.id
       OPENFACTCHECK_CORS_ORIGINS              = jsonencode(local.cors_origins)
-      OPENFACTCHECK_STATE_MACHINE_ARN         = aws_sfn_state_machine.pipeline.arn
+      OPENFACTCHECK_EXTERNAL_HOST             = local.api_domain
       OPENFACTCHECK_DEBUG                     = "false"
       OPENFACTCHECK_AUTH_BYPASS               = "false"
     }
@@ -45,6 +58,25 @@ resource "aws_lambda_function" "api" {
 
   tags = {
     Name = "OpenFactCheck - Lambda API - ${terraform.workspace} - ${var.aws_region}"
+  }
+}
+
+# ##############################################################################
+# Function URL — streamed via the Lambda Web Adapter, fronted by CloudFront
+# ##############################################################################
+
+resource "aws_lambda_function_url" "api" {
+  function_name      = aws_lambda_function.api.function_name
+  qualifier          = aws_lambda_alias.api_live.name
+  authorization_type = "NONE"
+  invoke_mode        = "RESPONSE_STREAM"
+
+  # With authorization_type NONE the provider auto-adds the public-access permissions
+  # (lambda:InvokeFunctionUrl plus lambda:InvokeFunction via the URL), so no separate
+  # aws_lambda_permission is needed. Replacing the function cascade-deletes the URL and
+  # those permissions server-side, so recreate the URL with it for a consistent apply.
+  lifecycle {
+    replace_triggered_by = [aws_lambda_function.api]
   }
 }
 
@@ -57,76 +89,4 @@ resource "aws_lambda_alias" "api_live" {
   description      = "OpenFactCheck API Current Release"
   function_name    = aws_lambda_function.api.arn
   function_version = aws_lambda_function.api.version
-}
-
-# ##############################################################################
-# Lambda Permissions — Allow API Gateway to invoke via LIVE alias
-# ##############################################################################
-
-resource "aws_lambda_permission" "api_gateway_default" {
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.api.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.openfactcheck.execution_arn}/*/$default"
-  qualifier     = "LIVE"
-}
-
-resource "aws_lambda_permission" "api_gateway_proxy" {
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.api.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.openfactcheck.execution_arn}/*/*/{proxy+}"
-  qualifier     = "LIVE"
-}
-
-# ##############################################################################
-# ECR Data Source — Engine
-# ##############################################################################
-
-data "aws_ecr_repository" "engine" {
-  name = "openfactcheck-engine-${terraform.workspace}-${var.aws_region}"
-}
-
-data "aws_ecr_image" "engine" {
-  repository_name = data.aws_ecr_repository.engine.name
-  image_tag       = "latest"
-}
-
-# ##############################################################################
-# Lambda Function — Engine (Step Functions-invoked pipeline executor)
-# ##############################################################################
-
-resource "aws_lambda_function" "engine" {
-  function_name    = "openfactcheck-engine-${terraform.workspace}-${var.aws_region}"
-  description      = var.build_version
-  role             = aws_iam_role.lambda_engine.arn
-  package_type     = "Image"
-  image_uri        = "${data.aws_ecr_repository.engine.repository_url}:latest"
-  source_code_hash = split(":", data.aws_ecr_image.engine.image_digest)[1]
-  publish          = true
-  timeout          = 900  # 15 min — max Lambda timeout for long pipelines
-  memory_size      = 2048 # CPU scales with memory; 512 MB starved the per-run SDK import and TLS handshake.
-
-  environment {
-    variables = {
-      OPENFACTCHECK_DYNAMODB_USERS_TABLE_NAME = aws_dynamodb_table.openfactcheck_users.name
-      OPENFACTCHECK_SECRETS_KMS_KEY_ID        = aws_kms_key.users.arn
-      OPENFACTCHECK_DYNAMODB_REGION           = var.aws_region
-    }
-  }
-
-  tags = {
-    Name = "OpenFactCheck - Lambda Engine - ${terraform.workspace} - ${var.aws_region}"
-  }
-}
-
-# ##############################################################################
-# Lambda Alias — Engine LIVE
-# ##############################################################################
-
-resource "aws_lambda_alias" "engine_live" {
-  name             = "LIVE"
-  description      = "OpenFactCheck Engine Current Release"
-  function_name    = aws_lambda_function.engine.arn
-  function_version = aws_lambda_function.engine.version
 }
