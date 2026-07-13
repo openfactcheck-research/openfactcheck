@@ -42,7 +42,6 @@ class WorkspaceRow(Base):
     sort_order: Mapped[int] = mapped_column(Integer)
     settings_json: Mapped[str] = mapped_column(Text, default="{}")
     content_json: Mapped[str] = mapped_column(Text, default="{}")
-    run_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime)
     updated_at: Mapped[datetime] = mapped_column(DateTime)
 

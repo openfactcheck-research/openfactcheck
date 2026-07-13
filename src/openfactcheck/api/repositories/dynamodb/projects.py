@@ -64,7 +64,7 @@ class DynamoProjectRepository(BaseDynamoRepository):
         return Project.model_validate(attrs) if attrs else None
 
     async def delete(self, user_id: str, project_id: str) -> bool:
-        """Delete the project and cascade-delete its workspaces and runs.
+        """Delete the project and cascade-delete its workspaces.
 
         Returns ``False`` if the project doesn't exist.
         """
@@ -72,7 +72,7 @@ class DynamoProjectRepository(BaseDynamoRepository):
         if not deleted:
             return False
 
-        # Cascade: delete every child item (workspaces and runs) under this project.
+        # Cascade: delete every child workspace under this project.
         children = await self._query_by_pk(workspace_pk(user_id, project_id), projection="PK, SK")
         if children:
             await self._batch_delete(children)

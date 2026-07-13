@@ -25,14 +25,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# api is the shared HTTP layer; local and cloud are the interchangeable repository backends.
 api = [
     "fastapi>=0.137.1",
     "uvicorn[standard]>=0.49",
     "pyjwt[crypto]>=2.13",
-    "sqlalchemy[asyncio]>=2.0",
-    "aiosqlite>=0.22",
-    "mangum>=0.21",
     "cryptography>=48.0.1",
+]
+local = [
+    "aiosqlite>=0.22",
+    "sqlalchemy[asyncio]>=2.0",
 ]
 cloud = [
     "boto3>=1.43",
@@ -287,7 +289,7 @@ docstring-code-line-length = "dynamic"
 ###############################################################################
 [dependency-groups]
 dev = [
-    "openfactcheck[api,cloud]",
+    "openfactcheck[api,local,cloud]",
     "pyright>=1.1",
     "pre-commit>=4.6",
     "pytest>=9.1.0",

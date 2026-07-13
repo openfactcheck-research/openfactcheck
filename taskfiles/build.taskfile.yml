@@ -4,70 +4,31 @@ version: "3"
 
 tasks:
   lambda:
-    desc: Build + push container image (APP=<name>, TARGET=<environment> for ECR push)
-    requires:
-      vars: [APP]
+    desc: Build all Lambda deployment zips (one per deployments/artifacts/*/)
     cmds:
       - |
         source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
-        set_target "{{.APP}}"
-        {{if .TARGET}}set_workspace "{{.TARGET}}"{{end}}
-
-        if build_needed; then
-            assemble
-            build_image
-            write_hash
-            {{if .TARGET}}
-            ecr_login
-            push_all
-            write_tfvars
-            {{end}}
-        else
-            c_echo "$COLOR_YELLOW" "[{{.APP}}] Skipping build — source unchanged"
-        fi
+        build_all
+        write_tfvars
 
   lambda:force:
-    desc: Build + push container image (APP=<name>, always rebuilds, TARGET=<environment> for ECR push)
-    requires:
-      vars: [APP]
+    desc: Build all Lambda deployment zips, ignoring the change hash
     cmds:
       - |
         source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
-        set_target "{{.APP}}"
-        {{if .TARGET}}set_workspace "{{.TARGET}}"{{end}}
-
-        assemble
-        build_image
-        write_hash
-        {{if .TARGET}}
-        ecr_login
-        push_all
+        build_all force
         write_tfvars
-        {{end}}
-
-  lambda:assemble:
-    desc: Assemble build/ directory only (APP=<name>)
-    requires:
-      vars: [APP]
-    cmds:
-      - |
-        source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
-        set_target "{{.APP}}"
-        assemble
 
   clean:
-    desc: Remove build artifacts (APP=<name>)
-    requires:
-      vars: [APP]
+    desc: Remove all Lambda build artifacts
     cmds:
       - |
         source taskfiles/build.helpers.sh 2>/dev/null || source ./taskfiles/build.helpers.sh
-        set_target "{{.APP}}"
-        clean
+        clean_all
 
   default:
     desc: Show available build tasks
     cmds:
       - task: :print:info
         vars:
-          MSG: "Usage: task build:lambda APP=api [TARGET=devhasan]"
+          MSG: "Usage: task build:lambda [force] — builds every deployments/artifacts/*/"

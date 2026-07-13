@@ -10,7 +10,6 @@ from openfactcheck.api.models import (
     Secret,
     Workspace,
     WorkspaceCreate,
-    WorkspaceRun,
     WorkspaceUpdate,
 )
 
@@ -42,7 +41,7 @@ class ProjectRepository(Protocol):
         ...
 
     async def delete(self, user_id: str, project_id: str) -> bool:
-        """Delete the project and cascade-delete its workspaces and runs.
+        """Delete the project and cascade-delete its workspaces.
 
         Returns ``False`` if the project doesn't exist.
         """
@@ -99,10 +98,6 @@ class WorkspaceRepository(Protocol):
         Each ID in ``ordered_ids`` is numbered ``1..N``. IDs not in the list keep
         their current ``sort_order``.
         """
-        ...
-
-    async def set_run(self, user_id: str, project_id: str, workspace_id: str, run: WorkspaceRun) -> None:
-        """Replace the workspace's latest run state with the given run."""
         ...
 
 

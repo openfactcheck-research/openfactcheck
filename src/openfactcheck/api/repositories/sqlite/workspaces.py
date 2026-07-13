@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from openfactcheck.api.models import (
     Workspace,
     WorkspaceCreate,
-    WorkspaceRun,
     WorkspaceUpdate,
 )
 from openfactcheck.api.repositories.constants import (
@@ -200,18 +199,4 @@ class SqliteWorkspaceRepository:
                     )
                     .values(sort_order=index, updated_at=datetime.now(UTC)),
                 )
-            await session.commit()
-
-    async def set_run(self, user_id: str, project_id: str, workspace_id: str, run: WorkspaceRun) -> None:
-        """Replace the workspace's latest run state with the given run."""
-        async with self._session_factory() as session:
-            await session.execute(
-                update(WorkspaceRow)
-                .where(
-                    WorkspaceRow.id == workspace_id,
-                    WorkspaceRow.user_id == user_id,
-                    WorkspaceRow.project_id == project_id,
-                )
-                .values(run_json=run.model_dump_json(), updated_at=datetime.now(UTC)),
-            )
             await session.commit()

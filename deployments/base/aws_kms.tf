@@ -54,9 +54,9 @@ resource "aws_kms_key" "users" {
         }
       },
       {
-        Sid       = "EngineDecryptSecrets"
+        Sid       = "APIDecryptSecrets"
         Effect    = "Allow"
-        Principal = { AWS = aws_iam_role.lambda_engine.arn }
+        Principal = { AWS = aws_iam_role.lambda_api.arn }
         Action    = ["kms:Decrypt", "kms:DescribeKey"]
         Resource  = "*"
       },

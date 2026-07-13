@@ -3,7 +3,7 @@
 from openfactcheck.engine import handlers
 from openfactcheck.engine.block import Block
 from openfactcheck.engine.errors import EngineError, UnknownBlockError
-from openfactcheck.engine.executor import ExecutionResult, execute_pipeline
+from openfactcheck.engine.executor import ExecutionResult, execute_pipeline, stream_pipeline
 
 __all__ = [
     "Block",
@@ -12,4 +12,5 @@ __all__ = [
     "UnknownBlockError",
     "execute_pipeline",
     "handlers",
+    "stream_pipeline",
 ]

@@ -6,7 +6,6 @@ from datetime import UTC, datetime
 from openfactcheck.api.models import (
     Workspace,
     WorkspaceCreate,
-    WorkspaceRun,
     WorkspaceUpdate,
 )
 from openfactcheck.api.repositories.constants import (
@@ -155,11 +154,3 @@ class DynamoWorkspaceRepository(BaseDynamoRepository):
                 )
 
         await asyncio.to_thread(_reorder)
-
-    async def set_run(self, user_id: str, project_id: str, workspace_id: str, run: WorkspaceRun) -> None:
-        """Replace the workspace's latest run state with the given run."""
-        await self._update(
-            workspace_pk(user_id, project_id),
-            workspace_sk(workspace_id),
-            {"run": run.model_dump(mode="json")},
-        )

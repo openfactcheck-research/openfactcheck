@@ -81,5 +81,11 @@ jobs:
           aws configure set aws_session_token "$AWS_SESSION_TOKEN" --profile hasaniqbal-dev
           aws configure set region us-east-1 --profile hasaniqbal-dev
 
+      - name: Set up QEMU (arm64 emulation for the Lambda zip build)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and deploy
         run: task deploy TARGET=production AUTO_APPROVE=true

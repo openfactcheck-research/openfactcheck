@@ -26,7 +26,7 @@ _MIN_HINT_LENGTH = 8
 # ---------------------------------------------------------------------------
 
 
-@router.get("/")
+@router.get("")
 async def list_secrets(
     user: Annotated[AuthUser, Depends(get_current_user)],
     repo: Annotated[SecretRepository, Depends(get_secret_repo)],

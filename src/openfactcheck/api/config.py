@@ -15,6 +15,11 @@ class APIConfig(BaseSettings):
     port: int = 8000
     debug: bool = False
 
+    # Public host the app is reached at (e.g. behind CloudFront + a Lambda Function URL, which hide
+    # the real host). Used to build redirects and absolute URLs on the public domain. Empty = use the
+    # request's own Host (correct for local and any direct-host deployment).
+    external_host: str = ""
+
     # CORS
     cors_origins: list[str] = ["http://localhost:3001"]
 
@@ -24,15 +29,12 @@ class APIConfig(BaseSettings):
     cognito_user_pool_id: str = ""
     cognito_client_id: str = ""
 
-    # Mode: "local" (SQLite, in-process execution) or "cloud" (DynamoDB, Step Functions)
+    # Mode: "local" (SQLite storage) or "cloud" (DynamoDB storage)
     mode: Literal["local", "cloud"] = "local"
     sqlite_path: str = "~/.openfactcheck/data.db"
     dynamodb_table_name: str = "openfactcheck"
     dynamodb_users_table_name: str = "openfactcheck-users"  # Dedicated table for user settings and secrets.
     dynamodb_region: str = "us-east-1"
-
-    # Run
-    state_machine_arn: str = ""
 
     # Secrets encryption
     secrets_kms_key_id: str = ""  # KMS key id or ARN, used in "cloud" mode.

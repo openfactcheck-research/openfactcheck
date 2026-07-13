@@ -6,27 +6,26 @@ source "taskfiles/common.helpers.sh" 2>/dev/null || source "${BASH_SOURCE%/*}/co
 # ============================================================================
 # Build Helper Functions
 #
-# Generic container build system. Each target has:
-#   deployments/containers/<target>/Dockerfile
-#   deployments/containers/<target>/manifest.sh   — defines what to assemble
-#   deployments/containers/<target>/build/         — assembled output (gitignored)
-#   deployments/containers/<target>/.hash          — source hash for skip logic
+# Builds Lambda deployment zips, one per directory under deployments/artifacts/.
+# Each target <name> has:
+#   deployments/artifacts/<name>/Dockerfile    — assembles + zips in the runtime image
+#   deployments/artifacts/<name>/run.sh         — handler startup script
+#   deployments/artifacts/<name>/manifest.sh    — defines the build context
+#   deployments/artifacts/<name>/build/         — build context + exported zip (gitignored)
+#   deployments/artifacts/<name>/.hash          — source hash for skip logic
+#
+# Dependencies are installed inside the arm64 Lambda runtime image (their exact native
+# builds) and zipped there deterministically; only the zip is exported.
 #
 # Usage:
 #   source taskfiles/build.helpers.sh
-#   set_target "api"
-#   set_workspace "devhasan"     # optional — enables ECR push
-#   assemble
-#   build_image
-#   push_image                   # only if workspace is set
-#   write_hash
+#   build_all            # build every target (skips unchanged)
+#   build_all force      # build every target, ignoring the change hash
+#   clean_all            # remove every target's build/ and hash
 # ============================================================================
 
 PROJECT_ROOT=$(pwd)
-ENVIRONMENTS_DIR="${PROJECT_ROOT}/deployments/environments"
-
-# Collected image refs for parallel push
-declare -a IMAGE_REFS=()
+ARTIFACTS_ROOT="${PROJECT_ROOT}/deployments/artifacts"
 
 # ============================================================================
 # Target setup
@@ -36,73 +35,30 @@ set_target() {
     local target="$1"
 
     if [[ -z "$target" ]]; then
-        c_echo "$COLOR_RED" "Error: TARGET is required"
+        c_echo "$COLOR_RED" "Error: target is required"
         exit 1
     fi
 
     TARGET="$target"
-    CONTAINER_DIR="${PROJECT_ROOT}/deployments/containers/${TARGET}"
-    BUILD_DIR="${CONTAINER_DIR}/build"
-    HASH_FILE="${CONTAINER_DIR}/.hash"
-    MANIFEST="${CONTAINER_DIR}/manifest.sh"
+    TARGET_DIR="${ARTIFACTS_ROOT}/${TARGET}"
+    BUILD_DIR="${TARGET_DIR}/build"
+    HASH_FILE="${TARGET_DIR}/.hash"
+    MANIFEST="${TARGET_DIR}/manifest.sh"
+    DOCKERFILE="${TARGET_DIR}/Dockerfile"
 
-    if [[ ! -f "${CONTAINER_DIR}/Dockerfile" ]]; then
-        c_echo "$COLOR_RED" "Error: No Dockerfile found at ${CONTAINER_DIR}/Dockerfile"
-        exit 1
-    fi
+    for f in "${TARGET_DIR}/run.sh" "$DOCKERFILE" "$MANIFEST"; do
+        if [[ ! -f "$f" ]]; then
+            c_echo "$COLOR_RED" "Error: missing $f"
+            exit 1
+        fi
+    done
 
-    if [[ ! -f "$MANIFEST" ]]; then
-        c_echo "$COLOR_RED" "Error: No manifest.sh found at ${MANIFEST}"
-        exit 1
-    fi
-
-    # Default image tag (overridden if workspace is set)
-    IMAGE_TAG="openfactcheck-${TARGET}:latest"
-
-    export TARGET CONTAINER_DIR BUILD_DIR HASH_FILE MANIFEST IMAGE_TAG
-}
-
-set_workspace() {
-    local workspace="$1"
-
-    if [[ -z "$workspace" ]]; then
-        c_echo "$COLOR_RED" "Error: WORKSPACE is required"
-        exit 1
-    fi
-
-    local env_tfvars="${ENVIRONMENTS_DIR}/${workspace}.tfvars.json"
-    if [[ ! -f "$env_tfvars" ]]; then
-        c_echo "$COLOR_RED" "Error: Missing workspace tfvars: $env_tfvars"
-        exit 1
-    fi
-
-    WORKSPACE="$workspace"
-    AWS_ACCOUNT="$(jq -r '.aws_account' "$env_tfvars")"
-    AWS_REGION="$(jq -r '.aws_region' "$env_tfvars")"
-    AWS_PROFILE="$(jq -r '.aws_profile' "$env_tfvars")"
-
-    ECR_REPO_NAME="openfactcheck-${TARGET}-${WORKSPACE}-${AWS_REGION}"
-    ECR_REPO_URL="${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}"
-    IMAGE_TAG="${ECR_REPO_URL}:latest"
-
-    export WORKSPACE AWS_ACCOUNT AWS_REGION AWS_PROFILE ECR_REPO_NAME ECR_REPO_URL IMAGE_TAG
+    export TARGET TARGET_DIR BUILD_DIR HASH_FILE MANIFEST DOCKERFILE
 }
 
 # ============================================================================
-# Hashing
+# Hashing (change detection)
 # ============================================================================
-
-hash_dir() {
-    local dir="$1"
-    (
-        cd "$dir"
-        find . -type f -print0 \
-            | sort -z \
-            | xargs -0 sha256sum \
-            | sha256sum \
-            | awk '{print $1}'
-    )
-}
 
 compute_source_hash() {
     # manifest.sh must define SOURCE_PATHS as an array
@@ -118,17 +74,14 @@ compute_source_hash() {
 }
 
 build_needed() {
-    local new_hash
+    local new_hash old_hash
     new_hash=$(compute_source_hash)
+    old_hash=$(cat "$HASH_FILE" 2>/dev/null)
 
-    if [[ -f "$HASH_FILE" ]]; then
-        local old_hash
-        old_hash=$(cat "$HASH_FILE")
-        if [[ "$new_hash" == "$old_hash" ]]; then
-            return 1  # not needed
-        fi
+    # Rebuild unless the source is unchanged and a zip is already present.
+    if [[ "$new_hash" == "$old_hash" ]] && ls "$BUILD_DIR"/*.zip >/dev/null 2>&1; then
+        return 1  # not needed
     fi
-
     return 0  # needed
 }
 
@@ -139,108 +92,85 @@ write_hash() {
 }
 
 # ============================================================================
-# Assemble
+# Build one target — assemble the context, zip it in Docker, export the zip
 # ============================================================================
 
 assemble() {
-    c_echo "$COLOR_GREEN" "[$TARGET] Assembling build/"
-
+    c_echo "$COLOR_GREEN" "[$TARGET] Assembling build context"
     rm -rf "$BUILD_DIR"
     mkdir -p "$BUILD_DIR"
-
-    # Clean caches before assembly
-    find "${PROJECT_ROOT}/src" -type d -name '__pycache__' -prune -exec rm -rf {} + 2>/dev/null || true
-    find "${PROJECT_ROOT}/src" -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete 2>/dev/null || true
 
     # manifest.sh must define assemble_target()
     source "$MANIFEST"
     assemble_target
-
-    c_echo "$COLOR_GREEN" "[$TARGET] Assembled ($(du -sh "$BUILD_DIR" | awk '{print $1}'))"
 }
 
-# ============================================================================
-# Docker build
-# ============================================================================
-
-build_image() {
-    c_echo "$COLOR_GREEN" "[$TARGET] Building Docker image: $IMAGE_TAG"
+build_zip() {
+    c_echo "$COLOR_GREEN" "[$TARGET] Building deployment zip in Docker (linux/arm64)"
 
     docker build \
-        --platform linux/amd64 \
-        --provenance=false \
-        -f "${CONTAINER_DIR}/Dockerfile" \
-        -t "$IMAGE_TAG" \
-        "$BUILD_DIR"
+        --platform linux/arm64 \
+        --target export \
+        --output "type=local,dest=${BUILD_DIR}" \
+        -f "$DOCKERFILE" \
+        "$BUILD_DIR" || {
+        c_echo "$COLOR_RED" "[$TARGET] Docker build failed!"
+        exit 1
+    }
 
-    if [[ $? -eq 0 ]]; then
-        c_echo "$COLOR_GREEN" "[$TARGET] Build success!"
-        IMAGE_REFS+=("$IMAGE_TAG")
-    else
-        c_echo "$COLOR_RED" "[$TARGET] Build failed!"
+    if ! ls "$BUILD_DIR"/*.zip >/dev/null 2>&1; then
+        c_echo "$COLOR_RED" "[$TARGET] No zip produced"
         exit 1
     fi
+
+    # Keep only the exported zip; the assembled context was only Docker build input.
+    find "$BUILD_DIR" -mindepth 1 -maxdepth 1 ! -name '*.zip' -exec rm -rf {} +
+
+    c_echo "$COLOR_GREEN" "[$TARGET] Built $(du -h "$BUILD_DIR"/*.zip | awk '{print $2" ("$1")"}')"
+}
+
+build_one() {
+    assemble
+    build_zip
+    write_hash
 }
 
 # ============================================================================
-# ECR login + push
+# Build / clean every target under deployments/artifacts/
 # ============================================================================
 
-ecr_login() {
-    local account="${1:-$AWS_ACCOUNT}"
-    local region="${2:-$AWS_REGION}"
+build_all() {
+    local force="$1" dir target built=0
 
-    c_echo "$COLOR_GREEN" "Logging into AWS ECR ($account / $region / $AWS_PROFILE)"
-    aws ecr get-login-password --region "$region" --profile "$AWS_PROFILE" \
-        | docker login --username AWS --password-stdin \
-          "${account}.dkr.ecr.${region}.amazonaws.com"
-}
+    for dir in "$ARTIFACTS_ROOT"/*/; do
+        [[ -d "$dir" ]] || continue
+        target=$(basename "$dir")
+        set_target "$target"
 
-push_image() {
-    local image_ref="$1"
-    local retries="${2:-1}"
-    local attempt=0
-
-    while true; do
-        if docker push "$image_ref"; then
-            c_echo "$COLOR_GREEN" "[$TARGET] Pushed: $image_ref"
-            return 0
+        if [[ "$force" == "force" ]] || build_needed; then
+            build_one
+            built=$((built + 1))
+        else
+            c_echo "$COLOR_YELLOW" "[$target] Skipping build — source unchanged"
         fi
-
-        attempt=$((attempt + 1))
-        if (( attempt > retries )); then
-            c_echo "$COLOR_RED" "[$TARGET] Push failed after $attempt attempt(s): $image_ref"
-            return 1
-        fi
-
-        c_echo "$COLOR_YELLOW" "[$TARGET] Push failed; re-login and retry ($attempt/$retries)"
-        ecr_login
     done
-}
 
-push_all() {
-    if [[ ${#IMAGE_REFS[@]} -eq 0 ]]; then
-        c_echo "$COLOR_YELLOW" "No images to push"
-        return 0
+    if [[ "$built" -eq 0 ]]; then
+        c_echo "$COLOR_YELLOW" "All targets up to date"
     fi
-
-    c_echo "$COLOR_GREEN" "Pushing ${#IMAGE_REFS[@]} image(s)"
-
-    for ref in "${IMAGE_REFS[@]}"; do
-        push_image "$ref" 3
-    done
-
-    c_echo "$COLOR_GREEN" "All images pushed!"
 }
 
-# ============================================================================
-# Clean
-# ============================================================================
+clean_all() {
+    local dir target
 
-clean() {
-    rm -rf "$BUILD_DIR"
-    rm -f "$HASH_FILE"
-    c_echo "$COLOR_GREEN" "[$TARGET] Cleaned build/ and hash"
+    for dir in "$ARTIFACTS_ROOT"/*/; do
+        [[ -d "$dir" ]] || continue
+        target=$(basename "$dir")
+        set_target "$target"
+        rm -rf "$BUILD_DIR"
+        rm -f "$HASH_FILE"
+        c_echo "$COLOR_GREEN" "[$target] Cleaned build/ and hash"
+    done
 }
 
 # ============================================================================

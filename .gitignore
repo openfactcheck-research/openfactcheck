@@ -75,8 +75,8 @@ environments/
 tmp
 
 # Build artifacts
-deployments/containers/*/build/
-deployments/containers/*/.hash
+deployments/artifacts/*/build/
+deployments/artifacts/*/.hash
 deployments/base/ignore.*.auto.tfvars
 
 # MkDocs build output.

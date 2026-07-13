@@ -12,7 +12,7 @@ from openfactcheck.api.schemas.preferences import PreferencesResponse, UpdatePre
 router = APIRouter(prefix="/preferences", tags=["preferences"])
 
 
-@router.get("/")
+@router.get("")
 async def get_preferences(
     user: Annotated[AuthUser, Depends(get_current_user)],
     repo: Annotated[PreferencesRepository, Depends(get_preferences_repo)],
@@ -22,7 +22,7 @@ async def get_preferences(
     return PreferencesResponse.from_model(preferences)
 
 
-@router.put("/")
+@router.put("")
 async def update_preferences(
     body: UpdatePreferencesRequest,
     user: Annotated[AuthUser, Depends(get_current_user)],

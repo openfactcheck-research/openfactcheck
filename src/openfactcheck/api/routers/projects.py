@@ -19,7 +19,7 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 ResourceId = Annotated[str, Path(max_length=20)]
 
 
-@router.get("/")
+@router.get("")
 async def list_projects(
     user: Annotated[AuthUser, Depends(get_current_user)],
     repo: Annotated[ProjectRepository, Depends(get_project_repo)],
@@ -31,7 +31,7 @@ async def list_projects(
     return [ProjectResponse.from_model(p) for p in projects]
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_project(
     body: CreateProjectRequest,
     user: Annotated[AuthUser, Depends(get_current_user)],
