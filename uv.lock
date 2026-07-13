@@ -1579,7 +1579,7 @@ provides-extras = ["api", "cloud", "local", "rarr"]
 dev = [
     { name = "boto3-stubs", extras = ["dynamodb", "kms"], specifier = ">=1.43" },
     { name = "httpx", specifier = ">=0.28" },
-    { name = "moto", extras = ["dynamodb"], specifier = ">=5.2" },
+    { name = "moto", extras = ["dynamodb"], specifier = ">=5.2.2" },
     { name = "openfactcheck", extras = ["api", "local", "cloud"] },
     { name = "pre-commit", specifier = ">=4.6" },
     { name = "pyright", specifier = ">=1.1" },

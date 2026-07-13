@@ -298,7 +298,7 @@ dev = [
     "pytest-mock>=3.15",
     "httpx>=0.28",
     "boto3-stubs[dynamodb,kms]>=1.43",
-    "moto[dynamodb]>=5.2",
+    "moto[dynamodb]>=5.2.2",
     "ruff>=0.15",
 ]
 docs = [
