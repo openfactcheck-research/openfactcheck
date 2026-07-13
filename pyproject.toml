@@ -34,7 +34,7 @@ api = [
 ]
 local = [
     "aiosqlite>=0.22",
-    "sqlalchemy[asyncio]>=2.0",
+    "sqlalchemy[asyncio]>=2.0.51",
 ]
 cloud = [
     "boto3>=1.43",
