@@ -16,21 +16,21 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "anthropic>=0.109",
+    "anthropic>=0.117.0",
     "httpx>=0.28.1",
-    "openai>=2.41",
+    "openai>=2.46.0",
     "pydantic>=2.13",
     "pydantic-settings[yaml]>=2.14",
-    "typing-extensions>=4.15.0",
+    "typing-extensions>=4.16.0",
 ]
 
 [project.optional-dependencies]
 # api is the shared HTTP layer; local and cloud are the interchangeable repository backends.
 api = [
-    "fastapi>=0.137.1",
+    "fastapi>=0.139.2",
     "uvicorn[standard]>=0.49",
     "pyjwt[crypto]>=2.13",
-    "cryptography>=48.0.1",
+    "cryptography>=49.0.0",
 ]
 local = [
     "aiosqlite>=0.22",
